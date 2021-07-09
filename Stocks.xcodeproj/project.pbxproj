@@ -16,7 +16,7 @@
 		8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */; };
 		8F11B95A26986DF000F4AFD1 /* StockDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */; };
 		8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95B269871D800F4AFD1 /* APICaller.swift */; };
-		8F11B95E269871EA00F4AFD1 /* PersistantManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95D269871EA00F4AFD1 /* PersistantManager.swift */; };
+		8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95D269871EA00F4AFD1 /* PersistenceManager.swift */; };
 		8F11B960269871F700F4AFD1 /* HapticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95F269871F600F4AFD1 /* HapticsManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,7 +32,7 @@
 		8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
 		8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockDetailViewController.swift; sourceTree = "<group>"; };
 		8F11B95B269871D800F4AFD1 /* APICaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APICaller.swift; sourceTree = "<group>"; };
-		8F11B95D269871EA00F4AFD1 /* PersistantManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistantManager.swift; sourceTree = "<group>"; };
+		8F11B95D269871EA00F4AFD1 /* PersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceManager.swift; sourceTree = "<group>"; };
 		8F11B95F269871F600F4AFD1 /* HapticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -106,7 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				8F11B95B269871D800F4AFD1 /* APICaller.swift */,
-				8F11B95D269871EA00F4AFD1 /* PersistantManager.swift */,
+				8F11B95D269871EA00F4AFD1 /* PersistenceManager.swift */,
 				8F11B95F269871F600F4AFD1 /* HapticsManager.swift */,
 			);
 			path = Managers;
@@ -194,7 +194,7 @@
 				8F11B960269871F700F4AFD1 /* HapticsManager.swift in Sources */,
 				8F11B95A26986DF000F4AFD1 /* StockDetailViewController.swift in Sources */,
 				8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */,
-				8F11B95E269871EA00F4AFD1 /* PersistantManager.swift in Sources */,
+				8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */,
 				8F11B95626986DDA00F4AFD1 /* TopStoriesNewsViewController.swift in Sources */,
 				8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */,
 				8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */,
