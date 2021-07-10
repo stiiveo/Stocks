@@ -18,6 +18,7 @@
 		8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95B269871D800F4AFD1 /* APICaller.swift */; };
 		8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95D269871EA00F4AFD1 /* PersistenceManager.swift */; };
 		8F11B960269871F700F4AFD1 /* HapticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95F269871F600F4AFD1 /* HapticsManager.swift */; };
+		8F11B9622699457400F4AFD1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B9612699457400F4AFD1 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		8F11B95B269871D800F4AFD1 /* APICaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APICaller.swift; sourceTree = "<group>"; };
 		8F11B95D269871EA00F4AFD1 /* PersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceManager.swift; sourceTree = "<group>"; };
 		8F11B95F269871F600F4AFD1 /* HapticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticsManager.swift; sourceTree = "<group>"; };
+		8F11B9612699457400F4AFD1 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				8F11B94526986C8200F4AFD1 /* Assets.xcassets */,
 				8F11B93C26986C8000F4AFD1 /* AppDelegate.swift */,
 				8F11B93E26986C8000F4AFD1 /* SceneDelegate.swift */,
+				8F11B9612699457400F4AFD1 /* Extensions.swift */,
 			);
 			path = Others;
 			sourceTree = "<group>";
@@ -196,6 +199,7 @@
 				8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */,
 				8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */,
 				8F11B95626986DDA00F4AFD1 /* TopStoriesNewsViewController.swift in Sources */,
+				8F11B9622699457400F4AFD1 /* Extensions.swift in Sources */,
 				8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */,
 				8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */,
 				8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */,
