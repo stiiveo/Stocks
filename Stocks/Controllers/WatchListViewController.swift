@@ -8,6 +8,8 @@
 import UIKit
 
 class WatchListViewController: UIViewController {
+    
+    private var searchTimer: Timer?
 
     // MARK: - Lifecycle
     
@@ -40,6 +42,7 @@ class WatchListViewController: UIViewController {
     private func setUpSearchController() {
         let resultVC = SearchResultViewController()
         resultVC.delegate = self
+        
         let searchVC = UISearchController(searchResultsController: resultVC)
         searchVC.searchResultsUpdater = self
         navigationItem.searchController = searchVC
@@ -56,19 +59,34 @@ extension WatchListViewController: UISearchResultsUpdating {
             return
         }
         
+        // Reset timer
+        searchTimer?.invalidate()
+        
+        // Kick off new timer
         // Optimize to reduce number of searches for when user stops typing
-        
-        // Call API to search
-        
-        // Update result controller
-        resultVC.update(with: ["AAPL, AWLL, AWE, ASME"])
+        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+            // Call API to search
+            APICaller.shared.search(query: query) { result in
+                switch result {
+                case .success(let response):
+                    DispatchQueue.main.async {
+                        resultVC.update(with: response.result)
+                    }
+                case .failure(let error):
+                    DispatchQueue.main.async {
+                        resultVC.update(with: [])
+                    }
+                    print(error)
+                }
+            }
+        })
     }
     
 }
 
 extension WatchListViewController: SearchResultViewControllerDelegate {
-    func searchResultViewControllerDidSelect(searchResult: String) {
+    func searchResultViewControllerDidSelect(searchResult: SearchResult) {
         // Present stock details for given selection
-        print(searchResult)
+        print("Did select: \(searchResult.displaySymbol)")
     }
 }
