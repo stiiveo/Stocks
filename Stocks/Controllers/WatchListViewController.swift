@@ -33,7 +33,7 @@ class WatchListViewController: UIViewController {
         )
         let label = UILabel(frame: CGRect(x: 10, y: 10, width: titleView.width - 20, height: titleView.height - 15))
         label.text = "Stocks"
-        label.font = .systemFont(ofSize: 40, weight: .bold)
+        label.font = .systemFont(ofSize: 36, weight: .bold)
         titleView.addSubview(label)
         
         navigationItem.titleView = titleView
@@ -87,6 +87,12 @@ extension WatchListViewController: UISearchResultsUpdating {
 extension WatchListViewController: SearchResultViewControllerDelegate {
     func searchResultViewControllerDidSelect(searchResult: SearchResult) {
         // Present stock details for given selection
-        print("Did select: \(searchResult.displaySymbol)")
+        navigationItem.searchController?.searchBar.resignFirstResponder()
+        
+        let stockDetailVC = StockDetailViewController()
+        stockDetailVC.title = searchResult.description
+        
+        let navVC = UINavigationController(rootViewController: stockDetailVC)
+        present(navVC, animated: true, completion: nil)
     }
 }
