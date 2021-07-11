@@ -21,6 +21,7 @@
 		8F11B9622699457400F4AFD1 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B9612699457400F4AFD1 /* Extensions.swift */; };
 		8F11B9642699485F00F4AFD1 /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B9632699485F00F4AFD1 /* SearchResultTableViewCell.swift */; };
 		8F11B9662699BAEC00F4AFD1 /* SearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B9652699BAEC00F4AFD1 /* SearchResponse.swift */; };
+		8F65B6B4269A9F99001FC19D /* PanelViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B3269A9F99001FC19D /* PanelViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		8F11B9612699457400F4AFD1 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		8F11B9632699485F00F4AFD1 /* SearchResultTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultTableViewCell.swift; sourceTree = "<group>"; };
 		8F11B9652699BAEC00F4AFD1 /* SearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResponse.swift; sourceTree = "<group>"; };
+		8F65B6B3269A9F99001FC19D /* PanelViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				8F11B95526986DDA00F4AFD1 /* TopStoriesNewsViewController.swift */,
 				8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */,
 				8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */,
+				8F65B6B3269A9F99001FC19D /* PanelViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -211,6 +214,7 @@
 				8F11B9662699BAEC00F4AFD1 /* SearchResponse.swift in Sources */,
 				8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */,
 				8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */,
+				8F65B6B4269A9F99001FC19D /* PanelViewController.swift in Sources */,
 				8F11B93F26986C8000F4AFD1 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
