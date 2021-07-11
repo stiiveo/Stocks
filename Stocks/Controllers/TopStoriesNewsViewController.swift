@@ -8,6 +8,8 @@
 import UIKit
 
 class TopStoriesNewsViewController: UIViewController {
+    
+    let tableView = UITableView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
