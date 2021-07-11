@@ -9,16 +9,20 @@ import UIKit
 
 class NewsViewController: UIViewController {
     
+    // MARK: - Properties
+    
+    private var stories = [String]()
+    
+    private let type: Type
+    
     let tableView: UITableView = {
         let table = UITableView()
         
         // Register cell, header
-        
+        table.register(NewsHeaderView.self, forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier)
         table.backgroundColor = .clear
         return table
     }()
-    
-    private let type: Type
     
     enum `Type` {
         case topStories
@@ -79,11 +83,18 @@ class NewsViewController: UIViewController {
 extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return nil
+        guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else {
+            return nil
+        }
+        header.configure(with: .init(
+                            title: self.type.title,
+                            shouldShowAddButton: false)
+        )
+        return header
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 70
+        return NewsHeaderView.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
