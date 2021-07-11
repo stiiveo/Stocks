@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,7 +12,7 @@
 		8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */; };
 		8F11B94626986C8200F4AFD1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8F11B94526986C8200F4AFD1 /* Assets.xcassets */; };
 		8F11B94926986C8200F4AFD1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8F11B94726986C8200F4AFD1 /* LaunchScreen.storyboard */; };
-		8F11B95626986DDA00F4AFD1 /* TopStoriesNewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95526986DDA00F4AFD1 /* TopStoriesNewsViewController.swift */; };
+		8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95526986DDA00F4AFD1 /* NewsViewController.swift */; };
 		8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */; };
 		8F11B95A26986DF000F4AFD1 /* StockDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */; };
 		8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95B269871D800F4AFD1 /* APICaller.swift */; };
@@ -34,7 +34,7 @@
 		8F11B94526986C8200F4AFD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8F11B94826986C8200F4AFD1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8F11B94A26986C8200F4AFD1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8F11B95526986DDA00F4AFD1 /* TopStoriesNewsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopStoriesNewsViewController.swift; sourceTree = "<group>"; };
+		8F11B95526986DDA00F4AFD1 /* NewsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsViewController.swift; sourceTree = "<group>"; };
 		8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
 		8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockDetailViewController.swift; sourceTree = "<group>"; };
 		8F11B95B269871D800F4AFD1 /* APICaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APICaller.swift; sourceTree = "<group>"; };
@@ -118,7 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */,
-				8F11B95526986DDA00F4AFD1 /* TopStoriesNewsViewController.swift */,
+				8F11B95526986DDA00F4AFD1 /* NewsViewController.swift */,
 				8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */,
 				8F11B95926986DF000F4AFD1 /* StockDetailViewController.swift */,
 			);
@@ -152,7 +152,6 @@
 				3FACF7EFFDBAD44899E988AD /* Pods-Stocks.debug.xcconfig */,
 				6D6B2076100EBCB60072D3EB /* Pods-Stocks.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -274,7 +273,7 @@
 				8F11B95A26986DF000F4AFD1 /* StockDetailViewController.swift in Sources */,
 				8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */,
 				8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */,
-				8F11B95626986DDA00F4AFD1 /* TopStoriesNewsViewController.swift in Sources */,
+				8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */,
 				8F11B9622699457400F4AFD1 /* Extensions.swift in Sources */,
 				8F11B95C269871D800F4AFD1 /* APICaller.swift in Sources */,
 				8F11B9662699BAEC00F4AFD1 /* SearchResponse.swift in Sources */,
