@@ -7,23 +7,10 @@
 
 import UIKit
 
+/// Controller to show news.
 class NewsViewController: UIViewController {
     
-    // MARK: - Properties
-    
-    private var stories = [String]()
-    
-    private let type: Type
-    
-    let tableView: UITableView = {
-        let table = UITableView()
-        
-        // Register cell, header
-        table.register(NewsHeaderView.self, forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier)
-        table.backgroundColor = .clear
-        return table
-    }()
-    
+    /// Type of news.
     enum `Type` {
         case topStories
         case company(symbol: String)
@@ -37,6 +24,23 @@ class NewsViewController: UIViewController {
             }
         }
     }
+    
+    // MARK: - Properties
+    
+    private var stories: [NewsStory] = [
+        NewsStory(category: "top news", datetime: 1625403601, headline: "Here's how much Americans are spending on food, alcohol and fireworks this Fourth of July", id: 6759941, image: "https://image.cnbcfm.com/api/v1/image/106905981-1625224556626-park-cooking-women-summer-picnic-outside-friends-grill-grilling_t20_dzEZk9.jpg?v=1625224698", related: "", source: "CNBC", summary: "Personal finance website WalletHub looked at how much Americans are planning to spend on celebrations this year. Here's where their money is going.", url: "https://www.cnbc.com/2021/07/04/how-much-americans-are-spending-on-fourth-of-july.html")
+    ]
+    
+    private let type: Type
+    
+    let tableView: UITableView = {
+        let table = UITableView()
+        // Register cell, header
+        table.register(NewsHeaderView.self, forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier)
+        table.register(NewsStoryTableViewCell.self, forCellReuseIdentifier: NewsStoryTableViewCell.identifier)
+        table.backgroundColor = .clear
+        return table
+    }()
     
     // MARK: - Initializers
     
@@ -82,6 +86,8 @@ class NewsViewController: UIViewController {
 
 extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
     
+    // Header View Settings
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else {
             return nil
@@ -97,20 +103,30 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
         return NewsHeaderView.preferredHeight
     }
     
+    // Cells Settings
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0
+        return stories.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: NewsStoryTableViewCell.identifier,
+                for: indexPath)
+                as? NewsStoryTableViewCell else {
+            fatalError()
+        }
+        cell.configure(with: .init(model: stories[indexPath.row]))
+        return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 40
+        return NewsStoryTableViewCell.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        // Open news story
     }
     
 }
