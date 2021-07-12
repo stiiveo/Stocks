@@ -27,9 +27,7 @@ class NewsViewController: UIViewController {
     
     // MARK: - Properties
     
-    private var stories: [NewsStory] = [
-        NewsStory(category: "top news", datetime: 1625403601, headline: "Here's how much Americans are spending on food, alcohol and fireworks this Fourth of July", id: 6759941, image: "https://image.cnbcfm.com/api/v1/image/106905981-1625224556626-park-cooking-women-summer-picnic-outside-friends-grill-grilling_t20_dzEZk9.jpg?v=1625224698", related: "", source: "CNBC", summary: "Personal finance website WalletHub looked at how much Americans are planning to spend on celebrations this year. Here's where their money is going.", url: "https://www.cnbc.com/2021/07/04/how-much-americans-are-spending-on-fourth-of-july.html")
-    ]
+    private var stories = [NewsStory]()
     
     private let type: Type
     
@@ -75,7 +73,19 @@ class NewsViewController: UIViewController {
     }
     
     private func fetchNews() {
-        
+        DispatchQueue.global(qos: .userInteractive).async {
+            APICaller.shared.news(for: self.type) { [weak self] result in
+                switch result {
+                case .success(let stories):
+                    self?.stories = stories
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
+                    }
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        }
     }
     
     private func open(url: URL) {
