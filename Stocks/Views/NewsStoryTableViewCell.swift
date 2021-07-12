@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import SDWebImage
 
 class NewsStoryTableViewCell: UITableViewCell {
-    static let identifier = "NewsStoryTableViewCell"
     
+    static let identifier = "NewsStoryTableViewCell"
     static let preferredHeight: CGFloat = 140
     
     struct ViewModel {
@@ -74,7 +75,7 @@ class NewsStoryTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        let imageSize: CGFloat = contentView.height - 10
+        let imageSize: CGFloat = contentView.height * 0.8
         storyImageView.frame = CGRect(
             x: contentView.width - imageSize - 10,
             y: (contentView.height - imageSize) / 2,
@@ -101,7 +102,7 @@ class NewsStoryTableViewCell: UITableViewCell {
         
         headlineLabel.frame = CGRect(
             x: separatorInset.left,
-            y: sourceLabel.bottom + 5,
+            y: sourceLabel.bottom,
             width: availableWidth,
             height: contentView.height - sourceLabel.bottom - dateLabel.height - 10
         )
@@ -120,8 +121,12 @@ class NewsStoryTableViewCell: UITableViewCell {
         sourceLabel.text = viewModel.source
         dateLabel.text = viewModel.dateString
         
+        let scale = UIScreen.main.scale
+        let thumbnailSize = CGSize(width: 100 * scale, height: 100 * scale)
+        storyImageView.sd_setImage(with: viewModel.imageURL, placeholderImage: nil, context: [.imageThumbnailPixelSize: thumbnailSize])
+        
         // Manually set image
-        storyImageView.setImage(with: viewModel.imageURL)
+//        storyImageView.setImage(with: viewModel.imageURL)
     }
 
 }
