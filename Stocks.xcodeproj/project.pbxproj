@@ -24,6 +24,7 @@
 		8F65B6B6269AE1B8001FC19D /* NewsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */; };
 		8F65B6B8269B3B98001FC19D /* NewsStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B7269B3B98001FC19D /* NewsStory.swift */; };
 		8F65B6BA269C2116001FC19D /* NewsStoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */; };
+		8FB254BE269D31A1004FF1C1 /* MarketDataResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BD269D31A1004FF1C1 /* MarketDataResponse.swift */; };
 		90A45978F98F376669627D96 /* Pods_Stocks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +50,7 @@
 		8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsHeaderView.swift; sourceTree = "<group>"; };
 		8F65B6B7269B3B98001FC19D /* NewsStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStory.swift; sourceTree = "<group>"; };
 		8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStoryTableViewCell.swift; sourceTree = "<group>"; };
+		8FB254BD269D31A1004FF1C1 /* MarketDataResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketDataResponse.swift; sourceTree = "<group>"; };
 		AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Stocks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -108,6 +110,7 @@
 			children = (
 				8F11B9652699BAEC00F4AFD1 /* SearchResponse.swift */,
 				8F65B6B7269B3B98001FC19D /* NewsStory.swift */,
+				8FB254BD269D31A1004FF1C1 /* MarketDataResponse.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8FB254BE269D31A1004FF1C1 /* MarketDataResponse.swift in Sources */,
 				8F11B960269871F700F4AFD1 /* HapticsManager.swift in Sources */,
 				8F11B9642699485F00F4AFD1 /* SearchResultTableViewCell.swift in Sources */,
 				8F11B95A26986DF000F4AFD1 /* StockDetailViewController.swift in Sources */,

@@ -13,6 +13,18 @@ class WatchListViewController: UIViewController {
     private var searchTimer: Timer?
     
     private var panel: FloatingPanelController?
+    
+    /// each symbol in the list has respective market data
+    private var watchlistData: [String: [CandleStick]] = [:]
+    
+    // ViewModels
+    private var viewModels: [String] = []
+    
+    private let tableView: UITableView = {
+        let table = UITableView()
+        // register cell
+        return table
+    }()
 
     // MARK: - Lifecycle
     
@@ -20,11 +32,50 @@ class WatchListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpSearchController()
-        setUpTitleView()
+        setUpTableView()
+        fetchWatchlistData()
         setUpFloatingPanel()
+        setUpTitleView()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
     }
     
     // MARK: - Private
+    
+    private func fetchWatchlistData() {
+        let symbols = PersistenceManager.shared.watchlist
+        let group = DispatchGroup()
+        
+        for symbol in symbols {
+            // Fetch market data of each symbol.
+            group.enter()
+            
+            APICaller.shared.marketData(for: symbol) { [weak self] result in
+                defer {
+                    group.leave()
+                }
+                switch result {
+                case .success(let response):
+                    self?.watchlistData[symbol] = response.candleSticks
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            self?.tableView.reloadData()
+        }
+    }
+    
+    private func setUpTableView() {
+        view.addSubview(tableView)
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
     
     private func setUpFloatingPanel() {
         let vc = NewsViewController(type: .topStories)
@@ -114,5 +165,21 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
 extension WatchListViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
         navigationItem.titleView?.isHidden = fpc.state == .full
+    }
+}
+
+extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return watchlistData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return UITableViewCell()
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // Show selected stock details
     }
 }

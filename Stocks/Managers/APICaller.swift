@@ -70,12 +70,33 @@ final class APICaller {
         }
     }
     
+    public func marketData(
+        for symbol: String,
+        numberOfDays: TimeInterval = 7,
+        completion: @escaping (Result<MarketDataResponse, Error>) -> Void
+    ) {
+        let currentTime = Int(Date().timeIntervalSince1970)
+        let startingTime = currentTime - Int(Constants.day * numberOfDays)
+        let url = url(
+            for: .marketData,
+            queryParams: [
+                "symbol": symbol,
+                "resolution": "1",
+                "from": "\(startingTime)",
+                "to": "\(currentTime)"
+            ]
+        )
+        
+        request(url: url, expecting: MarketDataResponse.self, completion: completion)
+    }
+    
     // MARK: - Private
     
     private enum Endpoint: String {
         case search
         case news = "news"
         case companyNews = "company-news"
+        case marketData = "stock/candle"
     }
     
     private enum APIError: Error {
