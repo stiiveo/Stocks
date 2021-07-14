@@ -26,27 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
 
     private func debug() {
-//        APICaller.shared.marketData(for: "AAPL", numberOfDays: 1) { result in
-//            switch result {
-//            case .success(let response):
-//                let data = response.candleSticks
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
         
-//        APICaller.shared.news(for: .company(symbol: "MSFT")) { result in
-//            switch result {
-//            case .success(let news):
-//                print("news count:", news.count)
-//                for peace in news {
-//                    let date = Date(timeIntervalSince1970: peace.datetime)
-//                    print("Date:", date, "\n-")
-//                }
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
     }
 
 }

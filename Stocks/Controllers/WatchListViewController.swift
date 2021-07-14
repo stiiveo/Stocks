@@ -14,17 +14,15 @@ class WatchListViewController: UIViewController {
     
     private var panel: FloatingPanelController?
     
-    /// each symbol in the list has respective market data
-    private var watchlistData: [String: [CandleStick]] = [:]
+    static var maxPriceLabelWidth: CGFloat = 0
     
-    private var watchlistQuote: [String: StockQuote] = [:]
+    private var watchlistData: [String: StockData] = [:]
     
-    // ViewModels
     private var viewModels = [WatchListTableViewCell.ViewModel]()
     
     private let tableView: UITableView = {
         let table = UITableView()
-        // register cell
+        table.register(WatchListTableViewCell.self, forCellReuseIdentifier: WatchListTableViewCell.identifier)
         return table
     }()
 
@@ -35,7 +33,7 @@ class WatchListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpSearchController()
         setUpTableView()
-        fetchWatchlistQuotes()
+        fetchWatchlistData()
         setUpFloatingPanel()
         setUpTitleView()
     }
@@ -47,7 +45,7 @@ class WatchListViewController: UIViewController {
     
     // MARK: - Private
     
-    private func fetchWatchlistQuotes() {
+    private func fetchWatchlistData(for days: TimeInterval = 7) {
         let symbols = PersistenceManager.shared.watchlist
         let group = DispatchGroup()
         
@@ -55,16 +53,19 @@ class WatchListViewController: UIViewController {
             // Fetch quote data of each symbol.
             group.enter()
             
-            APICaller.shared.stockQuote(for: symbol) { [weak self] result in
+            APICaller.shared.getStockData(
+                for: symbol,
+                historyDuration: days) { [weak self] result in
+                
                 defer {
                     group.leave()
                 }
                 
                 switch result {
-                case .success(let response):
-                    self?.watchlistQuote[symbol] = response
+                case .success(let stockData):
+                    self?.watchlistData[symbol] = stockData
                 case .failure(let error):
-                    print(error)
+                    print(error.localizedDescription)
                 }
             }
         }
@@ -73,36 +74,32 @@ class WatchListViewController: UIViewController {
             self?.createViewModels()
             self?.tableView.reloadData()
         }
-        
     }
     
     private func createViewModels() {
         var viewModels = [WatchListTableViewCell.ViewModel]()
             
-        for (symbol, quoteData) in watchlistQuote {
-            let currentPrice = quoteData.current
-            let previousClose = quoteData.prevClose
+        for (symbol, stockData) in watchlistData {
+            let currentPrice = stockData.quote.current
+            let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
             let priceChangePercentage = String.stockPriceChangePercentage(from: priceChange)
             
-            print(symbol, ": Price:", currentPrice, "|", "Prev:", previousClose, "\(priceChangePercentage)")
-            
-            viewModels.append(
-                .init(
-                    symbol: symbol,
-                    companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
-                    price: String.decimalFormatted(from: currentPrice),
-                    changeColor: priceChange < 0 ? .systemRed : .systemGreen,
-                    changePercentage: priceChangePercentage
-                )
-            )
-            print(WatchListTableViewCell.ViewModel(
+            let model = WatchListTableViewCell.ViewModel(
                 symbol: symbol,
                 companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
                 price: String.decimalFormatted(from: currentPrice),
                 changeColor: priceChange < 0 ? .systemRed : .systemGreen,
-                changePercentage: priceChangePercentage
-            ))
+                changePercentage: priceChangePercentage,
+                chartViewModel: .init(
+                    data: stockData.candleSticks.map{ $0.close },
+                    showLegend: false,
+                    showAxis: false
+                )
+            )
+            viewModels.append(model)
+            
+//            print(symbol, ": Price:", currentPrice, "|", "Prev:", previousClose, "\(priceChangePercentage)")
         }
         
         self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
@@ -207,16 +204,35 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
 
 extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return watchlistData.count
+        return viewModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: WatchListTableViewCell.identifier,
+            for: indexPath
+        ) as? WatchListTableViewCell else {
+            fatalError()
+        }
+        cell.delegate = self
+        cell.configure(with: viewModels[indexPath.row])
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return WatchListTableViewCell.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
         // Show selected stock details
+    }
+}
+
+extension WatchListViewController: WatchListTableViewCellDelegate {
+    func didUpdateMaxWidth() {
+        // Optimize: Only refresh rows prior to the current row that changes the max width.
+        tableView.reloadData()
     }
 }

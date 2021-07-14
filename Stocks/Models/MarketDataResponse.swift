@@ -40,8 +40,7 @@ struct MarketDataResponse: Codable {
             )
         }
         
-        let dataSortedByDate = data.sorted(by: { $0.date > $1.date } )
-        return dataSortedByDate
+        return data
     }
 }
 

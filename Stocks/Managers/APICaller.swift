@@ -70,27 +70,76 @@ final class APICaller {
         }
     }
     
-//    public func marketData(
-//        for symbol: String,
-//        numberOfDays: TimeInterval = 7,
-//        completion: @escaping (Result<MarketDataResponse, Error>) -> Void
-//    ) {
-//        let currentTime = Int(Date().timeIntervalSince1970)
-//        let startingTime = currentTime - Int(Constants.day * numberOfDays)
-//        let url = url(
-//            for: .marketData,
-//            queryParams: [
-//                "symbol": symbol,
-//                "resolution": "1",
-//                "from": "\(startingTime)",
-//                "to": "\(currentTime)"
-//            ]
-//        )
-//        
-//        request(url: url, expecting: MarketDataResponse.self, completion: completion)
-//    }
+    public func getStockData(
+        for symbol: String,
+        historyDuration: TimeInterval,
+        completion: @escaping (Result<StockData, Error>) -> Void
+    ) {
+        var stockQuote: StockQuote?
+        var stockCandleSticks: [CandleStick]?
+        let group = DispatchGroup()
+        var someError: Error? // <- Requires a better way to send errors to the caller.
+        
+        group.enter()
+        getStockQuote(for: symbol) { result in
+            defer {
+                group.leave()
+            }
+            switch result {
+            case .success(let response):
+                stockQuote = response
+            case .failure(let error):
+                someError = error
+            }
+        }
+        
+        group.enter()
+        getCandlesData(for: symbol) { result in
+            defer {
+                group.leave()
+            }
+            switch result {
+            case .success(let response):
+                stockCandleSticks = response.candleSticks
+            case .failure((let error)):
+                someError = error
+            }
+        }
+        
+        group.notify(queue: .global(qos: .default)) {
+            guard let quote = stockQuote,
+                  let candleSticks = stockCandleSticks else {
+                completion(.failure(someError!))
+                return
+            }
+            
+            let stockData = StockData(quote: quote, candleSticks: candleSticks)
+            completion(.success(stockData))
+            
+        }
+    }
     
-    public func stockQuote(
+    private func getCandlesData(
+        for symbol: String,
+        numberOfDays: TimeInterval = 7,
+        completion: @escaping (Result<MarketDataResponse, Error>) -> Void
+    ) {
+        let currentTime = Int(Date().timeIntervalSince1970)
+        let startingTime = currentTime - Int(Constants.day * numberOfDays)
+        let url = url(
+            for: .marketData,
+            queryParams: [
+                "symbol": symbol,
+                "resolution": "1",
+                "from": "\(startingTime)",
+                "to": "\(currentTime)"
+            ]
+        )
+        
+        request(url: url, expecting: MarketDataResponse.self, completion: completion)
+    }
+    
+    private func getStockQuote(
         for symbol: String,
         completion: @escaping (Result<StockQuote, Error>) -> Void
     ) {
