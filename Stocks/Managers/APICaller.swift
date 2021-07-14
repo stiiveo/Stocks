@@ -8,6 +8,7 @@
 import Foundation
 
 final class APICaller {
+    
     static let shared = APICaller()
     
     private struct Constants {
@@ -78,7 +79,6 @@ final class APICaller {
         var stockQuote: StockQuote?
         var stockCandleSticks: [CandleStick]?
         let group = DispatchGroup()
-        var someError: Error? // <- Requires a better way to send errors to the caller.
         
         group.enter()
         getStockQuote(for: symbol) { result in
@@ -89,7 +89,7 @@ final class APICaller {
             case .success(let response):
                 stockQuote = response
             case .failure(let error):
-                someError = error
+                print(error.localizedDescription)
             }
         }
         
@@ -101,42 +101,21 @@ final class APICaller {
             switch result {
             case .success(let response):
                 stockCandleSticks = response.candleSticks
-            case .failure((let error)):
-                someError = error
+            case .failure(let error):
+                print(error.localizedDescription)
             }
         }
         
         group.notify(queue: .global(qos: .default)) {
             guard let quote = stockQuote,
                   let candleSticks = stockCandleSticks else {
-                completion(.failure(someError!))
+                completion(.failure(APIError.failedToGetStockData))
                 return
             }
             
             let stockData = StockData(quote: quote, candleSticks: candleSticks)
             completion(.success(stockData))
-            
         }
-    }
-    
-    private func getCandlesData(
-        for symbol: String,
-        numberOfDays: TimeInterval = 7,
-        completion: @escaping (Result<MarketDataResponse, Error>) -> Void
-    ) {
-        let currentTime = Int(Date().timeIntervalSince1970)
-        let startingTime = currentTime - Int(Constants.day * numberOfDays)
-        let url = url(
-            for: .marketData,
-            queryParams: [
-                "symbol": symbol,
-                "resolution": "1",
-                "from": "\(startingTime)",
-                "to": "\(currentTime)"
-            ]
-        )
-        
-        request(url: url, expecting: MarketDataResponse.self, completion: completion)
     }
     
     private func getStockQuote(
@@ -147,19 +126,39 @@ final class APICaller {
         request(url: url, expecting: StockQuote.self, completion: completion)
     }
     
+    private func getCandlesData(
+        for symbol: String,
+        numberOfDays: TimeInterval = 7,
+        completion: @escaping (Result<StockCandles, Error>) -> Void
+    ) {
+        let currentTime = Int(Date().timeIntervalSince1970)
+        let startingTime = currentTime - Int(Constants.day * numberOfDays)
+        let url = url(
+            for: .stockCandles,
+            queryParams: [
+                "symbol": symbol,
+                "resolution": "1",
+                "from": "\(startingTime)",
+                "to": "\(currentTime)"
+            ]
+        )
+        request(url: url, expecting: StockCandles.self, completion: completion)
+    }
+    
     // MARK: - Private
     
     private enum Endpoint: String {
         case search
         case news = "news"
         case companyNews = "company-news"
-        case marketData = "stock/candle"
+        case stockCandles = "stock/candle"
         case quote = "quote"
     }
     
     private enum APIError: Error {
         case noDataReturned
         case invalidUrl
+        case failedToGetStockData
     }
     
     private func url(

@@ -1,5 +1,5 @@
 //
-//  MarketDataResponse.swift
+//  StockCandles.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/7/13.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MarketDataResponse: Codable {
+struct StockCandles: Codable {
     
     let close: [Double]
     let high: [Double]
