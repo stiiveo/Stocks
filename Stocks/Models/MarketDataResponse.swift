@@ -8,6 +8,7 @@
 import Foundation
 
 struct MarketDataResponse: Codable {
+    
     let close: [Double]
     let high: [Double]
     let low: [Double]
@@ -39,7 +40,7 @@ struct MarketDataResponse: Codable {
             )
         }
         
-        let dataSortedByDate = data.sorted(by: { $0.date < $1.date } )
+        let dataSortedByDate = data.sorted(by: { $0.date > $1.date } )
         return dataSortedByDate
     }
 }

@@ -8,6 +8,30 @@
 import Foundation
 import UIKit
 
+// MARK: - Number Formatter
+
+extension NumberFormatter {
+    
+    static let percentageFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .percent
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+    
+    static let decimalFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+    
+}
+
+// MARK: - UIImageView
+
 extension UIImageView {
     func setImage(with url: URL?) {
         guard let url = url else {
@@ -39,6 +63,23 @@ extension String {
         let date = Date(timeIntervalSince1970: timeInterval)
         return DateFormatter.prettyDateFormatter.string(from: date)
     }
+    
+    static func percentage(from double: Double) -> String {
+        let formatter = NumberFormatter.percentageFormatter
+        return formatter.string(from: NSNumber(value: double)) ?? "\(double)"
+    }
+    
+    static func decimalFormatted(from double: Double) -> String {
+        let formatter = NumberFormatter.decimalFormatter
+        return formatter.string(from: NSNumber(value: double)) ?? "\(double)"
+    }
+    
+    static func stockPriceChangePercentage(from priceChange: Double) -> String {
+        let percentage = String(format: "%.2f", priceChange * 100).appending("%")
+        let signedPercentage = priceChange > 0 ? "+" + percentage : percentage
+        return signedPercentage
+    }
+    
 }
 
 // MARK: - Date Formatter

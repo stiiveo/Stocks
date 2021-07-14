@@ -17,8 +17,10 @@ class WatchListViewController: UIViewController {
     /// each symbol in the list has respective market data
     private var watchlistData: [String: [CandleStick]] = [:]
     
+    private var watchlistQuote: [String: StockQuote] = [:]
+    
     // ViewModels
-    private var viewModels: [String] = []
+    private var viewModels = [WatchListTableViewCell.ViewModel]()
     
     private let tableView: UITableView = {
         let table = UITableView()
@@ -33,7 +35,7 @@ class WatchListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         setUpSearchController()
         setUpTableView()
-        fetchWatchlistData()
+        fetchWatchlistQuotes()
         setUpFloatingPanel()
         setUpTitleView()
     }
@@ -45,21 +47,22 @@ class WatchListViewController: UIViewController {
     
     // MARK: - Private
     
-    private func fetchWatchlistData() {
+    private func fetchWatchlistQuotes() {
         let symbols = PersistenceManager.shared.watchlist
         let group = DispatchGroup()
         
         for symbol in symbols {
-            // Fetch market data of each symbol.
+            // Fetch quote data of each symbol.
             group.enter()
             
-            APICaller.shared.marketData(for: symbol) { [weak self] result in
+            APICaller.shared.stockQuote(for: symbol) { [weak self] result in
                 defer {
                     group.leave()
                 }
+                
                 switch result {
                 case .success(let response):
-                    self?.watchlistData[symbol] = response.candleSticks
+                    self?.watchlistQuote[symbol] = response
                 case .failure(let error):
                     print(error)
                 }
@@ -67,8 +70,42 @@ class WatchListViewController: UIViewController {
         }
         
         group.notify(queue: .main) { [weak self] in
+            self?.createViewModels()
             self?.tableView.reloadData()
         }
+        
+    }
+    
+    private func createViewModels() {
+        var viewModels = [WatchListTableViewCell.ViewModel]()
+            
+        for (symbol, quoteData) in watchlistQuote {
+            let currentPrice = quoteData.current
+            let previousClose = quoteData.prevClose
+            let priceChange = (currentPrice / previousClose) - 1
+            let priceChangePercentage = String.stockPriceChangePercentage(from: priceChange)
+            
+            print(symbol, ": Price:", currentPrice, "|", "Prev:", previousClose, "\(priceChangePercentage)")
+            
+            viewModels.append(
+                .init(
+                    symbol: symbol,
+                    companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
+                    price: String.decimalFormatted(from: currentPrice),
+                    changeColor: priceChange < 0 ? .systemRed : .systemGreen,
+                    changePercentage: priceChangePercentage
+                )
+            )
+            print(WatchListTableViewCell.ViewModel(
+                symbol: symbol,
+                companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
+                price: String.decimalFormatted(from: currentPrice),
+                changeColor: priceChange < 0 ? .systemRed : .systemGreen,
+                changePercentage: priceChangePercentage
+            ))
+        }
+        
+        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
     }
     
     private func setUpTableView() {

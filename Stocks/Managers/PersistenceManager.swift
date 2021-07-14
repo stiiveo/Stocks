@@ -26,10 +26,8 @@ final class PersistenceManager {
         if !hasOnboarded {
             userDefaults.set(true, forKey: Constants.onboardKey)
             setUpDefaults()
-            return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? [] 
         }
-        
-        return []
+        return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? [] 
     }
     
     public func addToWatchlist() {
