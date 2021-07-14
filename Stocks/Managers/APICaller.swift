@@ -118,6 +118,22 @@ final class APICaller {
         }
     }
     
+    // MARK: - Private
+    
+    private enum Endpoint: String {
+        case search
+        case news = "news"
+        case companyNews = "company-news"
+        case stockCandles = "stock/candle"
+        case quote = "quote"
+    }
+    
+    private enum APIError: Error {
+        case noDataReturned
+        case invalidUrl
+        case failedToGetStockData
+    }
+    
     private func getStockQuote(
         for symbol: String,
         completion: @escaping (Result<StockQuote, Error>) -> Void
@@ -143,22 +159,6 @@ final class APICaller {
             ]
         )
         request(url: url, expecting: StockCandles.self, completion: completion)
-    }
-    
-    // MARK: - Private
-    
-    private enum Endpoint: String {
-        case search
-        case news = "news"
-        case companyNews = "company-news"
-        case stockCandles = "stock/candle"
-        case quote = "quote"
-    }
-    
-    private enum APIError: Error {
-        case noDataReturned
-        case invalidUrl
-        case failedToGetStockData
     }
     
     private func url(
@@ -188,8 +188,6 @@ final class APICaller {
             print("Failed to create url from URLComponents: \(components).")
             return nil
         }
-        
-        print("\n\(url.absoluteString)\n")
         
         return url
     }

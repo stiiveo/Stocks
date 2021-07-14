@@ -228,6 +228,31 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Show selected stock details
     }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            tableView.beginUpdates()
+            
+            // Update persistence
+            PersistenceManager.shared.removeFromWatchlist(symbol: viewModels[indexPath.row].symbol)
+            
+            // Update ViewModels
+            viewModels.remove(at: indexPath.row)
+            
+            // Delete Row
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            
+            tableView.endUpdates()
+        }
+    }
 }
 
 extension WatchListViewController: WatchListTableViewCellDelegate {

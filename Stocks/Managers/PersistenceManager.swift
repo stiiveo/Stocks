@@ -15,7 +15,7 @@ final class PersistenceManager {
     
     private struct Constants {
         static let onboardKey = "hasOnboarded"
-        static let watchlistKey = "watchlist"
+        static let watchListKey = "watchList"
     }
     
     private init() {}
@@ -27,15 +27,20 @@ final class PersistenceManager {
             userDefaults.set(true, forKey: Constants.onboardKey)
             setUpDefaults()
         }
-        return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? [] 
+        return userDefaults.stringArray(forKey: Constants.watchListKey) ?? [] 
     }
     
     public func addToWatchlist() {
         
     }
     
-    public func removeFromWatchlist() {
-        
+    public func removeFromWatchlist(symbol: String) {
+        var newList = [String]()
+        for item in watchlist where item != symbol {
+            newList.append(item)
+        }
+        userDefaults.set(newList, forKey: Constants.watchListKey)
+        userDefaults.set(nil, forKey: symbol)
     }
     
     // MARK: - Private
@@ -57,7 +62,7 @@ final class PersistenceManager {
         
         // Save all company's symbol.
         let symbols = defaultStocks.map{ $0.key }
-        userDefaults.setValue(symbols, forKey: Constants.watchlistKey)
+        userDefaults.setValue(symbols, forKey: Constants.watchListKey)
         
         // Save each company's name.
         for (symbol, name) in defaultStocks {
