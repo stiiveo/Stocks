@@ -196,11 +196,12 @@ extension WatchListViewController: UISearchResultsUpdating {
 }
 
 extension WatchListViewController: SearchResultViewControllerDelegate {
+    
     func searchResultViewControllerDidSelect(searchResult: SearchResult) {
         // Present stock details for given selection
         navigationItem.searchController?.searchBar.resignFirstResponder()
         
-        let stockDetailVC = StockDetailViewController(
+        let stockDetailVC = StockDetailsViewController(
             symbol: searchResult.displaySymbol,
             companyName: searchResult.description
         )
@@ -209,6 +210,7 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         let navVC = UINavigationController(rootViewController: stockDetailVC)
         present(navVC, animated: true, completion: nil)
     }
+    
 }
 
 extension WatchListViewController: FloatingPanelControllerDelegate {
@@ -265,14 +267,15 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
         // Show selected stock details
         let viewModel = viewModels[indexPath.row]
-        let vc = StockDetailViewController(
+        let stockDetailsVC = StockDetailsViewController(
             symbol: viewModel.symbol,
             companyName: viewModel.companyName,
             candleStickData: watchListData[viewModel.symbol]?.candleSticks ?? []
         )
-        let navVC = UINavigationController(rootViewController: vc)
+        let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)
     }
 }

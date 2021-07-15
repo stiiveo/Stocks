@@ -94,17 +94,6 @@ class NewsViewController: UIViewController {
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true, completion: nil)
     }
-    
-    private func presentFailedToOpenAlert() {
-        let alert = UIAlertController(
-            title: "Unable to Open",
-            message: "Something went wrong and the article could not be opened.",
-            preferredStyle: .alert
-        )
-        let dismissAction = UIAlertAction(title: "Dismiss", style: .default, handler: nil)
-        alert.addAction(dismissAction)
-        present(alert, animated: true, completion: nil)
-    }
 
 }
 
@@ -153,7 +142,7 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
         // Open news story
         let story = stories[indexPath.row]
         guard let url = URL(string: story.url) else {
-            presentFailedToOpenAlert()
+            showAlert(withTitle: "Unable to Open", message: "Something went wrong and the article could not be opened.", actionTitle: "Dismiss")
             return
         }
         open(url: url)

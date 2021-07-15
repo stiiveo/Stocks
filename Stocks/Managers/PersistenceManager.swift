@@ -55,6 +55,10 @@ final class PersistenceManager {
         userDefaults.set(nil, forKey: symbol)
     }
     
+    public func watchListContains(_ symbol: String) -> Bool {
+        return watchList.contains(symbol)
+    }
+    
     // MARK: - Private
     
     private var hasOnboarded: Bool {

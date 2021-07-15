@@ -8,6 +8,21 @@
 import Foundation
 import UIKit
 
+// MARK: - Alert
+
+extension UIViewController {
+    func showAlert(withTitle title: String, message: String, actionTitle: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: .alert
+        )
+        let dismissAction = UIAlertAction(title: actionTitle, style: .default, handler: nil)
+        alert.addAction(dismissAction)
+        present(alert, animated: true, completion: nil)
+    }
+}
+
 // MARK: - Notification
 
 extension Notification.Name {
