@@ -16,7 +16,7 @@ class WatchListViewController: UIViewController {
     
     static var maxPriceLabelWidth: CGFloat = 0
     
-    private var watchlistData: [String: StockData] = [:]
+    private var watchListData: [String: StockData] = [:]
     
     private var viewModels = [WatchListTableViewCell.ViewModel]()
     
@@ -25,6 +25,8 @@ class WatchListViewController: UIViewController {
         table.register(WatchListTableViewCell.self, forCellReuseIdentifier: WatchListTableViewCell.identifier)
         return table
     }()
+    
+    private var observer: NSObjectProtocol?
 
     // MARK: - Lifecycle
     
@@ -36,6 +38,7 @@ class WatchListViewController: UIViewController {
         fetchWatchlistData()
         setUpFloatingPanel()
         setUpTitleView()
+        setUpObserver()
     }
     
     override func viewDidLayoutSubviews() {
@@ -45,12 +48,23 @@ class WatchListViewController: UIViewController {
     
     // MARK: - Private
     
-    private func fetchWatchlistData(for days: TimeInterval = 7) {
-        let symbols = PersistenceManager.shared.watchlist
+    private func setUpObserver() {
+        observer = NotificationCenter.default.addObserver(
+            forName: .didAddToWatchList,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.viewModels.removeAll()
+            self?.fetchWatchlistData()
+        }
+    }
+    
+    private func fetchWatchlistData(forDays days: TimeInterval = 7) {
+        let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
-        for symbol in symbols {
-            // Fetch quote data of each symbol.
+        for symbol in symbols where watchListData[symbol] == nil {
+            // Fetch data of the companies listed in the watch list in which the data is absent.
             group.enter()
             
             APICaller.shared.getStockData(
@@ -63,7 +77,7 @@ class WatchListViewController: UIViewController {
                 
                 switch result {
                 case .success(let stockData):
-                    self?.watchlistData[symbol] = stockData
+                    self?.watchListData[symbol] = stockData
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
@@ -79,7 +93,7 @@ class WatchListViewController: UIViewController {
     private func createViewModels() {
         var viewModels = [WatchListTableViewCell.ViewModel]()
             
-        for (symbol, stockData) in watchlistData {
+        for (symbol, stockData) in watchListData {
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
@@ -98,8 +112,6 @@ class WatchListViewController: UIViewController {
                 )
             )
             viewModels.append(model)
-            
-//            print(symbol, ": Price:", currentPrice, "|", "Prev:", previousClose, "\(priceChangePercentage)")
         }
         
         self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })

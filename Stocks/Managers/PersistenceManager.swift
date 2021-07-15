@@ -29,7 +29,7 @@ final class PersistenceManager {
     
     // MARK: - Public
     
-    var watchlist: [String] {
+    var watchList: [String] {
         if !hasOnboarded {
             userDefaults.set(true, forKey: Constants.onboardKey)
             setUpDefaults()
@@ -37,13 +37,18 @@ final class PersistenceManager {
         return userDefaults.stringArray(forKey: Constants.watchListKey) ?? [] 
     }
     
-    public func addToWatchlist() {
-        
+    public func addToWatchlist(symbol: String, companyName: String) {
+        var currentList = watchList
+        currentList.append(symbol)
+        userDefaults.set(currentList, forKey: Constants.watchListKey)
+        userDefaults.set(companyName, forKey: symbol)
+        // Notify the observer that a new company is added to the watch list.
+        NotificationCenter.default.post(name: .didAddToWatchList, object: nil)
     }
     
     public func removeFromWatchlist(symbol: String) {
         var newList = [String]()
-        for item in watchlist where item != symbol {
+        for item in watchList where item != symbol {
             newList.append(item)
         }
         userDefaults.set(newList, forKey: Constants.watchListKey)
