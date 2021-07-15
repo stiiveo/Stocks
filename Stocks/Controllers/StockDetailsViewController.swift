@@ -39,11 +39,11 @@ class StockDetailsViewController: UIViewController {
         self.candleStickData = candleStickData
         super.init(nibName: nil, bundle: nil)
     }
-
+    
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -82,15 +82,35 @@ class StockDetailsViewController: UIViewController {
     }
 
     private func fetchFinancialData() {
-        // Fetch candle sticks if needed
+        let group = DispatchGroup()
+        
+        if candleStickData.isEmpty {
+            group.enter()
+            // Fetch candle sticks if needed
+        }
         
         // Fetch financial metrics
-
-        renderChart()
+        group.enter()
+        APICaller.shared.fetchFinancialMetrics(symbol: symbol) { [weak self] result in
+            defer {
+                group.leave()
+            }
+            switch result {
+            case .success(let response):
+                let metrics = response.metric
+                print(metrics)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            self?.renderChart()
+        }
     }
 
     private func fetchNews() {
-        APICaller.shared.news(for: .company(symbol: symbol)) { [weak self] result in
+        APICaller.shared.fetchNews(for: .company(symbol: symbol)) { [weak self] result in
             switch result {
             case .success(let stories):
                 DispatchQueue.main.async {
@@ -102,9 +122,20 @@ class StockDetailsViewController: UIViewController {
             }
         }
     }
-
+    
     private func renderChart() {
-
+        // Chart VM | FinancialMetricViewModel(s)
+        let headerView = StockDetailHeaderView(
+            frame: CGRect(
+                x: 0,
+                y: 0,
+                width: view.width,
+                height: (view.width * 0.7) + 100)
+        )
+        headerView.backgroundColor = .link
+        // configure
+        
+        tableView.tableHeaderView = headerView
     }
     
     private func open(url: URL) {

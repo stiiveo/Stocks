@@ -49,7 +49,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
     
     @objc func didTapButton() {

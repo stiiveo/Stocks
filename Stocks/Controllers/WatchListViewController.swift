@@ -67,8 +67,8 @@ class WatchListViewController: UIViewController {
             // Fetch data of the companies listed in the watch list in which the data is absent.
             group.enter()
             
-            APICaller.shared.getStockData(
-                for: symbol,
+            APICaller.shared.fetchStockData(
+                symbol: symbol,
                 historyDuration: days) { [weak self] result in
                 
                 defer {

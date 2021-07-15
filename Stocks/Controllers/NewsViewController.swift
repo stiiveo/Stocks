@@ -49,7 +49,7 @@ class NewsViewController: UIViewController {
     }
     
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Lifecycle
@@ -75,7 +75,7 @@ class NewsViewController: UIViewController {
     
     private func fetchNews() {
         DispatchQueue.global(qos: .userInteractive).async {
-            APICaller.shared.news(for: self.type) { [weak self] result in
+            APICaller.shared.fetchNews(for: self.type) { [weak self] result in
                 switch result {
                 case .success(let stories):
                     self?.stories = stories

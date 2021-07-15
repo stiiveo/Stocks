@@ -43,7 +43,7 @@ final class APICaller {
         
     }
     
-    public func news(
+    public func fetchNews(
         for type: NewsViewController.`Type`,
         completion: @escaping (Result<[NewsStory], Error>) -> Void
     ) {
@@ -71,8 +71,8 @@ final class APICaller {
         }
     }
     
-    public func getStockData(
-        for symbol: String,
+    public func fetchStockData(
+        symbol: String,
         historyDuration: TimeInterval,
         completion: @escaping (Result<StockData, Error>) -> Void
     ) {
@@ -118,6 +118,17 @@ final class APICaller {
         }
     }
     
+    public func fetchFinancialMetrics(
+        symbol: String,
+        completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
+    ) {
+        let url = url(
+            for: .financials,
+            queryParams: ["symbol": symbol, "metric": "all"]
+        )
+        request(url: url, expecting: FinancialMetricsResponse.self, completion: completion)
+    }
+    
     // MARK: - Private
     
     private enum Endpoint: String {
@@ -126,6 +137,7 @@ final class APICaller {
         case companyNews = "company-news"
         case stockCandles = "stock/candle"
         case quote = "quote"
+        case financials = "stock/metric"
     }
     
     private enum APIError: Error {
