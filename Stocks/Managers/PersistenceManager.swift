@@ -5,6 +5,13 @@
 //  Created by Jason Ou on 2021/7/9.
 //
 
+//  User Defaults Stored Data Structure:
+//  )) Key: Data Type
+
+//  1) onboardKey: Bool
+//  2) watchListKey: [symbol]
+//  3) companySymbol(String): companyName(String)
+
 import Foundation
 
 final class PersistenceManager {
@@ -62,7 +69,7 @@ final class PersistenceManager {
         
         // Save all company's symbol.
         let symbols = defaultStocks.map{ $0.key }
-        userDefaults.setValue(symbols, forKey: Constants.watchListKey)
+        userDefaults.set(symbols, forKey: Constants.watchListKey)
         
         // Save each company's name.
         for (symbol, name) in defaultStocks {
