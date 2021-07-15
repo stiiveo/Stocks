@@ -26,6 +26,8 @@ class StockDetailsViewController: UIViewController {
     }()
 
     private var stories: [NewsStory] = []
+    
+    private var metrics: Metrics?
 
     // MARK: - Init
 
@@ -65,10 +67,13 @@ class StockDetailsViewController: UIViewController {
     
     private func setUpCloseButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .close, target: self, action: #selector(didTapCloseButton))
+            barButtonSystemItem: .close,
+            target: self,
+            action: #selector(didTapCloseButton)
+        )
     }
     
-    @objc func didTapCloseButton() {
+    @objc private func didTapCloseButton() {
         dismiss(animated: true, completion: nil)
     }
 
@@ -77,10 +82,16 @@ class StockDetailsViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.tableHeaderView = UIView(
-            frame: CGRect(x: 0, y: 0, width: view.width, height: (view.width * 0.7) + 100)
+            frame: CGRect(
+                x: 0,
+                y: 0,
+                width: view.width,
+                height: (view.width * 0.7) + StockDetailHeaderView.metricsViewHeight
+            )
         )
     }
 
+    /// Fetch financial metrics.
     private func fetchFinancialData() {
         let group = DispatchGroup()
         
@@ -97,15 +108,14 @@ class StockDetailsViewController: UIViewController {
             }
             switch result {
             case .success(let response):
-                let metrics = response.metric
-                print(metrics)
+                self?.metrics = response.metric
             case .failure(let error):
                 print(error.localizedDescription)
             }
         }
         
         group.notify(queue: .main) { [weak self] in
-            self?.renderChart()
+            self?.updateChartAndFinancialsData()
         }
     }
 
@@ -123,25 +133,34 @@ class StockDetailsViewController: UIViewController {
         }
     }
     
-    private func renderChart() {
-        // Chart VM | FinancialMetricViewModel(s)
+    private func updateChartAndFinancialsData() {
         let headerView = StockDetailHeaderView(
             frame: CGRect(
                 x: 0,
                 y: 0,
                 width: view.width,
-                height: (view.width * 0.7) + 100)
+                height: (view.width * 0.7) + 100
+            )
         )
-        headerView.backgroundColor = .link
-        // configure
+        
+        var viewModels = [MetricCollectionViewCell.ViewModel]()
+        if let metrics = metrics {
+            viewModels.append(.init(name: "52W High", value: "\(metrics.annualHigh)"))
+            viewModels.append(.init(name: "52W Low", value: "\(metrics.annualLow)"))
+            viewModels.append(.init(name: "52W Low Date", value: "\(metrics.annualLowDate)"))
+            viewModels.append(.init(name: "52W Return", value: "\(metrics.annualWeekPriceReturnDaily)"))
+            viewModels.append(.init(name: "10D Volume", value: "\(metrics.tenDayAverageVolume)"))
+            viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
+        }
+        
+        // Configure
+        headerView.configure(
+            chartViewModel: .init(data: [], showLegend: false, showAxis: false),
+            metricViewModels: viewModels
+        )
         
         tableView.tableHeaderView = headerView
     }
-    
-    private func open(url: URL) {
-        
-    }
-
 
 }
 
@@ -169,18 +188,18 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(
+        guard let header = tableView.dequeueReusableHeaderFooterView(
                 withIdentifier: NewsHeaderView.identifier
         ) as? NewsHeaderView else {
             return nil
         }
-        headerView.delegate = self
-        headerView.configure(
+        header.delegate = self
+        header.configure(
             with: .init(
                 title: symbol.uppercased(),
                 shouldShowAddButton: !PersistenceManager.shared.watchListContains(symbol))
         )
-        return headerView
+        return header
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {

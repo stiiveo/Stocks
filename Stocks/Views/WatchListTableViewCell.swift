@@ -129,10 +129,10 @@ class WatchListTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        symbolLabel.text = ""
-        nameLabel.text = ""
-        priceLabel.text = ""
-        priceChangeLabel.text = ""
+        symbolLabel.text = nil
+        nameLabel.text = nil
+        priceLabel.text = nil
+        priceChangeLabel.text = nil
         miniChartView.reset()
     }
     

@@ -20,7 +20,7 @@ class StockChartView: UIView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func layoutSubviews() {
