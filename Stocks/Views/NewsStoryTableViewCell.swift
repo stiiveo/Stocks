@@ -19,11 +19,11 @@ class NewsStoryTableViewCell: UITableViewCell {
         let dateString: String
         let imageURL: URL?
         
-        init(model: NewsStory) {
-            self.source = model.source
-            self.headline = model.headline
-            self.dateString = .mediumStyleDate(from: model.datetime)
-            self.imageURL = URL(string: model.image)
+        init(news: NewsStory) {
+            self.source = news.source
+            self.headline = news.headline
+            self.dateString = news.date.dateString(formattedBy: .mediumDateStyleFormatter)
+            self.imageURL = URL(string: news.image)
         }
     }
     

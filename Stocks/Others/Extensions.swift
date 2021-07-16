@@ -9,17 +9,21 @@ import Foundation
 import UIKit
 import SafariServices
 
-// MARK: - Color
+// MARK: - UIColor
 
 extension UIColor {
     /// Color used to fill the stock chart when stock price goes up.
-    static var stockPriceUp: UIColor { .systemGreen }
+    static let stockPriceUp: UIColor = {
+        .systemGreen
+    }()
     
     /// Color used to fill the stock chart when stock price goes down.
-    static var stockPriceDown: UIColor { .systemRed }
+    static let stockPriceDown: UIColor = {
+        .systemRed
+    }()
 }
 
-// MARK: - Alert
+// MARK: - UIViewController
 
 extension UIViewController {
     /// Present simple alert to the user with provided title and message.
@@ -55,10 +59,27 @@ extension Notification.Name {
     static let didAddToWatchList = Notification.Name("didAddToWatchList")
 }
 
+// MARK: - Date Formatter
+
+extension DateFormatter {
+    /// Date formatter with date format "YYYY-MM-dd".
+    static let newsDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "YYYY-MM-dd"
+        return formatter
+    }()
+    
+    /// Date formatter with medium date style.
+    static let mediumDateStyleFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }()
+}
+
 // MARK: - Number Formatter
 
 extension NumberFormatter {
-    
     /// Number formatter with percentage style with maximum of 2 digits.
     static let percentageFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -76,7 +97,6 @@ extension NumberFormatter {
         formatter.maximumFractionDigits = 2
         return formatter
     }()
-    
 }
 
 // MARK: - UIImageView
@@ -109,62 +129,37 @@ extension UIImageView {
 // MARK: - Double
 
 // REQUIRED TESTING BEFORE ADOPTION
-//extension Double {
-//    static func stringFormatted(by formatter: NumberFormatter) -> String {
-//        return formatter.string(from: NSNumber(nonretainedObject: self)) ?? "\(self)"
-//    }
-//}
-
-// MARK: - String
-
-extension String {
-    /// String value created by formatting the provided time interval value with the provided formatter.
-    static func mediumStyleDate(from timeInterval: TimeInterval) -> String {
-        let date = Date(timeIntervalSince1970: timeInterval)
-        return DateFormatter.prettyDateFormatter.string(from: date)
-    }
-    
-    /// String value formatted with specified double value and number formatting style.
-    /// - Parameter double: Double value to be formatted.
-    /// - Parameter formatter: Formatter used to format the specified double value.
+extension Double {
+    /// String value formatted by specified number formatter.
+    /// - Parameter formatter: Number formatter used to format the double value.
     /// - Returns: Formatted string value.
-    /// A string value created by directly converting the value with string interpolation method will be returned if the formatting process failed.
-    static func formatted(from double: Double, with formatter: NumberFormatter) -> String {
-        return formatter.string(from: NSNumber(value: double)) ?? "\(double)"
+    /// A string value converted by using string interpolation method will be returned if the formatting process failed.
+    func stringFormatted(by formatter: NumberFormatter) -> String {
+        return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
     }
     
     /// Format the value to string with percentage style with maximum 2 decimal places.
     /// A percentage sign will be added to the end of the string.
-    /// A plus sign will be added to the front of the string if the provided value is bigger than 0.
-    /// - Parameter priceChange: Price change of the stock.
-    /// - Returns: The formatted string value.
-    static func signedWithPercentageStyle(from double: Double) -> String {
-        let percentage = String(format: "%.2f", double * 100).appending("%")
-        let signedPercentage = double > 0 ? "+" + percentage : percentage
+    /// A plus sign will be added to the front of the string if the value is bigger than 0.
+    /// - Returns: Returns string value formatted with percentage style.
+    func stringWithPercentageStyle() -> String {
+        let percentage = String(format: "%.2f", self * 100).appending("%")
+        let signedPercentage = self > 0 ? "+" + percentage : percentage
         return signedPercentage
     }
-    
 }
 
-// MARK: - Date Formatter
+// MARK: - Time Interval
 
-extension DateFormatter {
-    /// Date formatter with date format "YYYY-MM-dd".
-    static let newsDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "YYYY-MM-dd"
-        return formatter
-    }()
-    
-    /// Date formatter with medium date style.
-    static let prettyDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter
-    }()
+extension TimeInterval {
+    /// Date string created by using the specified date formatter.
+    func dateString(formattedBy formatter: DateFormatter) -> String {
+        let date = Date(timeIntervalSince1970: self)
+        return formatter.string(from: date)
+    }
 }
 
-// MARK: - Add Subview
+// MARK: - UIView
 
 extension UIView {
     /// Add subview(s) to the view.
@@ -174,11 +169,7 @@ extension UIView {
             addSubview($0)
         }
     }
-}
-
-// MARK: - Framing
-
-extension UIView {
+    
     /// Width of view.
     var width: CGFloat {
         frame.width

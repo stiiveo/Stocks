@@ -9,7 +9,7 @@ import Foundation
 
 struct NewsStory: Codable {
     let category: String
-    let datetime: TimeInterval
+    let date: TimeInterval
     let headline: String
     let id: Int
     let image: String
@@ -17,4 +17,16 @@ struct NewsStory: Codable {
     let source: String
     let summary: String
     let url: String
+    
+    enum CodingKeys: String, CodingKey {
+        case date = "datetime"
+        case category
+        case headline
+        case id
+        case image
+        case related
+        case source
+        case summary
+        case url
+    }
 }
