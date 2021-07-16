@@ -97,7 +97,7 @@ class WatchListViewController: UIViewController {
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
-            let priceChangePercentage = String.stockPriceChangePercentage(from: priceChange)
+            let priceChangePercentage = String.signedWithPercentageStyle(from: priceChange)
             
             let model = WatchListTableViewCell.ViewModel(
                 symbol: symbol,
