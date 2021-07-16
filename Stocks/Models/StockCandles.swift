@@ -9,22 +9,22 @@ import Foundation
 
 struct StockCandles: Codable {
     
-    let close: [Double]
+    let open: [Double]
     let high: [Double]
     let low: [Double]
-    let open: [Double]
-    let status: String
+    let close: [Double]
     let timestamp: [TimeInterval]
     let volume: [Int]
+    let status: String
     
     enum CodingKeys: String, CodingKey {
-        case close = "c"
+        case open = "o"
         case high = "h"
         case low = "l"
-        case open = "o"
-        case status = "s"
+        case close = "c"
         case timestamp = "t"
         case volume = "v"
+        case status = "s"
     }
     
     var candleSticks: [CandleStick] {

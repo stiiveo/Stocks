@@ -106,29 +106,30 @@ extension UIImageView {
     }
 }
 
+// MARK: - Double
+
+// REQUIRED TESTING BEFORE ADOPTION
+//extension Double {
+//    static func stringFormatted(by formatter: NumberFormatter) -> String {
+//        return formatter.string(from: NSNumber(nonretainedObject: self)) ?? "\(self)"
+//    }
+//}
+
 // MARK: - String
 
 extension String {
     /// String value created by formatting the provided time interval value with the provided formatter.
-    static func string(from timeInterval: TimeInterval) -> String {
+    static func mediumStyleDate(from timeInterval: TimeInterval) -> String {
         let date = Date(timeIntervalSince1970: timeInterval)
         return DateFormatter.prettyDateFormatter.string(from: date)
     }
     
-    /// String value formatted from provided Double value with percentage style.
+    /// String value formatted with specified double value and number formatting style.
     /// - Parameter double: Double value to be formatted.
-    /// - Returns: Converted string value.
+    /// - Parameter formatter: Formatter used to format the specified double value.
+    /// - Returns: Formatted string value.
     /// A string value created by directly converting the value with string interpolation method will be returned if the formatting process failed.
-    static func percentage(from double: Double) -> String {
-        let formatter = NumberFormatter.percentageFormatter
-        return formatter.string(from: NSNumber(value: double)) ?? "\(double)"
-    }
-    
-    /// Create a string value by formatting provided Double value with decimal formatter.
-    /// - Parameter double: Double value to be formatted.
-    /// - Returns: A string value created by directly converting the value with string interpolation method will be returned if the formatting process failed.
-    static func decimalFormatted(from double: Double) -> String {
-        let formatter = NumberFormatter.decimalFormatter
+    static func formatted(from double: Double, with formatter: NumberFormatter) -> String {
         return formatter.string(from: NSNumber(value: double)) ?? "\(double)"
     }
     

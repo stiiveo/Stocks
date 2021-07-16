@@ -102,7 +102,7 @@ class WatchListViewController: UIViewController {
             let model = WatchListTableViewCell.ViewModel(
                 symbol: symbol,
                 companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
-                price: String.decimalFormatted(from: currentPrice),
+                price: String.formatted(from: currentPrice, with: .decimalFormatter),
                 changeColor: priceChange < 0 ? .systemRed : .systemGreen,
                 changePercentage: priceChangePercentage,
                 chartViewModel: .init(
