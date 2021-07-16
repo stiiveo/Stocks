@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import SafariServices
 
 // MARK: - Color
 
@@ -36,6 +37,14 @@ extension UIViewController {
         let dismissAction = UIAlertAction(title: actionTitle, style: .default, handler: nil)
         alert.addAction(dismissAction)
         present(alert, animated: true, completion: nil)
+    }
+    
+    /// Present the standard Safari view controller initialized with specified URL.
+    /// - Parameter url: The URL to navigate to. The URL must use the http or https scheme.
+    func open(url: URL, withPresentationStyle style: UIModalPresentationStyle) {
+        let safariVC = SFSafariViewController(url: url)
+        safariVC.modalPresentationStyle = style
+        present(safariVC, animated: true, completion: nil)
     }
 }
 

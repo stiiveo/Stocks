@@ -9,15 +9,26 @@ import Foundation
 import UIKit
 
 final class HapticsManager {
+    
     static let shared = HapticsManager()
     
     private init() {}
     
     // MARK: - Public
     
+    /// Vibrate lightly for a selection tap interaction.
     public func vibrateForSelection() {
-        // Vibrate lightly for a selection tap interaction
+        let generator = UISelectionFeedbackGenerator()
+        generator.prepare()
+        generator.selectionChanged()
     }
     
     // Vibrate for type
+    /// Generate haptic feedback for given type of event.
+    /// - Parameter type: Type of the feedback.
+    public func vibrate(for type: UINotificationFeedbackGenerator.FeedbackType) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.prepare()
+        generator.notificationOccurred(type)
+    }
 }
