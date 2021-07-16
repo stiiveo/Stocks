@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Charts
 
 class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -47,12 +48,13 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        let viewHeight = StockDetailHeaderView.metricsViewHeight
+        let metricsViewHeight = StockDetailHeaderView.metricsViewHeight
+        chartView.frame = CGRect(x: 0, y: 0, width: width, height: height - metricsViewHeight)
         metricsView.frame = CGRect(
             x: 0,
-            y: height - viewHeight,
+            y: height - metricsViewHeight,
             width: width,
-            height: viewHeight
+            height: metricsViewHeight
         )
     }
     

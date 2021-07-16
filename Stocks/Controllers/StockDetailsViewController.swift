@@ -97,7 +97,19 @@ class StockDetailsViewController: UIViewController {
         
         if candleStickData.isEmpty {
             group.enter()
-            // Fetch candle sticks if needed
+            APICaller.shared.fetchStockData(symbol: symbol, historyDuration: 7) {
+                [weak self] result in
+                defer {
+                    group.leave()
+                }
+                
+                switch result {
+                case .success(let data):
+                    self?.candleStickData = data.candleSticks
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
         }
         
         // Fetch financial metrics
@@ -106,6 +118,7 @@ class StockDetailsViewController: UIViewController {
             defer {
                 group.leave()
             }
+            
             switch result {
             case .success(let response):
                 self?.metrics = response.metric
@@ -155,7 +168,11 @@ class StockDetailsViewController: UIViewController {
         
         // Configure
         headerView.configure(
-            chartViewModel: .init(data: [], showLegend: false, showAxis: false),
+            chartViewModel: .init(
+                data: candleStickData.map( {$0.close} ),
+                showLegend: true,
+                showAxis: true
+            ),
             metricViewModels: viewModels
         )
         

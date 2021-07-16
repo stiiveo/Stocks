@@ -59,6 +59,7 @@ class WatchListTableViewCell: UITableViewCell {
     private let miniChartView: StockChartView = {
         let chart = StockChartView()
         chart.clipsToBounds = true
+        chart.isUserInteractionEnabled = false
         return chart
     }()
     
@@ -143,7 +144,7 @@ class WatchListTableViewCell: UITableViewCell {
         priceChangeLabel.text = viewModel.changePercentage
         priceChangeLabel.backgroundColor = viewModel.changeColor
         
-        // miniChartView.viewModel = viewModel.chartViewModel
+        miniChartView.configure(with: viewModel.chartViewModel)
     }
 
 }
