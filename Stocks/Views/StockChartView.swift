@@ -61,12 +61,20 @@ class StockChartView: UIView {
             )
         }
         
-        let dataSet = LineChartDataSet(entries: entries)
+        chartView.rightAxis.enabled = viewModel.showAxis
+        chartView.legend.enabled = viewModel.showLegend
+        
+        let latestValue = viewModel.data.last ?? 1.0
+        let startValue = viewModel.data.first ?? 1.0
+        let valueChange = (latestValue / startValue) - 1
+        let fillColor: UIColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
+        
+        let dataSet = LineChartDataSet(entries: entries, label: "Place duration here")
         dataSet.drawCirclesEnabled = false
         dataSet.drawIconsEnabled = false
         dataSet.drawValuesEnabled = false
         dataSet.drawFilledEnabled = true
-        dataSet.fillColor = .systemBlue
+        dataSet.fillColor = fillColor
         
         let data = LineChartData(dataSet: dataSet)
         chartView.data = data

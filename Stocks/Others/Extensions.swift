@@ -8,6 +8,14 @@
 import Foundation
 import UIKit
 
+// MARK: - Color
+
+extension UIColor {
+    // Modify code here to reflect different color expressions in different countries.
+    static var stockPriceUp: UIColor { .systemGreen }
+    static var stockPriceDown: UIColor { .systemRed }
+}
+
 // MARK: - Alert
 
 extension UIViewController {

@@ -166,7 +166,6 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
         }
         
-        // Configure
         headerView.configure(
             chartViewModel: .init(
                 data: candleStickData.map( {$0.close} ),

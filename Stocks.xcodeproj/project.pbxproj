@@ -109,11 +109,11 @@
 		8F11B93B26986C8000F4AFD1 /* Stocks */ = {
 			isa = PBXGroup;
 			children = (
-				8F11B95426986D4700F4AFD1 /* Others */,
-				8F11B95326986D0D00F4AFD1 /* Managers */,
-				8F11B95226986D0600F4AFD1 /* Controllers */,
-				8F11B95126986CF600F4AFD1 /* Views */,
 				8F11B95026986CEF00F4AFD1 /* Models */,
+				8F11B95126986CF600F4AFD1 /* Views */,
+				8F11B95226986D0600F4AFD1 /* Controllers */,
+				8F11B95326986D0D00F4AFD1 /* Managers */,
+				8F11B95426986D4700F4AFD1 /* Others */,
 				8F11B94A26986C8200F4AFD1 /* Info.plist */,
 			);
 			path = Stocks;
