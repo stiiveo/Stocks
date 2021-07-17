@@ -8,12 +8,17 @@
 import UIKit
 import Charts
 
-class StockChartView: UIView {
+class StockChartView: UIView, ChartViewDelegate {
     
     struct ViewModel {
-        let data: [Double]
+        let data: [StockLineChartData]
         let showLegend: Bool
         let showAxis: Bool
+    }
+    
+    struct StockLineChartData {
+        let timeInterval: Double
+        let price: Double
     }
     
     private let chartView: LineChartView = {
@@ -33,6 +38,7 @@ class StockChartView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         addSubview(chartView)
+        chartView.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -44,6 +50,10 @@ class StockChartView: UIView {
         chartView.frame = bounds
     }
     
+    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
+        print(entry)
+    }
+    
     // Reset chart view
     func reset() {
         chartView.data = nil
@@ -52,31 +62,48 @@ class StockChartView: UIView {
     func configure(with viewModel: ViewModel) {
         // Chart Data Entries
         var entries = [ChartDataEntry]()
-        for (index, value) in viewModel.data.enumerated() {
+        for data in viewModel.data {
             entries.append(
                 .init(
-                    x: Double(index),
-                    y: value
+                    x: data.timeInterval,
+                    y: data.price
                 )
             )
         }
         
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM"
+        
+        let xAxisStrings = entries.map({
+            dateFormatter.string(from: Date(timeIntervalSince1970: $0.x))
+        })
+        print(xAxisStrings)
+        
         chartView.rightAxis.enabled = viewModel.showAxis
+        chartView.xAxis.enabled = viewModel.showAxis
+        chartView.xAxis.labelPosition = .bottom
         chartView.legend.enabled = viewModel.showLegend
         
-        let latestValue = viewModel.data.last ?? 1.0
-        let startValue = viewModel.data.first ?? 1.0
-        let valueChange = (latestValue / startValue) - 1
+        chartView.xAxis.valueFormatter = IndexAxisValueFormatter(values: xAxisStrings)
+        chartView.xAxis.granularity = 1
+        
+        let startPrice = viewModel.data.first?.price ?? 0.0
+        let latestValue = viewModel.data.last?.price ?? 0.0
+        let valueChange = latestValue - startPrice
         let fillColor: UIColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
         
-        let dataSet = LineChartDataSet(entries: entries, label: "Place duration here")
+        let dataSet = LineChartDataSet(entries: entries, label: "1 Day")
         dataSet.drawCirclesEnabled = false
         dataSet.drawIconsEnabled = false
         dataSet.drawValuesEnabled = false
         dataSet.drawFilledEnabled = true
         dataSet.fillColor = fillColor
-        
+        dataSet.highlightColor = fillColor
+        dataSet.setColor(fillColor)
+        dataSet.lineWidth = 2.0
+
         let data = LineChartData(dataSet: dataSet)
+        
         chartView.data = data
     }
 

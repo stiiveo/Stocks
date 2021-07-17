@@ -166,9 +166,13 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
         }
         
+        let lineChartData: [StockChartView.StockLineChartData] = candleStickData.map({
+            .init(timeInterval: $0.date.timeIntervalSince1970, price: $0.close)
+        })
+        
         headerView.configure(
             chartViewModel: .init(
-                data: candleStickData.map( {$0.close} ),
+                data: lineChartData,
                 showLegend: true,
                 showAxis: true
             ),

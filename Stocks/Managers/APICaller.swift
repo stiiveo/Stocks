@@ -71,9 +71,14 @@ final class APICaller {
         }
     }
     
+    /// Fetch specified stock's quote and candle sticks data from API.
+    /// - Parameters:
+    ///   - symbol: Symbol of the company.
+    ///   - historyDuration: Number of days of candle sticks data to fetch.
+    ///   - completion: A StockData object is provided once the fetching process succeeded. An error object is provided otherwise.
     public func fetchStockData(
         symbol: String,
-        historyDuration: TimeInterval,
+        historyDuration days: TimeInterval,
         completion: @escaping (Result<StockData, Error>) -> Void
     ) {
         var stockQuote: StockQuote?
@@ -94,7 +99,7 @@ final class APICaller {
         }
         
         group.enter()
-        getCandlesData(for: symbol) { result in
+        getCandlesData(symbol, for: days) { result in
             defer {
                 group.leave()
             }
@@ -118,6 +123,10 @@ final class APICaller {
         }
     }
     
+    /// Fetch specified company's financial metrics data: 52 week high, 52 week low, 10 day average trading volume etc.
+    /// - Parameters:
+    ///   - symbol: Symbol of the company.
+    ///   - completion: A FinancialMetricsResponse object is provided once the fetching process finishes successfully. An error object is provided otherwise.
     public func fetchFinancialMetrics(
         symbol: String,
         completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
@@ -131,6 +140,7 @@ final class APICaller {
     
     // MARK: - Private
     
+    /// Cases of the http endpoint of the API.
     private enum Endpoint: String {
         case search
         case news = "news"
@@ -140,6 +150,7 @@ final class APICaller {
         case financials = "stock/metric"
     }
     
+    /// Error cases related to the API operations.
     private enum APIError: Error {
         case noDataReturned
         case invalidUrl
@@ -155,8 +166,8 @@ final class APICaller {
     }
     
     private func getCandlesData(
-        for symbol: String,
-        numberOfDays: TimeInterval = 7,
+        _ symbol: String,
+        for numberOfDays: TimeInterval,
         completion: @escaping (Result<StockCandles, Error>) -> Void
     ) {
         let currentTime = Int(Date().timeIntervalSince1970)
@@ -165,7 +176,7 @@ final class APICaller {
             for: .stockCandles,
             queryParams: [
                 "symbol": symbol,
-                "resolution": "1",
+                "resolution": "5",
                 "from": "\(startingTime)",
                 "to": "\(currentTime)"
             ]

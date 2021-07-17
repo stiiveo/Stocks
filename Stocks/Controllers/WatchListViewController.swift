@@ -59,7 +59,7 @@ class WatchListViewController: UIViewController {
         }
     }
     
-    private func fetchWatchlistData(forDays days: TimeInterval = 7) {
+    private func fetchWatchlistData(forDays days: TimeInterval = 1) {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
@@ -94,6 +94,10 @@ class WatchListViewController: UIViewController {
         var viewModels = [WatchListTableViewCell.ViewModel]()
             
         for (symbol, stockData) in watchListData {
+            
+            let lineChartData: [StockChartView.StockLineChartData] = stockData.candleSticks.map({
+                .init(timeInterval: $0.date.timeIntervalSince1970, price: $0.close)
+            })
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
@@ -106,7 +110,7 @@ class WatchListViewController: UIViewController {
                 changeColor: priceChange < 0 ? .systemRed : .systemGreen,
                 changePercentage: priceChangePercentage,
                 chartViewModel: .init(
-                    data: stockData.candleSticks.map{ $0.close },
+                    data: lineChartData,
                     showLegend: false,
                     showAxis: false
                 )
@@ -266,6 +270,10 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         }
     }
     
+    /// This method is called if the user selects one of the tableView cells.
+    /// - Parameters:
+    ///   - tableView: TableView used to layout the cells containing each company's data.
+    ///   - indexPath: IndexPath pointing to the selected tableView row.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
