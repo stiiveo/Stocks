@@ -59,7 +59,7 @@ class WatchListViewController: UIViewController {
         }
     }
     
-    private func fetchWatchlistData(forDays days: TimeInterval = 1) {
+    private func fetchWatchlistData(forDays days: TimeInterval = 7) {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
@@ -95,8 +95,8 @@ class WatchListViewController: UIViewController {
             
         for (symbol, stockData) in watchListData {
             
-            let lineChartData: [StockChartView.StockLineChartData] = stockData.candleSticks.map({
-                .init(timeInterval: $0.date.timeIntervalSince1970, price: $0.close)
+            let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map({
+                .init(timeInterval: $0.time, price: $0.close)
             })
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
@@ -283,7 +283,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         let stockDetailsVC = StockDetailsViewController(
             symbol: viewModel.symbol,
             companyName: viewModel.companyName,
-            candleStickData: watchListData[viewModel.symbol]?.candleSticks ?? []
+            candleStickData: watchListData[viewModel.symbol]?.priceHistory ?? []
         )
         let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)

@@ -9,5 +9,5 @@ import Foundation
 
 struct StockData {
     let quote: StockQuote
-    let candleSticks: [CandleStick]
+    let priceHistory: [PriceHistory]
 }

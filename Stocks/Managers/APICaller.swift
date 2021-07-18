@@ -82,7 +82,7 @@ final class APICaller {
         completion: @escaping (Result<StockData, Error>) -> Void
     ) {
         var stockQuote: StockQuote?
-        var stockCandleSticks: [CandleStick]?
+        var stockPriceHistory: [PriceHistory]?
         let group = DispatchGroup()
         
         group.enter()
@@ -99,13 +99,13 @@ final class APICaller {
         }
         
         group.enter()
-        getCandlesData(symbol, for: days) { result in
+        getPriceHistory(symbol, dataResolution: .minute, for: days) { result in
             defer {
                 group.leave()
             }
             switch result {
             case .success(let response):
-                stockCandleSticks = response.candleSticks
+                stockPriceHistory = response.priceHistory
             case .failure(let error):
                 print(error.localizedDescription)
             }
@@ -113,12 +113,12 @@ final class APICaller {
         
         group.notify(queue: .global(qos: .default)) {
             guard let quote = stockQuote,
-                  let candleSticks = stockCandleSticks else {
+                  let priceHistory = stockPriceHistory else {
                 completion(.failure(APIError.failedToGetStockData))
                 return
             }
             
-            let stockData = StockData(quote: quote, candleSticks: candleSticks)
+            let stockData = StockData(quote: quote, priceHistory: priceHistory)
             completion(.success(stockData))
         }
     }
@@ -157,6 +157,18 @@ final class APICaller {
         case failedToGetStockData
     }
     
+    /// Time interval between each data set.
+    private enum DataResolution: String {
+        case minute = "1"
+        case fiveMinutes = "5"
+        case fifteenMinutes = "15"
+        case thirtyMinutes = "30"
+        case hour = "60"
+        case day = "D"
+        case week = "W"
+        case month = "M"
+    }
+    
     private func getStockQuote(
         for symbol: String,
         completion: @escaping (Result<StockQuote, Error>) -> Void
@@ -165,10 +177,11 @@ final class APICaller {
         request(url: url, expecting: StockQuote.self, completion: completion)
     }
     
-    private func getCandlesData(
+    private func getPriceHistory(
         _ symbol: String,
+        dataResolution resolution: DataResolution,
         for numberOfDays: TimeInterval,
-        completion: @escaping (Result<StockCandles, Error>) -> Void
+        completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
     ) {
         let currentTime = Int(Date().timeIntervalSince1970)
         let startingTime = currentTime - Int(Constants.day * numberOfDays)
@@ -176,12 +189,12 @@ final class APICaller {
             for: .stockCandles,
             queryParams: [
                 "symbol": symbol,
-                "resolution": "5",
+                "resolution": resolution.rawValue,
                 "from": "\(startingTime)",
                 "to": "\(currentTime)"
             ]
         )
-        request(url: url, expecting: StockCandles.self, completion: completion)
+        request(url: url, expecting: StockCandlesResponse.self, completion: completion)
     }
     
     private func url(
@@ -189,14 +202,10 @@ final class APICaller {
         queryParams: [String: String] = [:]
     ) -> URL? {
         let urlString = Constants.baseUrl + endpoint.rawValue
-        var queryItems = [URLQueryItem]()
-        
-        // Add parameters
-        for (name, value) in queryParams {
-            queryItems.append(.init(name: name, value: value))
-        }
-        
-        // Add token
+        var queryItems = queryParams.map(
+            { URLQueryItem(name: $0.key, value: $0.value) }
+        )
+        // Add token query item.
         queryItems.append(.init(name: "token", value: Constants.apiKey))
         
         // Convert query items to suffix string

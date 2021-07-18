@@ -61,20 +61,17 @@ class StockChartView: UIView, ChartViewDelegate {
     
     func configure(with viewModel: ViewModel) {
         // Chart Data Entries
-        var entries = [ChartDataEntry]()
-        for data in viewModel.data {
-            entries.append(
-                .init(
-                    x: data.timeInterval,
-                    y: data.price
-                )
+        let dataEntries = viewModel.data.map({
+            ChartDataEntry(
+                x: $0.timeInterval,
+                y: $0.price
             )
-        }
+        })
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.MM"
         
-        let xAxisStrings = entries.map({
+        let xAxisStrings = dataEntries.map({
             dateFormatter.string(from: Date(timeIntervalSince1970: $0.x))
         })
         print(xAxisStrings)
@@ -92,7 +89,7 @@ class StockChartView: UIView, ChartViewDelegate {
         let valueChange = latestValue - startPrice
         let fillColor: UIColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
         
-        let dataSet = LineChartDataSet(entries: entries, label: "1 Day")
+        let dataSet = LineChartDataSet(entries: dataEntries, label: "7 Day")
         dataSet.drawCirclesEnabled = false
         dataSet.drawIconsEnabled = false
         dataSet.drawValuesEnabled = false

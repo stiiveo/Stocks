@@ -14,7 +14,7 @@ class StockDetailsViewController: UIViewController {
 
     private let symbol: String
     private let companyName: String
-    private var candleStickData: [CandleStick]
+    private var candleStickData: [PriceHistory]
 
     private let tableView: UITableView = {
         let table = UITableView()
@@ -34,7 +34,7 @@ class StockDetailsViewController: UIViewController {
     init(
         symbol: String,
         companyName: String,
-        candleStickData: [CandleStick] = []
+        candleStickData: [PriceHistory] = []
     ) {
         self.symbol = symbol
         self.companyName = companyName
@@ -105,7 +105,7 @@ class StockDetailsViewController: UIViewController {
                 
                 switch result {
                 case .success(let data):
-                    self?.candleStickData = data.candleSticks
+                    self?.candleStickData = data.priceHistory
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
@@ -167,7 +167,7 @@ class StockDetailsViewController: UIViewController {
         }
         
         let lineChartData: [StockChartView.StockLineChartData] = candleStickData.map({
-            .init(timeInterval: $0.date.timeIntervalSince1970, price: $0.close)
+            .init(timeInterval: $0.time, price: $0.close)
         })
         
         headerView.configure(
