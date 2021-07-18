@@ -173,7 +173,6 @@ class StockDetailsViewController: UIViewController {
         headerView.configure(
             chartViewModel: .init(
                 data: lineChartData,
-                showLegend: true,
                 showAxis: true
             ),
             metricViewModels: viewModels

@@ -8,11 +8,10 @@
 import UIKit
 import Charts
 
-class StockChartView: UIView, ChartViewDelegate {
+class StockChartView: UIView {
     
     struct ViewModel {
         let data: [StockLineChartData]
-        let showLegend: Bool
         let showAxis: Bool
     }
     
@@ -22,15 +21,19 @@ class StockChartView: UIView, ChartViewDelegate {
     }
     
     private let chartView: LineChartView = {
-        let chartView = LineChartView()
-        chartView.pinchZoomEnabled = false
-        chartView.legend.enabled = false
-        chartView.setScaleEnabled(true)
-        chartView.xAxis.enabled = false
-        chartView.leftAxis.enabled = false
-        chartView.rightAxis.enabled = false
-        chartView.drawGridBackgroundEnabled = false
-        return chartView
+        let chart = LineChartView()
+        chart.legend.enabled = false
+        chart.setScaleEnabled(true)
+        chart.xAxis.enabled = false
+        chart.leftAxis.enabled = false
+        chart.rightAxis.enabled = false
+        chart.drawGridBackgroundEnabled = false
+        chart.rightAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        chart.xAxis.labelPosition = .bottom
+        chart.xAxis.valueFormatter = XAxisNameFormatter(resolution: 1)
+        chart.xAxis.granularity = 1
+        chart.xAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .regular)
+        return chart
     }()
     
     // MARK: - Int
@@ -38,7 +41,6 @@ class StockChartView: UIView, ChartViewDelegate {
     override init(frame: CGRect) {
         super.init(frame: frame)
         addSubview(chartView)
-        chartView.delegate = self
     }
     
     required init?(coder: NSCoder) {
@@ -48,10 +50,6 @@ class StockChartView: UIView, ChartViewDelegate {
     override func layoutSubviews() {
         super.layoutSubviews()
         chartView.frame = bounds
-    }
-    
-    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
-        print(entry)
     }
     
     // Reset chart view
@@ -68,28 +66,15 @@ class StockChartView: UIView, ChartViewDelegate {
             )
         })
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM"
-        
-        let xAxisStrings = dataEntries.map({
-            dateFormatter.string(from: Date(timeIntervalSince1970: $0.x))
-        })
-        print(xAxisStrings)
-        
         chartView.rightAxis.enabled = viewModel.showAxis
         chartView.xAxis.enabled = viewModel.showAxis
-        chartView.xAxis.labelPosition = .bottom
-        chartView.legend.enabled = viewModel.showLegend
-        
-        chartView.xAxis.valueFormatter = IndexAxisValueFormatter(values: xAxisStrings)
-        chartView.xAxis.granularity = 1
         
         let startPrice = viewModel.data.first?.price ?? 0.0
         let latestValue = viewModel.data.last?.price ?? 0.0
         let valueChange = latestValue - startPrice
         let fillColor: UIColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
         
-        let dataSet = LineChartDataSet(entries: dataEntries, label: "7 Day")
+        let dataSet = LineChartDataSet(entries: dataEntries)
         dataSet.drawCirclesEnabled = false
         dataSet.drawIconsEnabled = false
         dataSet.drawValuesEnabled = false
@@ -104,4 +89,20 @@ class StockChartView: UIView, ChartViewDelegate {
         chartView.data = data
     }
 
+}
+
+final class XAxisNameFormatter: IAxisValueFormatter {
+    var resolution = 0
+    init(resolution: Int) {
+        self.resolution = resolution
+    }
+    
+    func stringForValue( _ value: Double, axis _: AxisBase?) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar.current
+        formatter.dateFormat = "dd"
+        
+        return formatter.string(from: Date(timeIntervalSince1970: value))
+    }
 }

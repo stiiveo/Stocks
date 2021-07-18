@@ -13,7 +13,11 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     private var metricViewModels = [MetricCollectionViewCell.ViewModel]()
 
     // ChartView
-    private let chartView = StockChartView()
+    private let chartView: StockChartView = {
+        let chart = StockChartView()
+        chart.isUserInteractionEnabled = false
+        return chart
+    }()
     
     // Metrics View
     private let metricsView: UICollectionView = {
@@ -70,7 +74,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         metricsView.reloadData()
     }
     
-    // MARK: - CollectionView
+    // MARK: - Metrics Collection View
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return metricViewModels.count
