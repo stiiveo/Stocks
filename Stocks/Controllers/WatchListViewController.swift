@@ -27,6 +27,8 @@ class WatchListViewController: UIViewController {
     }()
     
     private var observer: NSObjectProtocol?
+    
+    private var lastContentOffset: CGFloat = 0
 
     // MARK: - Lifecycle
     
@@ -39,11 +41,6 @@ class WatchListViewController: UIViewController {
         setUpFloatingPanel()
         setUpTitleView()
         setUpObserver()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
     }
     
     // MARK: - Private
@@ -124,6 +121,9 @@ class WatchListViewController: UIViewController {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.frame = CGRect(x: 0, y: 0,
+                                 width: view.width,
+                                 height: view.height - 120.0)
     }
     
     private func setUpFloatingPanel() {
@@ -134,6 +134,8 @@ class WatchListViewController: UIViewController {
         panel.addPanel(toParent: self)
         panel.delegate = self
         panel.track(scrollView: vc.tableView)
+        panel.layout = MyFullScreenLayout()
+        self.panel = panel
     }
     
     private func setUpTitleView() {
@@ -145,9 +147,13 @@ class WatchListViewController: UIViewController {
                 height: navigationController?.navigationBar.height ?? 100
             )
         )
-        let label = UILabel(frame: CGRect(x: 10, y: 10, width: titleView.width - 20, height: titleView.height - 15))
+        let label = UILabel(
+            frame: CGRect(x: 10, y: 10,
+                          width: titleView.width - 20,
+                          height: titleView.height - 20)
+        )
         label.text = "Stocks"
-        label.font = .systemFont(ofSize: 36, weight: .bold)
+        label.font = .systemFont(ofSize: 32, weight: .bold)
         titleView.addSubview(label)
         
         navigationItem.titleView = titleView
@@ -287,11 +293,45 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)
     }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        self.lastContentOffset = scrollView.contentOffset.y
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // Move the floating panel to the bottom when tableView is scrolled up.
+        guard let panel = panel else { return }
+        if scrollView.contentOffset.y > self.lastContentOffset {
+            if panel.state == .full || panel.state == .half {
+                panel.move(to: .tip, animated: true)
+            }
+        }
+    }
 }
 
 extension WatchListViewController: WatchListTableViewCellDelegate {
     func didUpdateMaxWidth() {
         // Optimize: Only refresh rows prior to the current row that changes the max width.
         tableView.reloadData()
+    }
+}
+
+class MyFullScreenLayout: FloatingPanelLayout {
+    var position: FloatingPanelPosition {
+        return .bottom
+    }
+    
+    var initialState: FloatingPanelState {
+        return .half
+    }
+    
+    var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
+        let watchListVCNavBarHeight = WatchListViewController().navigationController?.navigationBar.height ?? 150
+        return [
+            .full: FloatingPanelLayoutAnchor(absoluteInset: watchListVCNavBarHeight, edge: .top, referenceGuide: .superview),
+            .half: FloatingPanelLayoutAnchor(fractionalInset: 0.4, edge: .bottom, referenceGuide: .superview),
+            .tip: FloatingPanelLayoutAnchor(absoluteInset: 120.0, edge: .bottom, referenceGuide: .superview),
+        ]
+        
     }
 }
