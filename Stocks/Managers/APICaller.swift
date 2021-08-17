@@ -55,19 +55,18 @@ final class APICaller {
             completion: completion
         )
         case .company(let symbol):
-            let today = Date()
-            let oneMonthBack = today.addingTimeInterval(-(Constants.day * 7))
+            let now = Date()
+            let startTime = now.addingTimeInterval(-(Constants.day * 7))
             request(
                 url: url(
                     for: .companyNews,
-                    queryParams: [
-                        "symbol": symbol,
-                        "from": DateFormatter.newsDateFormatter.string(from: oneMonthBack),
-                        "to": DateFormatter.newsDateFormatter.string(from: today)
-                    ]
+                    queryParams: ["symbol": symbol,
+                                  "from": DateFormatter.newsDateFormatter.string(from: startTime),
+                                  "to": DateFormatter.newsDateFormatter.string(from: now)]
                 ),
                 expecting: [NewsStory].self,
-                completion: completion)
+                completion: completion
+            )
         }
     }
     
@@ -99,7 +98,7 @@ final class APICaller {
         }
         
         group.enter()
-        getPriceHistory(symbol, dataResolution: .minute, for: days) { result in
+        getPriceHistory(symbol, dataResolution: .thirtyMinutes, for: days) { result in
             defer {
                 group.leave()
             }

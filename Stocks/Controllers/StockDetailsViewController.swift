@@ -14,7 +14,7 @@ class StockDetailsViewController: UIViewController {
 
     private let symbol: String
     private let companyName: String
-    private var candleStickData: [PriceHistory]
+    private var priceHistory: [PriceHistory]
 
     private let tableView: UITableView = {
         let table = UITableView()
@@ -34,11 +34,11 @@ class StockDetailsViewController: UIViewController {
     init(
         symbol: String,
         companyName: String,
-        candleStickData: [PriceHistory] = []
+        priceHistory: [PriceHistory] = []
     ) {
         self.symbol = symbol
         self.companyName = companyName
-        self.candleStickData = candleStickData
+        self.priceHistory = priceHistory
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -95,7 +95,7 @@ class StockDetailsViewController: UIViewController {
     private func fetchFinancialData() {
         let group = DispatchGroup()
         
-        if candleStickData.isEmpty {
+        if priceHistory.isEmpty {
             group.enter()
             APICaller.shared.fetchStockData(symbol: symbol, historyDuration: 7) {
                 [weak self] result in
@@ -105,7 +105,7 @@ class StockDetailsViewController: UIViewController {
                 
                 switch result {
                 case .success(let data):
-                    self?.candleStickData = data.priceHistory
+                    self?.priceHistory = data.priceHistory
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
@@ -166,7 +166,7 @@ class StockDetailsViewController: UIViewController {
             viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
         }
         
-        let lineChartData: [StockChartView.StockLineChartData] = candleStickData.map({
+        let lineChartData: [StockChartView.StockLineChartData] = priceHistory.map({
             .init(timeInterval: $0.time, price: $0.close)
         })
         

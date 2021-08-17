@@ -93,9 +93,8 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(
-            width: width / 2,
-            height: StockDetailHeaderView.metricsViewHeight / 3)
+        return CGSize(width: width / 2,
+                      height: StockDetailHeaderView.metricsViewHeight / 3)
     }
     
 }

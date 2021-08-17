@@ -282,7 +282,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         let stockDetailsVC = StockDetailsViewController(
             symbol: viewModel.symbol,
             companyName: viewModel.companyName,
-            candleStickData: watchListData[viewModel.symbol]?.priceHistory ?? []
+            priceHistory: watchListData[viewModel.symbol]?.priceHistory ?? []
         )
         let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)
