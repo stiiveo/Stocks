@@ -30,14 +30,15 @@ class NewsStoryTableViewCell: UITableViewCell {
     // Source
     private let sourceLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .secondaryLabel
         return label
     }()
     
     // Headline
     private let headlineLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 22, weight: .regular)
+        label.font = .systemFont(ofSize: 18, weight: .semibold)
         label.numberOfLines = 0
         return label
     }()
@@ -46,7 +47,7 @@ class NewsStoryTableViewCell: UITableViewCell {
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textColor = .secondaryLabel
-        label.font = .systemFont(ofSize: 14, weight: .light)
+        label.font = .systemFont(ofSize: 12, weight: .bold)
         return label
     }()
     
@@ -64,7 +65,6 @@ class NewsStoryTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .secondarySystemBackground
-        backgroundColor = .secondarySystemBackground
         addSubviews(sourceLabel, headlineLabel, dateLabel, storyImageView)
     }
     
@@ -75,7 +75,7 @@ class NewsStoryTableViewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        let imageSize: CGFloat = contentView.height * 0.8
+        let imageSize: CGFloat = contentView.height * 0.7
         storyImageView.frame = CGRect(
             x: contentView.width - imageSize - 10,
             y: (contentView.height - imageSize) / 2,
@@ -84,9 +84,9 @@ class NewsStoryTableViewCell: UITableViewCell {
         )
         
         // Layout labels
-        let availableWidth: CGFloat = contentView.width - separatorInset.left - imageSize - 15
+        let availableWidth: CGFloat = contentView.width - imageSize - 30
         dateLabel.frame = CGRect(
-            x: separatorInset.left,
+            x: contentView.frame.minX + 15,
             y: contentView.height - 40,
             width: availableWidth,
             height: 40
@@ -94,14 +94,14 @@ class NewsStoryTableViewCell: UITableViewCell {
         
         sourceLabel.sizeToFit()
         sourceLabel.frame = CGRect(
-            x: separatorInset.left,
+            x: contentView.frame.minX + 15,
             y: 6,
             width: availableWidth,
             height: sourceLabel.height
         )
         
         headlineLabel.frame = CGRect(
-            x: separatorInset.left,
+            x: contentView.frame.minX + 15,
             y: sourceLabel.bottom,
             width: availableWidth,
             height: contentView.height - sourceLabel.bottom - dateLabel.height - 10

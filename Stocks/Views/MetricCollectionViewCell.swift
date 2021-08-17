@@ -18,12 +18,15 @@ class MetricCollectionViewCell: UICollectionViewCell {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
+        label.textColor = .secondaryLabel
+        label.font = .systemFont(ofSize: 14, weight: .medium)
         return label
     }()
     
     private let valueLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .secondaryLabel
+        label.textColor = .label
+        label.font = .systemFont(ofSize: 14, weight: .semibold)
         return label
     }()
     
@@ -50,7 +53,7 @@ class MetricCollectionViewCell: UICollectionViewCell {
         
         valueLabel.sizeToFit()
         valueLabel.frame = CGRect(
-            x: nameLabel.right + 3,
+            x: nameLabel.right + 10,
             y: 0,
             width: valueLabel.width,
             height: contentView.height
@@ -64,7 +67,7 @@ class MetricCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(with viewModel: ViewModel) {
-        self.nameLabel.text = viewModel.name + ":"
+        self.nameLabel.text = viewModel.name
         self.valueLabel.text = viewModel.value
     }
 }

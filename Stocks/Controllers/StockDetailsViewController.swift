@@ -152,15 +152,15 @@ class StockDetailsViewController: UIViewController {
                 x: 0,
                 y: 0,
                 width: view.width,
-                height: (view.width * 0.7) + 100
+                height: (view.width * 0.6) + StockDetailHeaderView.metricsViewHeight
             )
         )
         
         var viewModels = [MetricCollectionViewCell.ViewModel]()
         if let metrics = metrics {
-            viewModels.append(.init(name: "52W High", value: "\(metrics.annualHigh)"))
-            viewModels.append(.init(name: "52W Low", value: "\(metrics.annualLow)"))
-            viewModels.append(.init(name: "52W Low Date", value: "\(metrics.annualLowDate)"))
+            viewModels.append(.init(name: "52W H", value: "\(metrics.annualHigh)"))
+            viewModels.append(.init(name: "52W L", value: "\(metrics.annualLow)"))
+            viewModels.append(.init(name: "52W L Date", value: "\(metrics.annualLowDate)"))
             viewModels.append(.init(name: "52W Return", value: "\(metrics.annualWeekPriceReturnDaily)"))
             viewModels.append(.init(name: "10D Volume", value: "\(metrics.tenDayAverageVolume)"))
             viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
@@ -204,25 +204,6 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return NewsStoryTableViewCell.preferredHeight
-    }
-
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let header = tableView.dequeueReusableHeaderFooterView(
-                withIdentifier: NewsHeaderView.identifier
-        ) as? NewsHeaderView else {
-            return nil
-        }
-        header.delegate = self
-        header.configure(
-            with: .init(
-                title: symbol.uppercased(),
-                shouldShowAddButton: !PersistenceManager.shared.watchListContains(symbol))
-        )
-        return header
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return NewsHeaderView.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

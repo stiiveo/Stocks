@@ -31,12 +31,12 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
             MetricCollectionViewCell.self,
             forCellWithReuseIdentifier: MetricCollectionViewCell.identifier
         )
-        collectionView.backgroundColor = .secondarySystemBackground
+        collectionView.backgroundColor = .systemBackground
         
         return collectionView
     }()
     
-    static let metricsViewHeight: CGFloat = 100
+    static let metricsViewHeight: CGFloat = 75
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -53,11 +53,14 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     override func layoutSubviews() {
         super.layoutSubviews()
         let metricsViewHeight = StockDetailHeaderView.metricsViewHeight
-        chartView.frame = CGRect(x: 0, y: 0, width: width, height: height - metricsViewHeight)
+        chartView.frame = CGRect(
+            x: 10, y: 0,
+            width: width - 20,
+            height: height - metricsViewHeight
+        )
         metricsView.frame = CGRect(
-            x: 0,
-            y: height - metricsViewHeight,
-            width: width,
+            x: 10, y: height - metricsViewHeight,
+            width: width - 20,
             height: metricsViewHeight
         )
     }
