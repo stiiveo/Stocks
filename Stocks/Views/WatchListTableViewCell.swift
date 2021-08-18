@@ -92,7 +92,7 @@ class WatchListTableViewCell: UITableViewCell {
         nameLabel.frame = CGRect(
             x: separatorInset.left,
             y: symbolLabel.bottom,
-            width: nameLabel.width,
+            width: (contentView.width / 2) - 20,
             height: nameLabel.height
         )
         

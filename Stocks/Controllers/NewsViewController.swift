@@ -11,26 +11,9 @@ import SafariServices
 /// Controller to show news.
 class NewsViewController: UIViewController {
     
-    /// Type of news.
-    enum `Type` {
-        case topStories
-        case company(symbol: String)
-        
-        var title: String {
-            switch self {
-            case .topStories:
-                return "Top Stories"
-            case .company(let symbol):
-                return symbol.uppercased()
-            }
-        }
-    }
-    
     // MARK: - Properties
     
     private var stories = [NewsStory]()
-    
-    private let type: Type
     
     let tableView: UITableView = {
         let table = UITableView()
@@ -40,17 +23,6 @@ class NewsViewController: UIViewController {
         table.backgroundColor = .clear
         return table
     }()
-    
-    // MARK: - Initializers
-    
-    init(type: Type) {
-        self.type = type
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     // MARK: - Lifecycle
 
@@ -75,7 +47,7 @@ class NewsViewController: UIViewController {
     
     private func fetchNews() {
         DispatchQueue.global(qos: .userInteractive).async {
-            APICaller.shared.fetchNews(for: self.type) { [weak self] result in
+            APICaller.shared.fetchNews(for: .topStories) { [weak self] result in
                 switch result {
                 case .success(let stories):
                     self?.stories = stories
@@ -99,9 +71,7 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
         guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else {
             return nil
         }
-        header.configure(with: .init(
-                            title: self.type.title,
-                            shouldShowAddButton: false)
+        header.configure(with: .init(title: "Top Stories")
         )
         return header
     }

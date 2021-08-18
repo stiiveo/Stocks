@@ -43,8 +43,12 @@ final class APICaller {
         
     }
     
+    enum NewsType {
+        case topStories, company(symbol: String)
+    }
+    
     public func fetchNews(
-        for type: NewsViewController.`Type`,
+        for type: NewsType,
         completion: @escaping (Result<[NewsStory], Error>) -> Void
     ) {
         switch type {

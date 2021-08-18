@@ -8,7 +8,7 @@
 import UIKit
 import SafariServices
 
-class StockDetailsViewController: UIViewController {
+class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDelegate {
 
     // MARK: - Properties
 
@@ -173,7 +173,12 @@ class StockDetailsViewController: UIViewController {
         let priceChange = (quote != nil && prevClose != nil) ? (quote! / stockQuote!.prevClose) - 1 : nil
         
         headerView.configure(
-            titleViewModel: .init(quote: quote, priceChange: priceChange),
+            titleViewModel: .init(
+                quote: quote,
+                priceChange: priceChange,
+                showAddingButton: !PersistenceManager.shared.watchListContains(symbol),
+                delegate: self
+            ),
             chartViewModel: .init(
                 data: lineChartData,
                 showAxis: true
@@ -182,6 +187,14 @@ class StockDetailsViewController: UIViewController {
         )
         
         tableView.tableHeaderView = headerView
+    }
+    
+    // MARK: - Delegate Methods
+    
+    func didTapAddingButton() {
+        HapticsManager.shared.vibrate(for: .success)
+        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: companyName)
+        showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
 
 }
@@ -214,17 +227,5 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
         guard let url = URL(string: stories[indexPath.row].url) else { return }
         HapticsManager.shared.vibrateForSelection()
         open(url: url, withPresentationStyle: .overFullScreen)
-    }
-}
-
-extension StockDetailsViewController: NewsHeaderViewDelegate {
-    func newsHeaderViewDidTapAddButton(_ headerView: NewsHeaderView) {
-        HapticsManager.shared.vibrate(for: .success)
-        headerView.button.isHidden = true
-        PersistenceManager.shared.addToWatchlist(
-            symbol: symbol,
-            companyName: companyName
-        )
-        showAlert(withTitle: "Added to Watch List", message: "", actionTitle: "OK")
     }
 }

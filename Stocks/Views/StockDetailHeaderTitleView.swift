@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol StockDetailHeaderTitleViewDelegate: AnyObject {
+    func didTapAddingButton()
+}
+
 class StockDetailHeaderTitleView: UIView {
     
     // MARK: - Properties
@@ -46,16 +50,30 @@ class StockDetailHeaderTitleView: UIView {
         return button
     }()
     
+    weak var delegate: StockDetailHeaderTitleViewDelegate?
+    
     struct ViewModel {
         let quote: Double?
         let priceChange: Double?
+        let showAddingButton: Bool
+        let delegate: StockDetailHeaderTitleViewDelegate
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        watchlistAddingButton.addTarget(self, action: #selector(didTapAddingButton), for: .touchUpInside)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     // MARK: - Layout
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        addSubview(stackView)
+        addSubview(watchlistAddingButton)
         setUpStackView()
         setUpAddingButton()
     }
@@ -63,19 +81,20 @@ class StockDetailHeaderTitleView: UIView {
     // MARK: - Public Methods
     
     public func configure(viewModel: ViewModel) {
-        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? "-"
-        priceChangeLabel.text = viewModel.priceChange?.stringWithPercentageStyle() ?? "-"
+        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? ""
+        priceChangeLabel.text = viewModel.priceChange?.stringWithPercentageStyle() ?? ""
         priceChangeLabel.textColor = viewModel.priceChange ?? 0 < 0 ? .stockPriceDown : .stockPriceUp
+        watchlistAddingButton.isHidden = !viewModel.showAddingButton
+        delegate = viewModel.delegate
     }
     
     // MARK: - Private Methods
     
     private func setUpStackView() {
-        addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            stackView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor),
+            stackView.trailingAnchor.constraint(lessThanOrEqualTo: self.watchlistAddingButton.leadingAnchor, constant: -10),
             stackView.topAnchor.constraint(equalTo: self.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
@@ -85,7 +104,6 @@ class StockDetailHeaderTitleView: UIView {
     }
     
     private func setUpAddingButton() {
-        addSubview(watchlistAddingButton)
         watchlistAddingButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             watchlistAddingButton.leadingAnchor.constraint(greaterThanOrEqualTo: self.leadingAnchor),
@@ -93,7 +111,11 @@ class StockDetailHeaderTitleView: UIView {
             watchlistAddingButton.topAnchor.constraint(equalTo: self.topAnchor),
             watchlistAddingButton.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
-        
+    }
+    
+    @objc private func didTapAddingButton() {
+        watchlistAddingButton.isHidden = true
+        delegate?.didTapAddingButton()
     }
     
 }

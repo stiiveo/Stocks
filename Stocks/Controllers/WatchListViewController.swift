@@ -127,7 +127,7 @@ class WatchListViewController: UIViewController {
     }
     
     private func setUpFloatingPanel() {
-        let vc = NewsViewController(type: .topStories)
+        let vc = NewsViewController()
         let panel = FloatingPanelController()
         panel.surfaceView.backgroundColor = .secondarySystemBackground
         panel.set(contentViewController: vc)
