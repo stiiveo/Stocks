@@ -37,19 +37,29 @@ class SearchResultViewController: UIViewController {
         tableView.frame = view.bounds
     }
     
+    // MARK: - Private Methods
+    
     private func setUpTable() {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
     }
     
+    // MARK: - Public Methods
+    
     public func update(with results: [SearchResult]) {
         self.results = results
         tableView.isHidden = results.isEmpty
         tableView.reloadData()
+        if !results.isEmpty {
+            // Scroll to the first row after data is reloaded.
+            tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+        }
     }
 
 }
+
+// MARK: - TableView Delegate, Data Source
 
 extension SearchResultViewController: UITableViewDelegate, UITableViewDataSource {
     

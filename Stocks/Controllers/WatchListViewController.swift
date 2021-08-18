@@ -168,7 +168,6 @@ class WatchListViewController: UIViewController {
     private func setUpSearchController() {
         let resultVC = SearchResultViewController()
         resultVC.delegate = self
-        
         let searchVC = UISearchController(searchResultsController: resultVC)
         searchVC.searchResultsUpdater = self
         searchVC.delegate = self
