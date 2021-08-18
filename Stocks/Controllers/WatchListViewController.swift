@@ -35,11 +35,11 @@ class WatchListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        setUpNavigationBar()
         setUpSearchController()
         setUpTableView()
         fetchWatchlistData()
         setUpFloatingPanel()
-        setUpTitleView()
         setUpObserver()
     }
     
@@ -138,6 +138,12 @@ class WatchListViewController: UIViewController {
         self.panel = panel
     }
     
+    private func setUpNavigationBar() {
+        navigationController?.navigationBar.isTranslucent = false
+        extendedLayoutIncludesOpaqueBars = true
+        setUpTitleView()
+    }
+    
     private func setUpTitleView() {
         let titleView = UIView(
             frame: CGRect(
@@ -165,9 +171,19 @@ class WatchListViewController: UIViewController {
         
         let searchVC = UISearchController(searchResultsController: resultVC)
         searchVC.searchResultsUpdater = self
+        searchVC.delegate = self
         navigationItem.searchController = searchVC
     }
 
+}
+
+extension WatchListViewController: UISearchControllerDelegate {
+    func willPresentSearchController(_ searchController: UISearchController) {
+        self.panel?.hide(animated: true)
+    }
+    func willDismissSearchController(_ searchController: UISearchController) {
+        self.panel?.show(animated: true)
+    }
 }
 
 extension WatchListViewController: UISearchResultsUpdating {
