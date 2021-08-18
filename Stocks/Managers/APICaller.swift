@@ -26,7 +26,7 @@ final class APICaller {
     /// - Parameters:
     ///   - query: "Searching keyword as query used to send API request."
     ///   - completion: Method to call after response from API is received. 
-    func search(
+    public func search(
         query: String,
         completion: @escaping (Result<SearchResponse, Error>) -> Void
     ) {
@@ -122,6 +122,14 @@ final class APICaller {
         }
     }
     
+    public func getStockQuote(
+        for symbol: String,
+        completion: @escaping (Result<StockQuote, Error>) -> Void
+    ) {
+        let url = url(for: .quote, queryParams: ["symbol": symbol])
+        request(url: url, expecting: StockQuote.self, completion: completion)
+    }
+    
     /// Fetch specified company's financial metrics data: 52 week high, 52 week low, 10 day average trading volume etc.
     /// - Parameters:
     ///   - symbol: Symbol of the company.
@@ -166,14 +174,6 @@ final class APICaller {
         case day = "D"
         case week = "W"
         case month = "M"
-    }
-    
-    private func getStockQuote(
-        for symbol: String,
-        completion: @escaping (Result<StockQuote, Error>) -> Void
-    ) {
-        let url = url(for: .quote, queryParams: ["symbol": symbol])
-        request(url: url, expecting: StockQuote.self, completion: completion)
     }
     
     private func getPriceHistory(

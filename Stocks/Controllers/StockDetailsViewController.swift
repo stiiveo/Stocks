@@ -14,7 +14,9 @@ class StockDetailsViewController: UIViewController {
 
     private let symbol: String
     private let companyName: String
+    private var stockQuote: StockQuote?
     private var priceHistory: [PriceHistory]
+    private var metrics: Metrics?
 
     private let tableView: UITableView = {
         let table = UITableView()
@@ -26,8 +28,6 @@ class StockDetailsViewController: UIViewController {
     }()
 
     private var stories: [NewsStory] = []
-    
-    private var metrics: Metrics?
 
     // MARK: - Init
 
@@ -81,33 +81,34 @@ class StockDetailsViewController: UIViewController {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.tableHeaderView = UIView(
-            frame: CGRect(
-                x: 0,
-                y: 0,
-                width: view.width,
-                height: (view.width * 0.7) + StockDetailHeaderView.metricsViewHeight
-            )
-        )
     }
 
     /// Fetch financial metrics.
     private func fetchFinancialData() {
         let group = DispatchGroup()
         
+        group.enter()
+        APICaller.shared.getStockQuote(for: symbol) { [weak self] result in
+            defer { group.leave() }
+            switch result {
+            case .success(let quote):
+                self?.stockQuote = quote
+            case .failure(let error):
+                print(error)
+            }
+        }
+        
         if priceHistory.isEmpty {
             group.enter()
             APICaller.shared.fetchStockData(symbol: symbol, historyDuration: 7) {
                 [weak self] result in
-                defer {
-                    group.leave()
-                }
+                defer { group.leave() }
                 
                 switch result {
                 case .success(let data):
                     self?.priceHistory = data.priceHistory
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    print(error)
                 }
             }
         }
@@ -115,20 +116,18 @@ class StockDetailsViewController: UIViewController {
         // Fetch financial metrics
         group.enter()
         APICaller.shared.fetchFinancialMetrics(symbol: symbol) { [weak self] result in
-            defer {
-                group.leave()
-            }
+            defer { group.leave() }
             
             switch result {
             case .success(let response):
                 self?.metrics = response.metric
             case .failure(let error):
-                print(error.localizedDescription)
+                print(error)
             }
         }
         
         group.notify(queue: .main) { [weak self] in
-            self?.updateChartAndFinancialsData()
+            self?.configureHeaderView()
         }
     }
 
@@ -141,41 +140,45 @@ class StockDetailsViewController: UIViewController {
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
-                print(error.localizedDescription)
+                print(error)
             }
         }
     }
     
-    private func updateChartAndFinancialsData() {
-        let headerView = StockDetailHeaderView(
-            frame: CGRect(
-                x: 0,
-                y: 0,
-                width: view.width,
-                height: (view.width * 0.6) + StockDetailHeaderView.metricsViewHeight
-            )
+    private func configureHeaderView() {
+        let headerView = StockDetailHeaderView()
+        let chartHeight = view.width * 0.6
+        headerView.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: view.width,
+            height: StockDetailHeaderView.titleViewHeight + chartHeight + StockDetailHeaderView.metricsViewHeight
         )
         
-        var viewModels = [MetricCollectionViewCell.ViewModel]()
-        if let metrics = metrics {
-            viewModels.append(.init(name: "52W H", value: "\(metrics.annualHigh)"))
-            viewModels.append(.init(name: "52W L", value: "\(metrics.annualLow)"))
-            viewModels.append(.init(name: "52W L Date", value: "\(metrics.annualLowDate)"))
-            viewModels.append(.init(name: "52W Return", value: "\(metrics.annualWeekPriceReturnDaily)"))
-            viewModels.append(.init(name: "10D Volume", value: "\(metrics.tenDayAverageVolume)"))
-            viewModels.append(.init(name: "Beta", value: "\(metrics.beta)"))
+        let metricsViewModels: [MetricCollectionViewCell.ViewModel] = [
+            .init(name: "52W H", value: metrics != nil ? metrics!.annualHigh.stringFormatted(by: .decimalFormatter) : "-"),
+            .init(name: "52W L", value: metrics != nil ? metrics!.annualLow.stringFormatted(by: .decimalFormatter) : "-"),
+            .init(name: "52W L Date", value: metrics != nil ? String(metrics!.annualLowDate) : "-"),
+            .init(name: "52W Return", value: metrics != nil ? metrics!.annualWeekPriceReturnDaily.stringFormatted(by: .decimalFormatter) : "-"),
+            .init(name: "10D Volume", value: metrics != nil ? metrics!.tenDayAverageVolume.stringFormatted(by: .decimalFormatter) : "-"),
+            .init(name: "Beta", value: metrics != nil ? metrics!.beta.stringFormatted(by: .decimalFormatter) : "-")
+        ]
+        
+        let lineChartData: [StockChartView.StockLineChartData] = priceHistory.map{
+            .init(timeInterval: $0.time, price: $0.close)
         }
         
-        let lineChartData: [StockChartView.StockLineChartData] = priceHistory.map({
-            .init(timeInterval: $0.time, price: $0.close)
-        })
+        let quote = stockQuote?.current
+        let prevClose = stockQuote?.prevClose
+        let priceChange = (quote != nil && prevClose != nil) ? (quote! / stockQuote!.prevClose) - 1 : nil
         
         headerView.configure(
+            titleViewModel: .init(quote: quote, priceChange: priceChange),
             chartViewModel: .init(
                 data: lineChartData,
                 showAxis: true
             ),
-            metricViewModels: viewModels
+            metricViewModels: metricsViewModels
         )
         
         tableView.tableHeaderView = headerView

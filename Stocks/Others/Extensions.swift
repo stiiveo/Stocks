@@ -85,6 +85,7 @@ extension NumberFormatter {
         let formatter = NumberFormatter()
         formatter.locale = .current
         formatter.numberStyle = .percent
+        formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter
     }()
@@ -95,6 +96,7 @@ extension NumberFormatter {
         formatter.locale = .current
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
         return formatter
     }()
 }
@@ -143,7 +145,7 @@ extension Double {
     /// A plus sign will be added to the front of the string if the value is bigger than 0.
     /// - Returns: Returns string value formatted with percentage style.
     func stringWithPercentageStyle() -> String {
-        let percentage = String(format: "%.2f", self * 100).appending("%")
+        let percentage = self.stringFormatted(by: .percentageFormatter)
         let signedPercentage = self > 0 ? "+" + percentage : percentage
         return signedPercentage
     }

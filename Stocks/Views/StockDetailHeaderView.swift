@@ -10,16 +10,18 @@ import Charts
 
 class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    private var metricViewModels = [MetricCollectionViewCell.ViewModel]()
+    // MARK: - Properties
+    
+    private let titleView: StockDetailHeaderTitleView = {
+        return StockDetailHeaderTitleView()
+    }()
 
-    // ChartView
     private let chartView: StockChartView = {
         let chart = StockChartView()
         chart.isUserInteractionEnabled = false
         return chart
     }()
     
-    // Metrics View
     private let metricsView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -36,12 +38,17 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         return collectionView
     }()
     
-    static let metricsViewHeight: CGFloat = 75
+    private var metricViewModels = [MetricCollectionViewCell.ViewModel]()
+    
+    static let titleViewHeight: CGFloat = 25
+    static let metricsViewHeight: CGFloat = 70
+    
+    // MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         clipsToBounds = true
-        addSubviews(chartView, metricsView)
+        addSubviews(titleView, chartView, metricsView)
         metricsView.delegate = self
         metricsView.dataSource = self
     }
@@ -50,28 +57,45 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - UI Layout
+    
     override func layoutSubviews() {
         super.layoutSubviews()
-        let metricsViewHeight = StockDetailHeaderView.metricsViewHeight
-        chartView.frame = CGRect(
-            x: 10, y: 0,
-            width: width - 20,
-            height: height - metricsViewHeight
-        )
-        metricsView.frame = CGRect(
-            x: 10, y: height - metricsViewHeight,
-            width: width - 20,
-            height: metricsViewHeight
-        )
+        let sideInset: CGFloat = 15
+        
+        titleView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            titleView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
+            titleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: sideInset * -1),
+            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
+            titleView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.titleViewHeight)
+        ])
+        
+        chartView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            chartView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
+            chartView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
+            chartView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 10)
+        ])
+        
+        metricsView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            metricsView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: sideInset),
+            metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: sideInset * -1),
+            metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor),
+            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15),
+            metricsView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.metricsViewHeight)
+        ])
     }
     
     // MARK: - Public
     
     func configure(
+        titleViewModel: StockDetailHeaderTitleView.ViewModel,
         chartViewModel: StockChartView.ViewModel,
         metricViewModels: [MetricCollectionViewCell.ViewModel]
     ) {
-        // Update chart view
+        titleView.configure(viewModel: titleViewModel)
         chartView.configure(with: chartViewModel)
         self.metricViewModels = metricViewModels
         metricsView.reloadData()

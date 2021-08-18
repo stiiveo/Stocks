@@ -159,7 +159,7 @@ class WatchListViewController: UIViewController {
                           height: titleView.height - 20)
         )
         label.text = "Stocks"
-        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.font = .systemFont(ofSize: 28, weight: .bold)
         titleView.addSubview(label)
         
         navigationItem.titleView = titleView

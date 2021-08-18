@@ -12,12 +12,12 @@ struct FinancialMetricsResponse: Codable {
 }
 
 struct Metrics: Codable {
-    let tenDayAverageVolume: Float
+    let tenDayAverageVolume: Double
     let annualHigh: Double
     let annualLow: Double
     let annualLowDate: String
-    let annualWeekPriceReturnDaily: Float
-    let beta: Float
+    let annualWeekPriceReturnDaily: Double
+    let beta: Double
     
     enum CodingKeys: String, CodingKey {
         case tenDayAverageVolume = "10DayAverageTradingVolume"
