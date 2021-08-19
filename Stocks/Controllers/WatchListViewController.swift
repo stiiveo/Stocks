@@ -130,12 +130,12 @@ class WatchListViewController: UIViewController {
     private func setUpFloatingPanel() {
         let vc = NewsViewController()
         let panel = FloatingPanelController()
+        panel.layout = MyFullScreenLayout()
         panel.surfaceView.backgroundColor = .secondarySystemBackground
         panel.set(contentViewController: vc)
         panel.addPanel(toParent: self)
         panel.delegate = self
         panel.track(scrollView: vc.tableView)
-        panel.layout = MyFullScreenLayout()
         self.panel = panel
     }
     
