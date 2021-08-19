@@ -26,11 +26,12 @@
 		8F65B6BA269C2116001FC19D /* NewsStoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */; };
 		8F878BFC269E9B8D00ACE8AF /* StockQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */; };
 		8F878BFE269F11B200ACE8AF /* StockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFD269F11B200ACE8AF /* StockData.swift */; };
-		8F878C0026A02EC200ACE8AF /* FinancialMetricsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFF26A02EC200ACE8AF /* FinancialMetricsResponse.swift */; };
+		8F878C0026A02EC200ACE8AF /* Metrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFF26A02EC200ACE8AF /* Metrics.swift */; };
 		8F878C0226A0330200ACE8AF /* StockDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */; };
 		8F878C0426A0421700ACE8AF /* MetricCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */; };
 		8F878C0C26A1AC8200ACE8AF /* StocksUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878C0B26A1AC8200ACE8AF /* StocksUnitTests.swift */; };
 		8F89E44B26CCC3EC002BD69E /* StockDetailHeaderTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F89E44A26CCC3EC002BD69E /* StockDetailHeaderTitleView.swift */; };
+		8F89E45B26CE587E002BD69E /* API_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F89E45A26CE587E002BD69E /* API_Tests.swift */; };
 		8FB254BE269D31A1004FF1C1 /* StockCandlesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BD269D31A1004FF1C1 /* StockCandlesResponse.swift */; };
 		8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */; };
 		8FB254C2269D8254004FF1C1 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254C1269D8254004FF1C1 /* StockChartView.swift */; };
@@ -71,13 +72,14 @@
 		8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStoryTableViewCell.swift; sourceTree = "<group>"; };
 		8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockQuote.swift; sourceTree = "<group>"; };
 		8F878BFD269F11B200ACE8AF /* StockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockData.swift; sourceTree = "<group>"; };
-		8F878BFF26A02EC200ACE8AF /* FinancialMetricsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinancialMetricsResponse.swift; sourceTree = "<group>"; };
+		8F878BFF26A02EC200ACE8AF /* Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metrics.swift; sourceTree = "<group>"; };
 		8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockDetailHeaderView.swift; sourceTree = "<group>"; };
 		8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricCollectionViewCell.swift; sourceTree = "<group>"; };
 		8F878C0926A1AC8200ACE8AF /* StocksUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StocksUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F878C0B26A1AC8200ACE8AF /* StocksUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StocksUnitTests.swift; sourceTree = "<group>"; };
 		8F878C0D26A1AC8200ACE8AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8F89E44A26CCC3EC002BD69E /* StockDetailHeaderTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockDetailHeaderTitleView.swift; sourceTree = "<group>"; };
+		8F89E45A26CE587E002BD69E /* API_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API_Tests.swift; sourceTree = "<group>"; };
 		8FB254BD269D31A1004FF1C1 /* StockCandlesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockCandlesResponse.swift; sourceTree = "<group>"; };
 		8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListTableViewCell.swift; sourceTree = "<group>"; };
 		8FB254C1269D8254004FF1C1 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
@@ -152,7 +154,7 @@
 				8FB254BD269D31A1004FF1C1 /* StockCandlesResponse.swift */,
 				8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */,
 				8F878BFD269F11B200ACE8AF /* StockData.swift */,
-				8F878BFF26A02EC200ACE8AF /* FinancialMetricsResponse.swift */,
+				8F878BFF26A02EC200ACE8AF /* Metrics.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -208,6 +210,7 @@
 		8F878C0A26A1AC8200ACE8AF /* StocksUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				8F89E45A26CE587E002BD69E /* API_Tests.swift */,
 				8F878C0B26A1AC8200ACE8AF /* StocksUnitTests.swift */,
 				8F878C0D26A1AC8200ACE8AF /* Info.plist */,
 			);
@@ -389,7 +392,7 @@
 				8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */,
 				8F878C0426A0421700ACE8AF /* MetricCollectionViewCell.swift in Sources */,
 				8F11B93F26986C8000F4AFD1 /* SceneDelegate.swift in Sources */,
-				8F878C0026A02EC200ACE8AF /* FinancialMetricsResponse.swift in Sources */,
+				8F878C0026A02EC200ACE8AF /* Metrics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +400,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F89E45B26CE587E002BD69E /* API_Tests.swift in Sources */,
 				8F878C0C26A1AC8200ACE8AF /* StocksUnitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

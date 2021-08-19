@@ -1,15 +1,11 @@
 //
-//  FinancialMetricsResponse.swift
+//  Metrics.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/7/15.
 //
 
 import Foundation
-
-struct FinancialMetricsResponse: Codable {
-    let metric: Metrics
-}
 
 struct Metrics: Codable {
     let tenDayAverageVolume: Double

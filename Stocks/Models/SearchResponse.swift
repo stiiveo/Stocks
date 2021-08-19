@@ -16,5 +16,4 @@ struct SearchResult: Codable {
     let description: String
     let displaySymbol: String
     let symbol: String
-    let type: String
 }

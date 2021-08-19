@@ -88,7 +88,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         let group = DispatchGroup()
         
         group.enter()
-        APICaller.shared.getStockQuote(for: symbol) { [weak self] result in
+        APICaller.shared.fetchStockQuote(for: symbol) { [weak self] result in
             defer { group.leave() }
             switch result {
             case .success(let quote):
@@ -119,8 +119,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             defer { group.leave() }
             
             switch result {
-            case .success(let response):
-                self?.metrics = response.metric
+            case .success(let metrics):
+                self?.metrics = metrics
             case .failure(let error):
                 print(error)
             }

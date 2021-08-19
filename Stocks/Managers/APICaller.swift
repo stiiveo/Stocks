@@ -15,7 +15,7 @@ final class APICaller {
         static let apiKey = "c3khjtaad3i8d96s5cug"
         static let sandboxApiKey = "sandbox_c3khjtaad3i8d96s5cv0"
         static let baseUrl = "https://finnhub.io/api/v1/"
-        static let day: TimeInterval = 3600 * 24
+        static let secondsInADay: TimeInterval = 3600 * 24
     }
     
     private init() {}
@@ -60,7 +60,7 @@ final class APICaller {
         )
         case .company(let symbol):
             let now = Date()
-            let startTime = now.addingTimeInterval(-(Constants.day * 7))
+            let startTime = now.addingTimeInterval(-(Constants.secondsInADay * 7))
             request(
                 url: url(
                     for: .companyNews,
@@ -81,7 +81,7 @@ final class APICaller {
     ///   - completion: A StockData object is provided once the fetching process succeeded. An error object is provided otherwise.
     public func fetchStockData(
         symbol: String,
-        historyDuration days: TimeInterval,
+        historyDuration days: Int,
         completion: @escaping (Result<StockData, Error>) -> Void
     ) {
         var stockQuote: StockQuote?
@@ -89,7 +89,7 @@ final class APICaller {
         let group = DispatchGroup()
         
         group.enter()
-        getStockQuote(for: symbol) { result in
+        fetchStockQuote(for: symbol) { result in
             defer {
                 group.leave()
             }
@@ -102,7 +102,7 @@ final class APICaller {
         }
         
         group.enter()
-        getPriceHistory(symbol, dataResolution: .thirtyMinutes, for: days) { result in
+        fetchPriceHistory(symbol, dataResolution: .thirtyMinutes, days: days) { result in
             defer {
                 group.leave()
             }
@@ -126,7 +126,7 @@ final class APICaller {
         }
     }
     
-    public func getStockQuote(
+    public func fetchStockQuote(
         for symbol: String,
         completion: @escaping (Result<StockQuote, Error>) -> Void
     ) {
@@ -134,19 +134,51 @@ final class APICaller {
         request(url: url, expecting: StockQuote.self, completion: completion)
     }
     
+    /// Time interval between each data set.
+    enum DataResolution: String {
+        case minute = "1"
+        case fiveMinutes = "5"
+        case fifteenMinutes = "15"
+        case thirtyMinutes = "30"
+        case hour = "60"
+        case day = "D"
+        case week = "W"
+        case month = "M"
+    }
+    
+    public func fetchPriceHistory(
+        _ symbol: String,
+        dataResolution resolution: DataResolution,
+        days: Int,
+        completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
+    ) {
+        let currentTime = Int(Date().timeIntervalSince1970)
+        let startingTime = currentTime - (Int(Constants.secondsInADay) * days)
+        let url = url(
+            for: .stockCandles,
+            queryParams: [
+                "symbol": symbol,
+                "resolution": resolution.rawValue,
+                "from": "\(startingTime)",
+                "to": "\(currentTime)"
+            ]
+        )
+        request(url: url, expecting: StockCandlesResponse.self, completion: completion)
+    }
+    
     /// Fetch specified company's financial metrics data: 52 week high, 52 week low, 10 day average trading volume etc.
     /// - Parameters:
     ///   - symbol: Symbol of the company.
-    ///   - completion: A FinancialMetricsResponse object is provided once the fetching process finishes successfully. An error object is provided otherwise.
+    ///   - completion: A Metrics object is provided once the fetching process finishes successfully. An error object is provided otherwise.
     public func fetchFinancialMetrics(
         symbol: String,
-        completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
+        completion: @escaping (Result<Metrics, Error>) -> Void
     ) {
         let url = url(
             for: .financials,
             queryParams: ["symbol": symbol, "metric": "all"]
         )
-        request(url: url, expecting: FinancialMetricsResponse.self, completion: completion)
+        request(url: url, expecting: Metrics.self, completion: completion)
     }
     
     // MARK: - Private
@@ -166,38 +198,6 @@ final class APICaller {
         case noDataReturned
         case invalidUrl
         case failedToGetStockData
-    }
-    
-    /// Time interval between each data set.
-    private enum DataResolution: String {
-        case minute = "1"
-        case fiveMinutes = "5"
-        case fifteenMinutes = "15"
-        case thirtyMinutes = "30"
-        case hour = "60"
-        case day = "D"
-        case week = "W"
-        case month = "M"
-    }
-    
-    private func getPriceHistory(
-        _ symbol: String,
-        dataResolution resolution: DataResolution,
-        for numberOfDays: TimeInterval,
-        completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
-    ) {
-        let currentTime = Int(Date().timeIntervalSince1970)
-        let startingTime = currentTime - Int(Constants.day * numberOfDays)
-        let url = url(
-            for: .stockCandles,
-            queryParams: [
-                "symbol": symbol,
-                "resolution": resolution.rawValue,
-                "from": "\(startingTime)",
-                "to": "\(currentTime)"
-            ]
-        )
-        request(url: url, expecting: StockCandlesResponse.self, completion: completion)
     }
     
     private func url(

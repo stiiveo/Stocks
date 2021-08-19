@@ -57,7 +57,7 @@ class WatchListViewController: UIViewController {
         }
     }
     
-    private func fetchWatchlistData(forDays days: TimeInterval = 7) {
+    private func fetchWatchlistData(forDays days: Int = 7) {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
@@ -99,7 +99,7 @@ class WatchListViewController: UIViewController {
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
-            let priceChangePercentage = priceChange.stringWithPercentageStyle()
+            let priceChangePercentage = priceChange.signedPercentageString()
             
             let model = WatchListTableViewCell.ViewModel(
                 symbol: symbol,

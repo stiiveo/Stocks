@@ -144,7 +144,7 @@ extension Double {
     /// A percentage sign will be added to the end of the string.
     /// A plus sign will be added to the front of the string if the value is bigger than 0.
     /// - Returns: Returns string value formatted with percentage style.
-    func stringWithPercentageStyle() -> String {
+    func signedPercentageString() -> String {
         let percentage = self.stringFormatted(by: .percentageFormatter)
         let signedPercentage = self > 0 ? "+" + percentage : percentage
         return signedPercentage
