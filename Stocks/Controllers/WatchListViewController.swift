@@ -11,6 +11,7 @@ import FloatingPanel
 class WatchListViewController: UIViewController {
     
     private var searchTimer: Timer?
+    private var prevSearchBarQuery = ""
     
     private var panel: FloatingPanelController?
     
@@ -189,6 +190,7 @@ extension WatchListViewController: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text,
+              query != prevSearchBarQuery, // Make sure the new query is diff from the prev one.
               let resultVC = searchController.searchResultsController as? SearchResultViewController,
               !query.trimmingCharacters(in: .whitespaces).isEmpty else {
             return
@@ -196,6 +198,7 @@ extension WatchListViewController: UISearchResultsUpdating {
         
         // Reset timer
         searchTimer?.invalidate()
+        prevSearchBarQuery = query // Save the current query for comparison later.
         
         // Kick off new timer
         // Optimize to reduce number of searches for when user stops typing
@@ -234,6 +237,14 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         
         let navVC = UINavigationController(rootViewController: stockDetailVC)
         present(navVC, animated: true, completion: nil)
+    }
+    
+    func scrollViewWillBeginDragging() {
+        // Dismiss the keyboard when the result table view is about to be scrolled.
+        if let searchBar = navigationItem.searchController?.searchBar,
+           searchBar.isFirstResponder {
+            searchBar.resignFirstResponder()
+        }
     }
     
 }

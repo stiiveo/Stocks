@@ -9,6 +9,7 @@ import UIKit
 
 protocol SearchResultViewControllerDelegate: AnyObject {
     func searchResultViewControllerDidSelect(searchResult: SearchResult)
+    func scrollViewWillBeginDragging()
 }
 
 class SearchResultViewController: UIViewController {
@@ -82,4 +83,9 @@ extension SearchResultViewController: UITableViewDelegate, UITableViewDataSource
         let result = results[indexPath.row]
         delegate?.searchResultViewControllerDidSelect(searchResult: result)
     }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.scrollViewWillBeginDragging()
+    }
+    
 }
