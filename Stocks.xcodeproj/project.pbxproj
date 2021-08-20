@@ -212,9 +212,9 @@
 		8F878C0A26A1AC8200ACE8AF /* StocksUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				8F878C0D26A1AC8200ACE8AF /* Info.plist */,
 				8F89E45A26CE587E002BD69E /* API_Tests.swift */,
 				8F878C0B26A1AC8200ACE8AF /* StocksUnitTests.swift */,
-				8F878C0D26A1AC8200ACE8AF /* Info.plist */,
 				8F89E45C26CF5102002BD69E /* Persistence_Manager_Tests.swift */,
 			);
 			path = StocksUnitTests;

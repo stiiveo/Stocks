@@ -14,8 +14,8 @@ class Persistence_Manager_Tests: XCTestCase {
     private let userDefaults: UserDefaults = .standard
     
     // Test use company symbol and name.
-    private let companySymbol = "SYMBOL"
-    private let companyName = "Company Inc."
+    private let testSymbol = "SYMBOL"
+    private let testCompanyName = "Company Inc."
     
     // User defaults keys.
     private let watchlistKey = "watchList"
@@ -37,12 +37,18 @@ class Persistence_Manager_Tests: XCTestCase {
         userDefaults.stringArray(forKey: watchlistKey) ?? []
     }
     
-    func test_onboarding() {
-        let hasOnboarded = userDefaults.bool(forKey: onboardKey)
-        if !hasOnboarded {
-            XCTAssert(defaultStocks.map{ $0.key } == watchlist,
-                      "Returned watchlist: '\(watchlist)' does not match with the default one.")
-        }
+    func test_watchlist_retrieval_and_default_list_setup() {
+        // Set onboard status to false and trigger defaults set up.
+        userDefaults.setValue(false, forKey: onboardKey)
+        let retrievedWatchlist = manager.watchList
+        
+        // Assertion
+        XCTAssert(retrievedWatchlist == watchlist,
+                  "Retrieved watchlist does not match with the actual one.")
+        
+        let defaultSymbols = defaultStocks.map{ $0.key }
+        XCTAssert(watchlist.containsSameElement(as: defaultSymbols),
+                  "Watchlist (\(watchlist)) does not contain same elements as the default one.")
     }
     
     func test_watchlist_retrieving() {
@@ -55,19 +61,19 @@ class Persistence_Manager_Tests: XCTestCase {
         
         // Correct watchlist
         var correctList = userDefaults.stringArray(forKey: watchlistKey) ?? []
-        correctList.append(companySymbol)
+        correctList.append(testSymbol)
         
-        manager.addToWatchlist(symbol: companySymbol, companyName: companyName)
+        manager.addToWatchlist(symbol: testSymbol, companyName: testCompanyName)
         
         // Assertion
         XCTAssert(watchlist == correctList)
         
-        let retrievedCompanyName = userDefaults.string(forKey: companySymbol)
-        XCTAssert(retrievedCompanyName == companyName)
+        let retrievedCompanyName = userDefaults.string(forKey: testSymbol)
+        XCTAssert(retrievedCompanyName == testCompanyName)
         
         // Restore the watchlist and remove test company name.
         userDefaults.setValue(originalWatchlist, forKey: watchlistKey)
-        userDefaults.setValue(nil, forKey: companySymbol)
+        userDefaults.setValue(nil, forKey: testSymbol)
     }
     
     func test_watchlist_deletion() {
@@ -75,17 +81,17 @@ class Persistence_Manager_Tests: XCTestCase {
         
         // Add test company symbol and name to watchlist before deletion test.
         var testSymbolAddedWatchlist = watchlist
-        testSymbolAddedWatchlist.append(companySymbol)
+        testSymbolAddedWatchlist.append(testSymbol)
         userDefaults.setValue(testSymbolAddedWatchlist, forKey: watchlistKey)
-        userDefaults.setValue(companyName, forKey: companySymbol)
+        userDefaults.setValue(testCompanyName, forKey: testSymbol)
         
         // Deletion
-        manager.removeFromWatchlist(symbol: companySymbol)
+        manager.removeFromWatchlist(symbol: testSymbol)
         
         // Assertion
         XCTAssert(watchlist == originalWatchlist,
                   "Watchlist after deletion is not identical to the original one")
-        XCTAssert(userDefaults.string(forKey: companySymbol) == nil,
+        XCTAssert(userDefaults.string(forKey: testSymbol) == nil,
                   "Company name is not removed.")
     }
     
@@ -94,11 +100,11 @@ class Persistence_Manager_Tests: XCTestCase {
         
         // Add test symbol to the watchlist
         var list = watchlist
-        list.append(companySymbol)
+        list.append(testSymbol)
         userDefaults.setValue(list, forKey: watchlistKey)
         
         // Assertion
-        let containsTestSymbol = manager.watchListContains(companySymbol)
+        let containsTestSymbol = manager.watchListContains(testSymbol)
         XCTAssert(containsTestSymbol,
                   "Contains function returns false even though the watchlist contains test symbol")
         
@@ -106,4 +112,10 @@ class Persistence_Manager_Tests: XCTestCase {
         userDefaults.setValue(originalWatchlist, forKey: watchlistKey)
     }
 
+}
+
+extension Array where Element: Comparable {
+    func containsSameElement(as other: [Element]) -> Bool {
+        return self.count == other.count && self.sorted() == other.sorted()
+    }
 }

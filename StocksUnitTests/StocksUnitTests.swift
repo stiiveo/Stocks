@@ -6,9 +6,7 @@
 //
 
 @testable import Stocks
-
 import XCTest
-import Foundation
 
 class StocksUnitTests: XCTestCase {
 

@@ -10,22 +10,12 @@ import XCTest
 
 class API_Tests: XCTestCase {
     
-    private var apiCaller: APICaller!
-    private let targetSymbol = "AAPL"
-    private let targetDescription = "Apple Inc."
-
-    override func setUp() {
-        super.setUp()
-        apiCaller = APICaller.shared
-    }
-    
-    override func tearDown() {
-        apiCaller = nil
-        super.tearDown()
-    }
+    private let apiCaller = APICaller.shared
+    private let testSymbol = "AAPL"
+    private let testDescription = "Apple Inc."
     
     func test_Search() {
-        apiCaller.search(query: targetSymbol) { [weak self] result in
+        apiCaller.search(query: testSymbol) { [weak self] result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Search attempt failed: \(error)")
@@ -35,12 +25,12 @@ class API_Tests: XCTestCase {
                     return
                 }
                 guard let targetResult = response.result.filter(
-                    { $0.symbol == self?.targetSymbol }
+                    { $0.symbol == self?.testSymbol }
                 ).first else {
                     XCTAssert(false, "No symbol matched from the search result.")
                     return
                 }
-                XCTAssert(targetResult.description == self?.targetDescription,
+                XCTAssert(targetResult.description == self?.testDescription,
                           "Matched result's description did not match.")
             }
         }
@@ -58,7 +48,7 @@ class API_Tests: XCTestCase {
         }
         
         // Company stories
-        apiCaller.fetchNews(for: .company(symbol: targetSymbol)) { result in
+        apiCaller.fetchNews(for: .company(symbol: testSymbol)) { result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Failed to fetch test company's stories: \(error)")
@@ -69,7 +59,7 @@ class API_Tests: XCTestCase {
     }
     
     func test_quote_fetching() {
-        apiCaller.fetchStockQuote(for: targetSymbol) { result in
+        apiCaller.fetchStockQuote(for: testSymbol) { result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Quote fetching failed: \(error)")
@@ -81,7 +71,7 @@ class API_Tests: XCTestCase {
     
     func test_stock_candles_fetching() {
         apiCaller.fetchPriceHistory(
-            targetSymbol,
+            testSymbol,
             dataResolution: .fiveMinutes,
             days: 7
         ) { result in
@@ -95,7 +85,7 @@ class API_Tests: XCTestCase {
     }
     
     func test_stock_metrics_fetching() {
-        apiCaller.fetchFinancialMetrics(symbol: targetSymbol) { result in
+        apiCaller.fetchFinancialMetrics(symbol: testSymbol) { result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Failed to fetch stock metrics data: \(error)")

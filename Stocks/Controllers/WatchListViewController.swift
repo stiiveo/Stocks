@@ -92,7 +92,6 @@ class WatchListViewController: UIViewController {
         var viewModels = [WatchListTableViewCell.ViewModel]()
             
         for (symbol, stockData) in watchListData {
-            
             let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map({
                 .init(timeInterval: $0.time, price: $0.close)
             })
