@@ -52,7 +52,7 @@
 /* Begin PBXFileReference section */
 		3FACF7EFFDBAD44899E988AD /* Pods-Stocks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Stocks.debug.xcconfig"; path = "Target Support Files/Pods-Stocks/Pods-Stocks.debug.xcconfig"; sourceTree = "<group>"; };
 		6D6B2076100EBCB60072D3EB /* Pods-Stocks.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Stocks.release.xcconfig"; path = "Target Support Files/Pods-Stocks/Pods-Stocks.release.xcconfig"; sourceTree = "<group>"; };
-		8F11B93926986C8000F4AFD1 /* Stocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "U.S. Stocks.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F11B93C26986C8000F4AFD1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8F11B93E26986C8000F4AFD1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListViewController.swift; sourceTree = "<group>"; };
@@ -129,7 +129,7 @@
 		8F11B93A26986C8000F4AFD1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8F11B93926986C8000F4AFD1 /* Stocks.app */,
+				8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */,
 				8F878C0926A1AC8200ACE8AF /* StocksUnitTests.xctest */,
 			);
 			name = Products;
@@ -248,7 +248,7 @@
 			);
 			name = Stocks;
 			productName = Stocks;
-			productReference = 8F11B93926986C8000F4AFD1 /* Stocks.app */;
+			productReference = 8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8F878C0826A1AC8200ACE8AF /* StocksUnitTests */ = {
@@ -560,8 +560,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jasonou.Stocks;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jasonou.USStocks;
+				PRODUCT_NAME = "U.S. Stocks";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -580,8 +580,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jasonou.Stocks;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jasonou.USStocks;
+				PRODUCT_NAME = "U.S. Stocks";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
