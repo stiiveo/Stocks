@@ -29,6 +29,7 @@ final class PersistenceManager {
     
     // MARK: - Public
     
+    /// Array of company symbols saved in the watchlist.
     var watchList: [String] {
         if !hasOnboarded {
             userDefaults.set(true, forKey: Constants.onboardKey)
@@ -37,6 +38,10 @@ final class PersistenceManager {
         return userDefaults.stringArray(forKey: Constants.watchListKey) ?? [] 
     }
     
+    /// Save specified company symbol and name to the watchlist.
+    /// - Parameters:
+    ///   - symbol: Company's stock ticker symbol.
+    ///   - companyName: The company's formal name.
     public func addToWatchlist(symbol: String, companyName: String) {
         var currentList = watchList
         currentList.append(symbol)
@@ -46,6 +51,8 @@ final class PersistenceManager {
         NotificationCenter.default.post(name: .didAddToWatchList, object: nil)
     }
     
+    /// Remove specified company from the watchlist.
+    /// - Parameter symbol: Stock ticker symbol of the company to be removed from the watchlist.
     public func removeFromWatchlist(symbol: String) {
         var newList = [String]()
         for item in watchList where item != symbol {
@@ -55,16 +62,22 @@ final class PersistenceManager {
         userDefaults.set(nil, forKey: symbol)
     }
     
+    /// Returns if the specified company symbol is saved in the watchlist.
+    /// - Parameter symbol: The company's stock ticker symbol.
+    /// - Returns: True if the specified company stock ticker symbol is contained in the watchlist.
     public func watchListContains(_ symbol: String) -> Bool {
         return watchList.contains(symbol)
     }
     
     // MARK: - Private
     
+    /// Returns if it's the first time the watchlist is accessed.
     private var hasOnboarded: Bool {
         return userDefaults.bool(forKey: Constants.onboardKey)
     }
     
+    /// Store preset companies to the watchlist as default.
+    /// - Note: Any data previously stored in the watchlist will be replaced by the default ones.
     private func setUpDefaults() {
         let defaultStocks: [String: String] = [
             "AAPL": "Apple Inc.",

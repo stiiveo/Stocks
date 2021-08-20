@@ -12,7 +12,7 @@ class API_Tests: XCTestCase {
     
     private var apiCaller: APICaller!
     private let targetSymbol = "AAPL"
-    private let targetdescription = "Apple Inc."
+    private let targetDescription = "Apple Inc."
 
     override func setUp() {
         super.setUp()
@@ -40,7 +40,8 @@ class API_Tests: XCTestCase {
                     XCTAssert(false, "No symbol matched from the search result.")
                     return
                 }
-                XCTAssert(targetResult.description == self?.targetdescription, "Matched result's description did not match.")
+                XCTAssert(targetResult.description == self?.targetDescription,
+                          "Matched result's description did not match.")
             }
         }
     }
@@ -79,7 +80,11 @@ class API_Tests: XCTestCase {
     }
     
     func test_stock_candles_fetching() {
-        apiCaller.fetchPriceHistory(targetSymbol, dataResolution: .fiveMinutes, days: 7) { result in
+        apiCaller.fetchPriceHistory(
+            targetSymbol,
+            dataResolution: .fiveMinutes,
+            days: 7
+        ) { result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Failed to fetch stock candles data: \(error)")
