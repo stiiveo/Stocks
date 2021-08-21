@@ -102,7 +102,7 @@ final class APICaller {
         }
         
         group.enter()
-        fetchPriceHistory(symbol, dataResolution: .thirtyMinutes, days: days) { result in
+        fetchPriceHistory(symbol, dataResolution: .fiveMinutes, days: days) { result in
             defer {
                 group.leave()
             }
@@ -152,8 +152,9 @@ final class APICaller {
         days: Int,
         completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
     ) {
-        let currentTime = Int(Date().timeIntervalSince1970)
-        let startingTime = currentTime - (Int(Constants.secondsInADay) * days)
+        let calendarManager = CalendarManager()
+        let currentTime = Int(calendarManager.latestTradingTimeInterval.1)
+        let startingTime = Int(calendarManager.latestTradingTimeInterval.0)
         let url = url(
             for: .stockCandles,
             queryParams: [
@@ -170,12 +171,12 @@ final class APICaller {
     /// - Parameters:
     ///   - symbol: Symbol of the company.
     ///   - completion: A Metrics object is provided once the fetching process finishes successfully. An error object is provided otherwise.
-    public func fetchFinancialMetrics(
+    public func fetchStockMetrics(
         symbol: String,
         completion: @escaping (Result<Metrics, Error>) -> Void
     ) {
         let url = url(
-            for: .financials,
+            for: .metrics,
             queryParams: ["symbol": symbol, "metric": "all"]
         )
         request(url: url, expecting: Metrics.self, completion: completion)
@@ -190,7 +191,7 @@ final class APICaller {
         case companyNews = "company-news"
         case stockCandles = "stock/candle"
         case quote = "quote"
-        case financials = "stock/metric"
+        case metrics = "stock/metric"
     }
     
     /// Error cases related to the API operations.

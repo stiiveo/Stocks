@@ -5,7 +5,7 @@
 //  Created by Jason Ou on 2021/8/20.
 //
 
-@testable import Stocks
+@testable import U_S__Stocks
 import XCTest
 
 class Persistence_Manager_Tests: XCTestCase {

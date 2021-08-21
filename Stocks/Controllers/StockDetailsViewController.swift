@@ -115,7 +115,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         
         // Fetch financial metrics
         group.enter()
-        APICaller.shared.fetchFinancialMetrics(symbol: symbol) { [weak self] result in
+        APICaller.shared.fetchStockMetrics(symbol: symbol) { [weak self] result in
             defer { group.leave() }
             
             switch result {

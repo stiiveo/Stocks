@@ -130,7 +130,6 @@ extension UIImageView {
 
 // MARK: - Double
 
-// REQUIRED TESTING BEFORE ADOPTION
 extension Double {
     /// String value formatted by specified number formatter.
     /// - Parameter formatter: Number formatter used to format the double value.

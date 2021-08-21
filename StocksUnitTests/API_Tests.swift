@@ -5,7 +5,7 @@
 //  Created by Jason Ou on 2021/8/19.
 //
 
-@testable import Stocks
+@testable import U_S__Stocks
 import XCTest
 
 class API_Tests: XCTestCase {
@@ -85,7 +85,7 @@ class API_Tests: XCTestCase {
     }
     
     func test_stock_metrics_fetching() {
-        apiCaller.fetchFinancialMetrics(symbol: testSymbol) { result in
+        apiCaller.fetchStockMetrics(symbol: testSymbol) { result in
             switch result {
             case .failure(let error):
                 XCTAssert(false, "Failed to fetch stock metrics data: \(error)")
