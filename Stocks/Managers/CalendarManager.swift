@@ -7,13 +7,17 @@
 
 import Foundation
 
-class CalendarManager {
+final class CalendarManager {
     
     /// Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
     private let holidayDates: [(Int, Int, Int)] = [
         (2021, 1, 1), (2021, 1, 18), (2021, 2, 15),
         (2021, 4, 2), (2021, 5, 31), (2021, 7, 5),
         (2021, 9, 6), (2021, 11, 25), (2021, 12, 24)
+    ]
+    
+    private let earlyCloseDates: [(Int, Int, Int)] = [
+        (2021, 11, 26), (2022, 11, 25), (2023, 7, 3), (2023, 11, 24)
     ]
     
     private let currentTime = Date()
@@ -26,19 +30,8 @@ class CalendarManager {
         return calendar
     }
     
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .long
-        formatter.timeZone = newYorkTimeZone
-        return formatter
-    }
-    
-    private let dateComponentUnits: Set<Calendar.Component> =
-        [.year, .month, .day, .hour, .minute, .second, .nanosecond]
-    
     private func newYorkDateComponents(from date: Date) -> DateComponents {
-        return newYorkCalendar.dateComponents(dateComponentUnits, from: date)
+        return newYorkCalendar.dateComponents(.normal, from: date)
     }
     
     private func isInHoliday(date: Date) -> Bool {
@@ -62,13 +55,26 @@ class CalendarManager {
         components.minute = 0
         components.second = 0
         components.nanosecond = 0
+        
+        // Change the close hour to 13:00 New York time if the specified date is one of
+        // the early close dates.
+        if let year = components.year,
+           let month = components.month,
+           let day = components.day {
+            let date = (year, month, day)
+            if earlyCloseDates.contains(where: { $0 == date }) {
+                components.hour = 13
+            }
+        }
+        
         return newYorkCalendar.date(from: components)!.timeIntervalSince1970
     }
     
     private var latestTradingDate: Date {
         var date = currentTime
         while newYorkCalendar.isDateInWeekend(date) || isInHoliday(date: date) {
-            // Reverse the current date for one day until it's not neither in a weekend nor a holiday.
+            // Reverse the current date for one day until it's not neither
+            // in a weekend nor a holiday.
             date = newYorkCalendar.date(byAdding: .day, value: -1, to: date)!
         }
         return date
@@ -84,6 +90,14 @@ class CalendarManager {
         print("Close Date:", dateFormatter.string(from: Date(timeIntervalSince1970: closeTime)))
         
         return (openTime, closeTime)
+    }
+    
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .long
+        formatter.timeZone = newYorkTimeZone
+        return formatter
     }
     
 }
