@@ -7,18 +7,13 @@
 
 import Foundation
 
+struct CalendarDate: Equatable {
+    let year: Int
+    let month: Int
+    let day: Int
+}
+
 final class CalendarManager {
-    
-    /// Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
-    private let holidayDates: [(Int, Int, Int)] = [
-        (2021, 1, 1), (2021, 1, 18), (2021, 2, 15),
-        (2021, 4, 2), (2021, 5, 31), (2021, 7, 5),
-        (2021, 9, 6), (2021, 11, 25), (2021, 12, 24)
-    ]
-    
-    private let earlyCloseDates: [(Int, Int, Int)] = [
-        (2021, 11, 26), (2022, 11, 25), (2023, 7, 3), (2023, 11, 24)
-    ]
     
     private let currentTime = Date()
     
@@ -27,47 +22,66 @@ final class CalendarManager {
     private var newYorkCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = newYorkTimeZone!
+        calendar.locale = .autoupdatingCurrent
         return calendar
     }
     
-    private func newYorkDateComponents(from date: Date) -> DateComponents {
-        return newYorkCalendar.dateComponents(.normal, from: date)
-    }
+    /// Holidays of New York Stock Exchange.
+    /// Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
+    /// - Description: The market is closed on these dates.
+    /// - Note: Provides calendar date info in unit of year, month and day only.
+    private let marketHolidays: [CalendarDate] = [
+        .init(year: 2021, month: 1, day: 1),
+        .init(year: 2021, month: 1, day: 18),
+        .init(year: 2021, month: 2, day: 15),
+        .init(year: 2021, month: 4, day: 2),
+        .init(year: 2021, month: 5, day: 31),
+        .init(year: 2021, month: 7, day: 5),
+        .init(year: 2021, month: 9, day: 6),
+        .init(year: 2021, month: 11, day: 25),
+        .init(year: 2021, month: 12, day: 24)
+    ]
+    
+    /// Early market close dates of New York Stock Exchange.
+    /// - Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
+    /// - Description: The market close early at 13:00 on these dates.
+    /// - Note: Provides calendar date info in unit of year, month and day only.
+    private let earlyCloseDates: [CalendarDate] = [
+        .init(year: 2021, month: 11, day: 26),
+        .init(year: 2022, month: 11, day: 25),
+        .init(year: 2023, month: 7, day: 3),
+        .init(year: 2023, month: 11, day: 24)
+    ]
     
     private func isInHoliday(date: Date) -> Bool {
-        let dateComponents = newYorkDateComponents(from: date)
-        let literalDate = (dateComponents.year!, dateComponents.month!, dateComponents.day!)
-        return holidayDates.contains{ $0 == literalDate }
+        let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
+                                month: newYorkCalendar.component(.month, from: date),
+                                day: newYorkCalendar.component(.day, from: date))
+        return marketHolidays.contains{ $0 == calendarDate }
     }
     
-    private func marketOpenTime(from date: Date) -> TimeInterval {
-        var components = newYorkDateComponents(from: date)
-        components.hour = 9
-        components.minute = 30
-        components.second = 0
-        components.nanosecond = 0
-        return newYorkCalendar.date(from: components)!.timeIntervalSince1970
+    private func marketOpenTime(on date: Date) -> TimeInterval {
+        let openTime = newYorkCalendar.date(bySettingHour: 9, minute: 30, second: 0, of: date)!
+        let preciseOpenTime = newYorkCalendar.date(bySetting: .nanosecond, value: 0, of: openTime)!
+        return preciseOpenTime.timeIntervalSince1970
     }
     
     private func marketCloseTime(from date: Date) -> TimeInterval {
-        var components = newYorkDateComponents(from: date)
-        components.hour = 16
-        components.minute = 0
-        components.second = 0
-        components.nanosecond = 0
+        let closeTime = newYorkCalendar.date(bySettingHour: 16, minute: 0, second: 0, of: date)!
+        let preciseCloseTime = newYorkCalendar.date(bySetting: .nanosecond, value: 0, of: closeTime)!
         
-        // Change the close hour to 13:00 New York time if the specified date is one of
-        // the early close dates.
-        if let year = components.year,
-           let month = components.month,
-           let day = components.day {
-            let date = (year, month, day)
-            if earlyCloseDates.contains(where: { $0 == date }) {
-                components.hour = 13
-            }
+        let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
+                                       month: newYorkCalendar.component(.month, from: date),
+                                       day: newYorkCalendar.component(.day, from: date))
+        
+        // Change the market close hour to 13:00 if the provided calendar date is
+        // the early close date.
+        if earlyCloseDates.contains(where: { $0 == calendarDate }) {
+            let earlyCloseDate = newYorkCalendar.date(bySetting: .hour, value: 13, of: preciseCloseTime)!
+            return earlyCloseDate.timeIntervalSince1970
+        } else {
+            return preciseCloseTime.timeIntervalSince1970
         }
-        
-        return newYorkCalendar.date(from: components)!.timeIntervalSince1970
     }
     
     private var latestTradingDate: Date {
@@ -83,7 +97,7 @@ final class CalendarManager {
     /// The start and end of the latest market trading time.
     /// - Note: If current time is in weekend or a holiday, the method returns the time at the last trading date.
     var latestTradingTimeInterval: (TimeInterval, TimeInterval) {
-        let openTime = marketOpenTime(from: latestTradingDate)
+        let openTime = marketOpenTime(on: latestTradingDate)
         let closeTime = marketCloseTime(from: latestTradingDate)
         
         print("Open Date:", dateFormatter.string(from: Date(timeIntervalSince1970: openTime)))
