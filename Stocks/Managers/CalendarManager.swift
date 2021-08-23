@@ -39,7 +39,24 @@ final class CalendarManager {
         .init(year: 2021, month: 7, day: 5),
         .init(year: 2021, month: 9, day: 6),
         .init(year: 2021, month: 11, day: 25),
-        .init(year: 2021, month: 12, day: 24)
+        .init(year: 2021, month: 12, day: 24),
+        .init(year: 2022, month: 1, day: 17),
+        .init(year: 2022, month: 2, day: 21),
+        .init(year: 2022, month: 4, day: 15),
+        .init(year: 2022, month: 5, day: 30),
+        .init(year: 2022, month: 7, day: 4),
+        .init(year: 2022, month: 9, day: 5),
+        .init(year: 2022, month: 11, day: 24),
+        .init(year: 2022, month: 12, day: 26),
+        .init(year: 2023, month: 1, day: 2),
+        .init(year: 2023, month: 1, day: 16),
+        .init(year: 2023, month: 2, day: 20),
+        .init(year: 2023, month: 4, day: 7),
+        .init(year: 2023, month: 5, day: 29),
+        .init(year: 2023, month: 7, day: 4),
+        .init(year: 2023, month: 9, day: 4),
+        .init(year: 2023, month: 11, day: 23),
+        .init(year: 2023, month: 12, day: 25),
     ]
     
     /// Early market close dates of New York Stock Exchange.
@@ -57,31 +74,26 @@ final class CalendarManager {
         let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
                                 month: newYorkCalendar.component(.month, from: date),
                                 day: newYorkCalendar.component(.day, from: date))
-        return marketHolidays.contains{ $0 == calendarDate }
+        return marketHolidays.contains(calendarDate)
     }
     
-    private func marketOpenTime(on date: Date) -> TimeInterval {
+    private func marketOpenTime(on date: Date) -> Date {
         let openTime = newYorkCalendar.date(bySettingHour: 9, minute: 30, second: 0, of: date)!
         let preciseOpenTime = newYorkCalendar.date(bySetting: .nanosecond, value: 0, of: openTime)!
-        return preciseOpenTime.timeIntervalSince1970
+        return preciseOpenTime
     }
     
-    private func marketCloseTime(from date: Date) -> TimeInterval {
+    private func marketCloseTime(from date: Date) -> Date {
         let closeTime = newYorkCalendar.date(bySettingHour: 16, minute: 0, second: 0, of: date)!
         let preciseCloseTime = newYorkCalendar.date(bySetting: .nanosecond, value: 0, of: closeTime)!
-        
+        let earlyCloseDate = newYorkCalendar.date(bySetting: .hour, value: 13, of: preciseCloseTime)!
         let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
                                        month: newYorkCalendar.component(.month, from: date),
                                        day: newYorkCalendar.component(.day, from: date))
         
         // Change the market close hour to 13:00 if the provided calendar date is
         // the early close date.
-        if earlyCloseDates.contains(where: { $0 == calendarDate }) {
-            let earlyCloseDate = newYorkCalendar.date(bySetting: .hour, value: 13, of: preciseCloseTime)!
-            return earlyCloseDate.timeIntervalSince1970
-        } else {
-            return preciseCloseTime.timeIntervalSince1970
-        }
+        return earlyCloseDates.contains(calendarDate) ? earlyCloseDate : preciseCloseTime
     }
     
     private var latestTradingDate: Date {
@@ -94,16 +106,21 @@ final class CalendarManager {
         return date
     }
     
+    struct TradingTime {
+        let open: Date
+        let close: Date
+    }
+    
     /// The start and end of the latest market trading time.
     /// - Note: If current time is in weekend or a holiday, the method returns the time at the last trading date.
-    var latestTradingTimeInterval: (TimeInterval, TimeInterval) {
+    var latestTradingTime: TradingTime {
         let openTime = marketOpenTime(on: latestTradingDate)
         let closeTime = marketCloseTime(from: latestTradingDate)
         
-        print("Open Date:", dateFormatter.string(from: Date(timeIntervalSince1970: openTime)))
-        print("Close Date:", dateFormatter.string(from: Date(timeIntervalSince1970: closeTime)))
+        print("Open Date:", dateFormatter.string(from: openTime))
+        print("Close Date:", dateFormatter.string(from: closeTime))
         
-        return (openTime, closeTime)
+        return TradingTime(open: openTime, close: closeTime)
     }
     
     private var dateFormatter: DateFormatter {

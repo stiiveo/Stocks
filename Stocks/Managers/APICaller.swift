@@ -153,15 +153,15 @@ final class APICaller {
         completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
     ) {
         let calendarManager = CalendarManager()
-        let currentTime = Int(calendarManager.latestTradingTimeInterval.1)
-        let startingTime = Int(calendarManager.latestTradingTimeInterval.0)
+        let startTime = Int(calendarManager.latestTradingTime.open.timeIntervalSince1970)
+        let endTime = Int(calendarManager.latestTradingTime.close.timeIntervalSince1970)
         let url = url(
             for: .stockCandles,
             queryParams: [
                 "symbol": symbol,
                 "resolution": resolution.rawValue,
-                "from": "\(startingTime)",
-                "to": "\(currentTime)"
+                "from": "\(startTime)",
+                "to": "\(endTime)"
             ]
         )
         request(url: url, expecting: StockCandlesResponse.self, completion: completion)
