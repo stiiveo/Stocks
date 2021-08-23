@@ -96,8 +96,18 @@ final class CalendarManager {
         return earlyCloseDates.contains(calendarDate) ? earlyCloseDate : preciseCloseTime
     }
     
+    /// Returns if the specified time is before the market is opened (i.e. Before 09:30 Eastern Time).
+    /// - Parameter date: Point of time to be determined.
+    /// - Returns: Boolean value on if the specified time is before the market is opened.
+    private func isBeforeMarketOpenTime(at date: Date) -> Bool {
+        return date < marketOpenTime(on: date)
+    }
+    
+    /// The last date on which the trading takes place.
+    /// - Note: If the date on which this method is called is a valid trading day but the market is not opened yet,
+    /// this method will return the previous trading date.
     private var latestTradingDate: Date {
-        var date = currentTime
+        var date = isBeforeMarketOpenTime(at: currentTime) ? newYorkCalendar.date(byAdding: .day, value: -1, to: currentTime)! : currentTime
         while newYorkCalendar.isDateInWeekend(date) || isInHoliday(date: date) {
             // Reverse the current date for one day until it's not neither
             // in a weekend nor a holiday.

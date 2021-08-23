@@ -89,7 +89,7 @@ class Persistence_Manager_Tests: XCTestCase {
         manager.removeFromWatchlist(symbol: testSymbol)
         
         // Assertion
-        XCTAssert(watchlist == originalWatchlist,
+        XCTAssert(watchlist.sorted() == originalWatchlist.sorted(),
                   "Watchlist after deletion is not identical to the original one")
         XCTAssert(userDefaults.string(forKey: testSymbol) == nil,
                   "Company name is not removed.")
