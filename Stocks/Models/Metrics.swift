@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct FinancialMetricsResponse: Codable {
+    let metric: Metrics
+}
+
 struct Metrics: Codable {
     let tenDayAverageVolume: Double
     let annualHigh: Double

@@ -119,8 +119,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             defer { group.leave() }
             
             switch result {
-            case .success(let metrics):
-                self?.metrics = metrics
+            case .success(let metricsResponse):
+                self?.metrics = metricsResponse.metric
             case .failure(let error):
                 print(error)
             }

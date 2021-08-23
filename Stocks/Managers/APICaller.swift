@@ -173,13 +173,13 @@ final class APICaller {
     ///   - completion: A Metrics object is provided once the fetching process finishes successfully. An error object is provided otherwise.
     public func fetchStockMetrics(
         symbol: String,
-        completion: @escaping (Result<Metrics, Error>) -> Void
+        completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
     ) {
         let url = url(
             for: .metrics,
             queryParams: ["symbol": symbol, "metric": "all"]
         )
-        request(url: url, expecting: Metrics.self, completion: completion)
+        request(url: url, expecting: FinancialMetricsResponse.self, completion: completion)
     }
     
     // MARK: - Private
