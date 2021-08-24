@@ -41,6 +41,7 @@ class WatchListViewController: UIViewController {
         setUpTableView()
         fetchWatchlistData(timeSpan: .day)
         setUpFloatingPanel()
+        setUpFooterView()
         setUpObserver()
     }
     
@@ -123,7 +124,7 @@ class WatchListViewController: UIViewController {
         tableView.dataSource = self
         tableView.frame = CGRect(x: 0, y: 0,
                                  width: view.width,
-                                 height: view.height - 120.0)
+                                 height: view.height - 175)
     }
     
     private func setUpFloatingPanel() {
@@ -172,6 +173,18 @@ class WatchListViewController: UIViewController {
         searchVC.searchResultsUpdater = self
         searchVC.delegate = self
         navigationItem.searchController = searchVC
+    }
+    
+    private func setUpFooterView() {
+        let footerView = WatchlistFooterView()
+        view.addSubviews(footerView)
+        footerView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            footerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            footerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            footerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            footerView.heightAnchor.constraint(equalToConstant: 86)
+        ])
     }
 
 }
@@ -355,7 +368,7 @@ class MyFullScreenLayout: FloatingPanelLayout {
         return [
             .full: FloatingPanelLayoutAnchor(absoluteInset: watchListVCNavBarHeight, edge: .top, referenceGuide: .superview),
             .half: FloatingPanelLayoutAnchor(fractionalInset: 0.4, edge: .bottom, referenceGuide: .superview),
-            .tip: FloatingPanelLayoutAnchor(absoluteInset: 120.0, edge: .bottom, referenceGuide: .superview),
+            .tip: FloatingPanelLayoutAnchor(absoluteInset: 175.0, edge: .bottom, referenceGuide: .superview),
         ]
         
     }

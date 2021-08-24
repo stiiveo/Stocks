@@ -41,6 +41,7 @@
 		8FB254BE269D31A1004FF1C1 /* StockCandlesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BD269D31A1004FF1C1 /* StockCandlesResponse.swift */; };
 		8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */; };
 		8FB254C2269D8254004FF1C1 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254C1269D8254004FF1C1 /* StockChartView.swift */; };
+		8FEFA99A26D4F4730083931E /* WatchlistFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */; };
 		90A45978F98F376669627D96 /* Pods_Stocks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */; };
 /* End PBXBuildFile section */
 
@@ -95,6 +96,7 @@
 		8FB254BD269D31A1004FF1C1 /* StockCandlesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockCandlesResponse.swift; sourceTree = "<group>"; };
 		8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListTableViewCell.swift; sourceTree = "<group>"; };
 		8FB254C1269D8254004FF1C1 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
+		8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistFooterView.swift; sourceTree = "<group>"; };
 		AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Stocks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -180,6 +182,7 @@
 				8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */,
 				8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */,
 				8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */,
+				8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */,
 				8FB254C1269D8254004FF1C1 /* StockChartView.swift */,
 				8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */,
 				8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */,
@@ -407,6 +410,7 @@
 				8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */,
 				8F878BFE269F11B200ACE8AF /* StockData.swift in Sources */,
 				8F878C0226A0330200ACE8AF /* StockDetailHeaderView.swift in Sources */,
+				8FEFA99A26D4F4730083931E /* WatchlistFooterView.swift in Sources */,
 				8F65B6B8269B3B98001FC19D /* NewsStory.swift in Sources */,
 				8F11B9622699457400F4AFD1 /* UIKit.swift in Sources */,
 				8F65B6BA269C2116001FC19D /* NewsStoryTableViewCell.swift in Sources */,
