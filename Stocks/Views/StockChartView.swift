@@ -83,7 +83,7 @@ class StockChartView: UIView {
         dataSet.drawFilledEnabled = true
         dataSet.setColor(fillColor)
         dataSet.fillColor = fillColor
-        dataSet.lineWidth = 2.0
+        dataSet.lineWidth = 1.5
 
         let data = LineChartData(dataSet: dataSet)
         chartView.data = data

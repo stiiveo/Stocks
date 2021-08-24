@@ -87,5 +87,18 @@ class Calendar_Manager_Tests: XCTestCase {
             XCTAssert(newYorkCalendar.component(.hour, from: closeDate) == 16)
         }
     }
+    
+    func test_first_market_open_date_in_given_time_span() {
+        let latestMarketOpenDate = manager.latestTradingTime.open
+        let firstOpenDateInAWeek = manager.firstMarketOpenTime(timeSpan: .week)
+        
+        let firstOpenHour = newYorkCalendar.component(.hour, from: firstOpenDateInAWeek)
+        let firstOpenMinute = newYorkCalendar.component(.minute, from: firstOpenDateInAWeek)
+        XCTAssert(firstOpenHour == 9 && firstOpenMinute == 30,
+                  "Open time is not 9:30 New York time. Returned: \(firstOpenHour):\(firstOpenMinute)")
+        
+        let timeIntervalDiff = latestMarketOpenDate.timeIntervalSince1970 - firstOpenDateInAWeek.timeIntervalSince1970
+        XCTAssert(timeIntervalDiff <= 3600 * 24 * 7)
+    }
 
 }

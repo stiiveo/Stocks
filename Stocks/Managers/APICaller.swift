@@ -81,7 +81,7 @@ final class APICaller {
     ///   - completion: A StockData object is provided once the fetching process succeeded. An error object is provided otherwise.
     public func fetchStockData(
         symbol: String,
-        historyDuration days: Int,
+        timeSpan: CalendarManager.TimeSpan,
         completion: @escaping (Result<StockData, Error>) -> Void
     ) {
         var stockQuote: StockQuote?
@@ -102,7 +102,7 @@ final class APICaller {
         }
         
         group.enter()
-        fetchPriceHistory(symbol, dataResolution: .fiveMinutes, days: days) { result in
+        fetchPriceHistory(symbol, timeSpan: timeSpan) { result in
             defer {
                 group.leave()
             }
@@ -148,18 +148,17 @@ final class APICaller {
     
     public func fetchPriceHistory(
         _ symbol: String,
-        dataResolution resolution: DataResolution,
-        days: Int,
+        timeSpan: CalendarManager.TimeSpan,
         completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
     ) {
         let calendarManager = CalendarManager()
-        let startTime = Int(calendarManager.latestTradingTime.open.timeIntervalSince1970)
+        let startTime = Int(calendarManager.firstMarketOpenTime(timeSpan: timeSpan).timeIntervalSince1970)
         let endTime = Int(calendarManager.latestTradingTime.close.timeIntervalSince1970)
         let url = url(
             for: .stockCandles,
             queryParams: [
                 "symbol": symbol,
-                "resolution": resolution.rawValue,
+                "resolution": timeSpan.dataResolution.rawValue,
                 "from": "\(startTime)",
                 "to": "\(endTime)"
             ]

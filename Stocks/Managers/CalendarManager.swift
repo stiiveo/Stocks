@@ -15,6 +15,8 @@ struct CalendarDate: Equatable {
 
 final class CalendarManager {
     
+    // MARK: - Properties
+    
     private let currentTime = Date()
     
     private let newYorkTimeZone = TimeZone(identifier: "America/New_York")
@@ -70,6 +72,8 @@ final class CalendarManager {
         .init(year: 2023, month: 11, day: 24)
     ]
     
+    // MARK: - Private Methods
+    
     private func isInHoliday(date: Date) -> Bool {
         let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
                                 month: newYorkCalendar.component(.month, from: date),
@@ -116,6 +120,69 @@ final class CalendarManager {
         return date
     }
     
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .long
+        formatter.timeZone = newYorkTimeZone
+        return formatter
+    }
+    
+    /// The starting date in the given time span in which the latest trading day as the last day.
+    /// - Parameter timeSpan: Duration of the time span.
+    /// - Returns: Returns the starting date of the specified time span in which the latest trading day as the last day.
+    private func unverifiedFirstMarketOpenDate(in timeSpan: TimeSpan) -> Date {
+        let latestMarketOpenTime = latestTradingTime.open
+        switch timeSpan {
+        case .day:
+            return latestTradingTime.open
+        case .week:
+            return newYorkCalendar.date(byAdding: .day, value: -7, to: latestMarketOpenTime)!
+        case .month:
+            return newYorkCalendar.date(byAdding: .month, value: -1, to: latestMarketOpenTime)!
+        case .threeMonths:
+            return newYorkCalendar.date(byAdding: .month, value: -3, to: latestMarketOpenTime)!
+        case .sixMonths:
+            return newYorkCalendar.date(byAdding: .month, value: -6, to: latestMarketOpenTime)!
+        case .year:
+            return newYorkCalendar.date(byAdding: .year, value: -1, to: latestMarketOpenTime)!
+        case .twoYears:
+            return newYorkCalendar.date(byAdding: .year, value: -2, to: latestMarketOpenTime)!
+        case .fiveYears:
+            return newYorkCalendar.date(byAdding: .year, value: -5, to: latestMarketOpenTime)!
+        case .tenYears:
+            return newYorkCalendar.date(byAdding: .year, value: -10, to: latestMarketOpenTime)!
+        }
+    }
+    
+    // MARK: - Public
+    
+    enum TimeSpan {
+        case day
+        case week
+        case month
+        case threeMonths
+        case sixMonths
+        case year
+        case twoYears
+        case fiveYears
+        case tenYears
+        
+        var dataResolution: APICaller.DataResolution {
+            switch self {
+            case .day: return .minute
+            case .week: return .fiveMinutes
+            case .month: return .thirtyMinutes
+            case .threeMonths: return .thirtyMinutes
+            case .sixMonths: return .hour
+            case .year: return .day
+            case .twoYears: return .week
+            case .fiveYears: return .week
+            case .tenYears: return .week
+            }
+        }
+    }
+    
     struct TradingTime {
         let open: Date
         let close: Date
@@ -127,18 +194,24 @@ final class CalendarManager {
         let openTime = marketOpenTime(on: latestTradingDate)
         let closeTime = marketCloseTime(from: latestTradingDate)
         
-        print("Open Date:", dateFormatter.string(from: openTime))
-        print("Close Date:", dateFormatter.string(from: closeTime))
-        
         return TradingTime(open: openTime, close: closeTime)
     }
     
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .long
-        formatter.timeZone = newYorkTimeZone
-        return formatter
+    /// Returns the first market open time on the specified days of time span, with the latest trading open time as the end of the time span.
+    /// - Parameter days: The number of days of time span including the latest trading day.
+    /// - Returns: Returns the first trading day's open time in the calculated time span or
+    ///            the latest trading day's open time if everyday before the latest trading day is in weekend or is a holiday.
+    public func firstMarketOpenTime(timeSpan: TimeSpan) -> Date {
+        let unverifiedOpenDate = unverifiedFirstMarketOpenDate(in: timeSpan)
+
+        // If the start day is in weekend or is a holiday, find the first trading day after it.
+        var time = unverifiedOpenDate
+        while (newYorkCalendar.isDateInWeekend(time) || isInHoliday(date: time)) && !newYorkCalendar.isDateInToday(time) {
+            if let theDayAfter = newYorkCalendar.date(byAdding: .day, value: 1, to: time) {
+                time = theDayAfter
+            }
+        }
+        return time
     }
     
 }

@@ -72,8 +72,7 @@ class API_Tests: XCTestCase {
     func test_stock_candles_fetching() {
         apiCaller.fetchPriceHistory(
             testSymbol,
-            dataResolution: .fiveMinutes,
-            days: 7
+            timeSpan: .week
         ) { result in
             switch result {
             case .failure(let error):

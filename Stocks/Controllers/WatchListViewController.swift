@@ -39,7 +39,7 @@ class WatchListViewController: UIViewController {
         setUpNavigationBar()
         setUpSearchController()
         setUpTableView()
-        fetchWatchlistData()
+        fetchWatchlistData(timeSpan: .day)
         setUpFloatingPanel()
         setUpObserver()
     }
@@ -57,17 +57,17 @@ class WatchListViewController: UIViewController {
         }
     }
     
-    private func fetchWatchlistData(forDays days: Int = 7) {
+    private func fetchWatchlistData(timeSpan: CalendarManager.TimeSpan = .day) {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
         for symbol in symbols where watchListData[symbol] == nil {
-            // Fetch data of the companies listed in the watch list in which the data is absent.
+            // Fetch data of the companies listed in the watchlist in which the data is absent.
             group.enter()
             
             APICaller.shared.fetchStockData(
                 symbol: symbol,
-                historyDuration: days) { [weak self] result in
+                timeSpan: timeSpan) { [weak self] result in
                 
                 defer {
                     group.leave()

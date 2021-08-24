@@ -100,7 +100,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         
         if priceHistory.isEmpty {
             group.enter()
-            APICaller.shared.fetchStockData(symbol: symbol, historyDuration: 7) {
+            APICaller.shared.fetchStockData(symbol: symbol, timeSpan: .day) {
                 [weak self] result in
                 defer { group.leave() }
                 
