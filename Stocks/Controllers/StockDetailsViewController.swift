@@ -181,6 +181,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             ),
             chartViewModel: .init(
                 data: lineChartData,
+                previousClose: stockQuote?.prevClose ?? 0.0,
                 showAxis: true
             ),
             metricViewModels: metricsViewModels

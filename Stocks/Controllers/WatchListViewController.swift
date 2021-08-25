@@ -145,6 +145,7 @@ class WatchListViewController: UIViewController {
                 changePercentage: priceChangePercentage,
                 chartViewModel: .init(
                     data: lineChartData,
+                    previousClose: previousClose,
                     showAxis: false
                 )
             )

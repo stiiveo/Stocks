@@ -24,10 +24,9 @@ final class CalendarManager {
     
     private let newYorkTimeZone = TimeZone(identifier: "America/New_York")
     
-    private var newYorkCalendar: Calendar {
+    var newYorkCalendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = newYorkTimeZone!
-        calendar.locale = .autoupdatingCurrent
         return calendar
     }
     
