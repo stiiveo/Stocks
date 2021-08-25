@@ -151,9 +151,9 @@ final class APICaller {
         timeSpan: CalendarManager.TimeSpan,
         completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
     ) {
-        let calendarManager = CalendarManager()
-        let startTime = Int(calendarManager.firstMarketOpenTime(timeSpan: timeSpan).timeIntervalSince1970)
-        let endTime = Int(calendarManager.latestTradingTime.close.timeIntervalSince1970)
+        let calendar = CalendarManager.shared
+        let startTime = Int(calendar.firstMarketOpenTime(timeSpan: timeSpan).timeIntervalSince1970)
+        let endTime = Int(calendar.latestTradingTime.close.timeIntervalSince1970)
         let url = url(
             for: .stockCandles,
             queryParams: [

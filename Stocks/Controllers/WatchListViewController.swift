@@ -10,8 +10,7 @@ import FloatingPanel
 
 class WatchListViewController: UIViewController {
     
-    private var searchTimer: Timer?
-    private var prevSearchBarQuery = ""
+    static let sharedInstance = WatchListViewController()
     
     private var panel: FloatingPanelController?
     
@@ -23,14 +22,32 @@ class WatchListViewController: UIViewController {
     
     private let tableView: UITableView = {
         let table = UITableView()
-        table.register(WatchListTableViewCell.self, forCellReuseIdentifier: WatchListTableViewCell.identifier)
+        table.register(WatchListTableViewCell.self,
+                       forCellReuseIdentifier: WatchListTableViewCell.identifier)
         return table
     }()
     
     private var observer: NSObjectProtocol?
     
     private var lastContentOffset: CGFloat = 0
-
+    
+    private let calendarManager = CalendarManager.shared
+    
+    private var dataFetchingTimer: Timer?
+    
+    private var searchTimer: Timer?
+    private var prevSearchBarQuery = ""
+    
+    // MARK: - Init
+    
+    private init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -39,10 +56,30 @@ class WatchListViewController: UIViewController {
         setUpNavigationBar()
         setUpSearchController()
         setUpTableView()
-        fetchWatchlistData(timeSpan: .day)
+        fetchWatchlistData()
         setUpFloatingPanel()
         setUpFooterView()
         setUpObserver()
+    }
+    
+    // MARK: - Public
+    
+    func initiateDataFetchingTimer() {
+        dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            // Fetch new stock data if the data in the watchlist is not the latest.
+            guard let calendarManager = self?.calendarManager else { return }
+            if let firstWatchlistData = self?.watchListData.first?.value {
+                let lastQuoteTime = TimeInterval(firstWatchlistData.quote.time)
+                let lastTradingTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+                if lastQuoteTime < lastTradingTime {
+                    self?.fetchWatchlistData()
+                }
+            }
+        }
+    }
+    
+    func invalidateDataFetchingTimer() {
+        dataFetchingTimer?.invalidate()
     }
     
     // MARK: - Private
@@ -62,8 +99,7 @@ class WatchListViewController: UIViewController {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
-        for symbol in symbols where watchListData[symbol] == nil {
-            // Fetch data of the companies listed in the watchlist in which the data is absent.
+        for symbol in symbols {
             group.enter()
             
             APICaller.shared.fetchStockData(
@@ -364,7 +400,7 @@ class MyFullScreenLayout: FloatingPanelLayout {
     }
     
     var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
-        let watchListVCNavBarHeight = WatchListViewController().navigationController?.navigationBar.height ?? 150
+        let watchListVCNavBarHeight = WatchListViewController.sharedInstance.navigationController?.navigationBar.height ?? 150
         return [
             .full: FloatingPanelLayoutAnchor(absoluteInset: watchListVCNavBarHeight, edge: .top, referenceGuide: .superview),
             .half: FloatingPanelLayoutAnchor(fractionalInset: 0.4, edge: .bottom, referenceGuide: .superview),

@@ -17,6 +17,9 @@ final class CalendarManager {
     
     // MARK: - Properties
     
+    static let shared = CalendarManager()
+    private init() {}
+    
     private let currentTime = Date()
     
     private let newYorkTimeZone = TimeZone(identifier: "America/New_York")
@@ -195,6 +198,16 @@ final class CalendarManager {
         let closeTime = marketCloseTime(from: latestTradingDate)
         
         return TradingTime(open: openTime, close: closeTime)
+    }
+    
+    var isMarketOpened: Bool {
+        // Returns if the market is currently opened.
+        return false
+    }
+    
+    var currentNewYorkDate: String {
+        // Returns the formatted local time in New York
+        return ""
     }
     
     /// Returns the first market open time on the specified days of time span, with the latest trading open time as the end of the time span.
