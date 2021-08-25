@@ -85,15 +85,10 @@ class WatchlistFooterView: UIView {
     
     // MARK: - Public
     
-    enum MarketStatus {
-        case open, close
-    }
-    
-    func toggleMarketStatus(_ status: MarketStatus) {
-        switch status {
-        case .open:
+    func toggleMarketStatus(_ isOpen: Bool) {
+        if isOpen {
             marketStatusLabel.text = "Delayed Quote"
-        case .close:
+        } else {
             marketStatusLabel.text = "Market Closed"
         }
     }

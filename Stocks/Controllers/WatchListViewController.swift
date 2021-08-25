@@ -38,6 +38,8 @@ class WatchListViewController: UIViewController {
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
+    private let footerView = WatchlistFooterView()
+    
     // MARK: - Init
     
     private init() {
@@ -66,12 +68,15 @@ class WatchListViewController: UIViewController {
     
     func initiateDataFetchingTimer() {
         dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.footerView.toggleMarketStatus(self?.calendarManager.isMarketOpened ?? false)
+            
             // Fetch new stock data if the data in the watchlist is not the latest.
             guard let calendarManager = self?.calendarManager else { return }
             if let firstWatchlistData = self?.watchListData.first?.value {
                 let lastQuoteTime = TimeInterval(firstWatchlistData.quote.time)
-                let lastTradingTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
-                if lastQuoteTime < lastTradingTime {
+                let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+                
+                if lastQuoteTime < marketCloseTime {
                     self?.fetchWatchlistData()
                 }
             }
@@ -213,7 +218,6 @@ class WatchListViewController: UIViewController {
     }
     
     private func setUpFooterView() {
-        let footerView = WatchlistFooterView()
         view.addSubviews(footerView)
         footerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([

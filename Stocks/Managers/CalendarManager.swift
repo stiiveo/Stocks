@@ -200,13 +200,11 @@ final class CalendarManager {
     }
     
     var isMarketOpened: Bool {
-        // Returns if the market is currently opened.
-        return false
+        return currentTime >= latestTradingTime.open && currentTime < latestTradingTime.close
     }
     
     var currentNewYorkDate: String {
-        // Returns the formatted local time in New York
-        return ""
+        return dateFormatter.string(from: currentTime)
     }
     
     /// Returns the first market open time on the specified days of time span, with the latest trading open time as the end of the time span.
