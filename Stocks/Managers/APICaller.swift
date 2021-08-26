@@ -253,6 +253,14 @@ final class APICaller {
                 completion(.success(result))
             } catch {
                 completion(.failure(error))
+                
+                // Print converted json data returned from API if the returned json data could not be decoded.
+                do {
+                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+                    print("jsonObject:", jsonObject)
+                } catch {
+                    print("Failed to serialize json object: \(error)")
+                }
             }
         }
         

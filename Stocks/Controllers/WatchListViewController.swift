@@ -235,7 +235,9 @@ class WatchListViewController: UIViewController {
                     case .success(let stockData):
                         self?.watchListData[symbol] = stockData
                         self?.createViewModels()
-                        self?.tableView.reloadData()
+                        DispatchQueue.main.async {
+                            self?.tableView.reloadData()
+                        }
                     case .failure(let error):
                         print(error)
                     }
