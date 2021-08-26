@@ -124,8 +124,7 @@ final class CalendarManager {
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .long
+        formatter.dateFormat = "HH:mm:ss z"
         formatter.timeZone = newYorkTimeZone
         return formatter
     }
@@ -200,7 +199,7 @@ final class CalendarManager {
         return TradingTime(open: openTime, close: closeTime)
     }
     
-    var isMarketOpened: Bool {
+    var isMarketOpen: Bool {
         return currentTime >= latestTradingTime.open && currentTime < latestTradingTime.close
     }
     

@@ -67,12 +67,9 @@ class WatchListViewController: UIViewController {
     // MARK: - Public
     
     func initiateDataFetchingTimer() {
-        // Before initiating the timer, update the market status and the watchlist data.
-        footerView.toggleMarketStatus(calendarManager.isMarketOpened)
+        // Update the watchlist data before initiating the timer.
         updateWatchlistData()
-        
         dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
-            self?.footerView.toggleMarketStatus(self?.calendarManager.isMarketOpened ?? false)
             self?.updateWatchlistData()
         }
     }
@@ -114,6 +111,7 @@ class WatchListViewController: UIViewController {
                 switch result {
                 case .success(let stockData):
                     self?.watchListData[symbol] = stockData
+                    self?.footerView.updateMarketStatusLabel()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
@@ -238,6 +236,7 @@ class WatchListViewController: UIViewController {
                         DispatchQueue.main.async {
                             self?.tableView.reloadData()
                         }
+                        self?.footerView.updateMarketStatusLabel()
                     case .failure(let error):
                         print(error)
                     }
@@ -355,13 +354,10 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.beginUpdates()
             
-            // Update persistence
-            PersistenceManager.shared.removeFromWatchlist(symbol: viewModels[indexPath.row].symbol)
-            
-            // Update ViewModels
+            let symbol = viewModels[indexPath.row].symbol
+            watchListData[symbol] = nil
+            PersistenceManager.shared.removeFromWatchlist(symbol: symbol)
             viewModels.remove(at: indexPath.row)
-            
-            // Delete Row
             tableView.deleteRows(at: [indexPath], with: .automatic)
             
             tableView.endUpdates()

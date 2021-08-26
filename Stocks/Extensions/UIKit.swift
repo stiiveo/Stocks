@@ -12,12 +12,12 @@ import SafariServices
 // MARK: - UIColor
 
 extension UIColor {
-    /// Color used to fill the stock chart when stock price goes up.
+    /// Color used to represent a gainer stock.
     static let stockPriceUp: UIColor = {
         .systemGreen
     }()
     
-    /// Color used to fill the stock chart when stock price goes down.
+    /// Color used to represent a loser stock.
     static let stockPriceDown: UIColor = {
         .systemRed
     }()
@@ -122,6 +122,7 @@ extension UIView {
 }
 
 // MARK: - StackView
+
 extension UIStackView {
     func addArrangedSubviews(_ subviews: UIView...) {
         subviews.forEach { addArrangedSubview($0) }

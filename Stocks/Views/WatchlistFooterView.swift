@@ -25,7 +25,7 @@ class WatchlistFooterView: UIView {
         label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textAlignment = .right
         label.textColor = .secondaryLabel
-        label.text = "Market Closed"
+        label.text = ""
         return label
     }()
     
@@ -84,10 +84,15 @@ class WatchlistFooterView: UIView {
     
     // MARK: - Public
     
-    func toggleMarketStatus(_ isOpen: Bool) {
-        if isOpen {
-            marketStatusLabel.text = "Delayed Quote"
-        } else {
+    func updateMarketStatusLabel() {
+        let calendarManager = CalendarManager.shared
+        if calendarManager.isMarketOpen {
+            let formattedDate = calendarManager.currentNewYorkDate
+            DispatchQueue.main.async { [weak self] in
+                self?.marketStatusLabel.text = "Updated: " + formattedDate
+            }
+        }
+        else {
             marketStatusLabel.text = "Market Closed"
         }
     }
