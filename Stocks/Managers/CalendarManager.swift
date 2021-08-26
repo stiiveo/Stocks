@@ -20,7 +20,7 @@ final class CalendarManager {
     static let shared = CalendarManager()
     private init() {}
     
-    private let currentTime = Date()
+    private var currentTime: Date { Date() }
     
     private let newYorkTimeZone = TimeZone(identifier: "America/New_York")
     
@@ -159,6 +159,7 @@ final class CalendarManager {
     
     // MARK: - Public
     
+    /// The time span of the candle sticks data which starts from the specified time to the latest trading day.
     enum TimeSpan {
         case day
         case week
