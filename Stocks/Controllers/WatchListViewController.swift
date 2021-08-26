@@ -67,19 +67,13 @@ class WatchListViewController: UIViewController {
     // MARK: - Public
     
     func initiateDataFetchingTimer() {
-        dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+        // Before initiating the timer, update the market status and the watchlist data.
+        footerView.toggleMarketStatus(calendarManager.isMarketOpened)
+        updateWatchlistData()
+        
+        dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
             self?.footerView.toggleMarketStatus(self?.calendarManager.isMarketOpened ?? false)
-            
-            // Fetch new stock data if the data in the watchlist is not the latest.
-            guard let calendarManager = self?.calendarManager else { return }
-            if let firstWatchlistData = self?.watchListData.first?.value {
-                let lastQuoteTime = TimeInterval(firstWatchlistData.quote.time)
-                let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
-                
-                if lastQuoteTime < marketCloseTime {
-                    self?.fetchWatchlistData()
-                }
-            }
+            self?.updateWatchlistData()
         }
     }
     
@@ -100,7 +94,9 @@ class WatchListViewController: UIViewController {
         }
     }
     
-    private func fetchWatchlistData(timeSpan: CalendarManager.TimeSpan = .day) {
+    /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
+    /// - Parameter timeSpan: The time span of the candle stick data.
+    private func fetchWatchlistData() {
         let symbols = PersistenceManager.shared.watchList
         let group = DispatchGroup()
         
@@ -109,7 +105,7 @@ class WatchListViewController: UIViewController {
             
             APICaller.shared.fetchStockData(
                 symbol: symbol,
-                timeSpan: timeSpan) { [weak self] result in
+                timeSpan: .day) { [weak self] result in
                 
                 defer {
                     group.leave()
@@ -134,9 +130,9 @@ class WatchListViewController: UIViewController {
         var viewModels = [WatchListTableViewCell.ViewModel]()
             
         for (symbol, stockData) in watchListData {
-            let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map({
+            let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map{
                 .init(timeInterval: $0.time, price: $0.close)
-            })
+            }
             let currentPrice = stockData.quote.current
             let previousClose = stockData.quote.prevClose
             let priceChange = (currentPrice / previousClose) - 1
@@ -226,6 +222,26 @@ class WatchListViewController: UIViewController {
             footerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             footerView.heightAnchor.constraint(equalToConstant: 86)
         ])
+    }
+    
+    /// Update any data in the watchlist if its quote time is before the market closing time.
+    private func updateWatchlistData() {
+        let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+        for (symbol, stockData) in watchListData {
+            let quoteTime = stockData.quote.time
+            if TimeInterval(quoteTime) < marketCloseTime {
+                APICaller.shared.fetchStockData(symbol: symbol, timeSpan: .day) { [weak self] result in
+                    switch result {
+                    case .success(let stockData):
+                        self?.watchListData[symbol] = stockData
+                        self?.createViewModels()
+                        self?.tableView.reloadData()
+                    case .failure(let error):
+                        print(error)
+                    }
+                }
+            }
+        }
     }
 
 }
