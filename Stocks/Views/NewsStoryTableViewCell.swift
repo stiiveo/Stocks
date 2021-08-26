@@ -10,8 +10,9 @@ import SDWebImage
 
 class NewsStoryTableViewCell: UITableViewCell {
     
+    // MARK: - Properties
+    
     static let identifier = "NewsStoryTableViewCell"
-    static let preferredHeight: CGFloat = 140
     
     struct ViewModel {
         let source: String
@@ -27,7 +28,6 @@ class NewsStoryTableViewCell: UITableViewCell {
         }
     }
     
-    // Source
     private let sourceLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
@@ -35,15 +35,15 @@ class NewsStoryTableViewCell: UITableViewCell {
         return label
     }()
     
-    // Headline
     private let headlineLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .semibold)
-        label.numberOfLines = 0
+        label.numberOfLines = 3
+        label.allowsDefaultTighteningForTruncation = true
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
-    // Date
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.textColor = .secondaryLabel
@@ -51,10 +51,9 @@ class NewsStoryTableViewCell: UITableViewCell {
         return label
     }()
     
-    // Image
     private let storyImageView: UIImageView = {
        let imageView = UIImageView()
-        imageView.backgroundColor = .tertiarySystemBackground
+        imageView.backgroundColor = .secondarySystemBackground
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 6
@@ -62,50 +61,19 @@ class NewsStoryTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    // MARK: - Init
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .secondarySystemBackground
-        addSubviews(sourceLabel, headlineLabel, dateLabel, storyImageView)
+        setUpImageView()
+        setUpSourceLabel()
+        setUpDateLabel()
+        setUpHeadlineLabel()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        let imageSize: CGFloat = contentView.height * 0.7
-        storyImageView.frame = CGRect(
-            x: contentView.width - imageSize - 10,
-            y: (contentView.height - imageSize) / 2,
-            width: imageSize,
-            height: imageSize
-        )
-        
-        // Layout labels
-        let availableWidth: CGFloat = contentView.width - imageSize - 30
-        dateLabel.frame = CGRect(
-            x: contentView.frame.minX + 15,
-            y: contentView.height - 40,
-            width: availableWidth,
-            height: 40
-        )
-        
-        sourceLabel.sizeToFit()
-        sourceLabel.frame = CGRect(
-            x: contentView.frame.minX + 15,
-            y: 6,
-            width: availableWidth,
-            height: sourceLabel.height
-        )
-        
-        headlineLabel.frame = CGRect(
-            x: contentView.frame.minX + 15,
-            y: sourceLabel.bottom,
-            width: availableWidth,
-            height: contentView.height - sourceLabel.bottom - dateLabel.height - 10
-        )
     }
     
     override func prepareForReuse() {
@@ -116,6 +84,8 @@ class NewsStoryTableViewCell: UITableViewCell {
         storyImageView.image = nil
     }
     
+    // MARK: - Public Methods
+    
     public func configure(with viewModel: ViewModel) {
         headlineLabel.text = viewModel.headline
         sourceLabel.text = viewModel.source
@@ -124,9 +94,55 @@ class NewsStoryTableViewCell: UITableViewCell {
         let scale = UIScreen.main.scale
         let thumbnailSize = CGSize(width: 100 * scale, height: 100 * scale)
         storyImageView.sd_setImage(with: viewModel.imageURL, placeholderImage: nil, context: [.imageThumbnailPixelSize: thumbnailSize])
-        
-        // Manually set image
-//        storyImageView.setImage(with: viewModel.imageURL)
+    }
+    
+    // MARK: - Private Methods
+    
+    private let leadingPadding: CGFloat = 20.0
+    private let trailingPadding: CGFloat = -20.0
+    private let topPadding: CGFloat = 10.0
+    private let bottomPadding: CGFloat = -10.0
+    private let imageViewSize: CGFloat = 90.0
+    
+    private func setUpImageView() {
+        addSubview(storyImageView)
+        storyImageView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            storyImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: trailingPadding),
+            storyImageView.topAnchor.constraint(equalTo: topAnchor, constant: 25.0),
+            storyImageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -25.0),
+            storyImageView.widthAnchor.constraint(equalToConstant: imageViewSize),
+            storyImageView.heightAnchor.constraint(equalToConstant: imageViewSize)
+        ])
+    }
+    
+    private func setUpSourceLabel() {
+        addSubview(sourceLabel)
+        sourceLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            sourceLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            sourceLabel.topAnchor.constraint(equalTo: topAnchor, constant: topPadding)
+        ])
+    }
+    
+    private func setUpDateLabel() {
+        addSubview(dateLabel)
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            dateLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            dateLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: bottomPadding),
+        ])
+    }
+    
+    private func setUpHeadlineLabel() {
+        addSubview(headlineLabel)
+        headlineLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            headlineLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            headlineLabel.trailingAnchor.constraint(equalTo: storyImageView.leadingAnchor, constant: -20),
+            headlineLabel.topAnchor.constraint(equalTo: sourceLabel.bottomAnchor, constant: 6.0),
+            headlineLabel.bottomAnchor.constraint(lessThanOrEqualTo: dateLabel.topAnchor, constant: -10.0),
+        ])
     }
 
 }

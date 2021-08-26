@@ -10,7 +10,6 @@ import UIKit
 class NewsHeaderView: UITableViewHeaderFooterView {
     
     static let identifier = "NewsHeaderView"
-    static let preferredHeight: CGFloat = 90
     
     struct ViewModel {
         let title: String

@@ -417,10 +417,9 @@ class MyFullScreenLayout: FloatingPanelLayout {
     }
     
     var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
-        let watchListVCNavBarHeight = WatchListViewController.sharedInstance.navigationController?.navigationBar.height ?? 150
         return [
-            .full: FloatingPanelLayoutAnchor(absoluteInset: watchListVCNavBarHeight, edge: .top, referenceGuide: .superview),
-            .half: FloatingPanelLayoutAnchor(fractionalInset: 0.4, edge: .bottom, referenceGuide: .superview),
+            .full: FloatingPanelLayoutAnchor(absoluteInset: 150.0, edge: .top, referenceGuide: .superview),
+            .half: FloatingPanelLayoutAnchor(fractionalInset: 0.45, edge: .bottom, referenceGuide: .superview),
             .tip: FloatingPanelLayoutAnchor(absoluteInset: 175.0, edge: .bottom, referenceGuide: .superview),
         ]
         
