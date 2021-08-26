@@ -99,8 +99,7 @@ class StockDetailHeaderTitleView: UIView {
             stackView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
         ])
         
-        stackView.addArrangedSubview(quoteLabel)
-        stackView.addArrangedSubview(priceChangeLabel)
+        stackView.addArrangedSubviews(quoteLabel, priceChangeLabel)
     }
     
     private func setUpAddingButton() {

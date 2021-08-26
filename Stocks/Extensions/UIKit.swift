@@ -120,3 +120,10 @@ extension UIView {
         top + height
     }
 }
+
+// MARK: - StackView
+extension UIStackView {
+    func addArrangedSubviews(_ subviews: UIView...) {
+        subviews.forEach { addArrangedSubview($0) }
+    }
+}

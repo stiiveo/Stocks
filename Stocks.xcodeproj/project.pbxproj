@@ -183,10 +183,10 @@
 				8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */,
 				8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */,
 				8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */,
-				8FB254C1269D8254004FF1C1 /* StockChartView.swift */,
-				8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */,
-				8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */,
 				8F89E44A26CCC3EC002BD69E /* StockDetailHeaderTitleView.swift */,
+				8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */,
+				8FB254C1269D8254004FF1C1 /* StockChartView.swift */,
+				8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";

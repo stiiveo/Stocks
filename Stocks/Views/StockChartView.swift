@@ -8,7 +8,7 @@
 import UIKit
 import Charts
 
-class StockChartView: UIView {
+class StockChartView: LineChartView {
     
     // MARK: - Properties
     
@@ -23,51 +23,28 @@ class StockChartView: UIView {
         let price: Double
     }
     
-    private let chartView: LineChartView = {
-        let chart = LineChartView()
-        chart.legend.enabled = false
-        chart.xAxis.enabled = false
-        chart.leftAxis.enabled = false
-        chart.rightAxis.enabled = false
-        chart.drawGridBackgroundEnabled = false
-        chart.rightAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        chart.xAxis.labelPosition = .bottom
-        chart.xAxis.valueFormatter = XAxisValueFormatter()
-        chart.xAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .regular)
-        chart.xAxis.avoidFirstLastClippingEnabled = true
-        chart.xAxis.granularity = 3600.0 // minimum interval between xAxis values
-        return chart
-    }()
-    
     // MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        addSubview(chartView)
+        setUpChartView()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Lifecycle
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        chartView.frame = bounds
-    }
-    
     // MARK: - Public Methods
     
     // Reset chart view
     func reset() {
-        chartView.data = nil
+        data = nil
     }
     
     func configure(with viewModel: ViewModel) {
         // Switch the appearance of the right and x axis.
-        chartView.rightAxis.enabled = viewModel.showAxis
-        chartView.xAxis.enabled = viewModel.showAxis
+        rightAxis.enabled = viewModel.showAxis
+        xAxis.enabled = viewModel.showAxis
         
         // Chart Data Entries
         let entries: [ChartDataEntry] = viewModel.data.map{
@@ -92,7 +69,7 @@ class StockChartView: UIView {
         // last price in the data entry.
         var fillColor: UIColor = .stockPriceUp
         if isDataRangeWithinLatestTradingTimeRange {
-            chartView.xAxis.axisMaximum = latestCloseTime
+            xAxis.axisMaximum = latestCloseTime
             fillColor = (latestValue - viewModel.previousClose < 0) ? .stockPriceDown : .stockPriceUp
         } else {
             fillColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
@@ -108,7 +85,24 @@ class StockChartView: UIView {
         dataSet.lineWidth = 1.5
 
         let data = LineChartData(dataSet: dataSet)
-        chartView.data = data
+        self.data = data
+    }
+    
+    // MARK: - Private
+    
+    private func setUpChartView() {
+        minOffset = 0.0
+        legend.enabled = false
+        xAxis.enabled = false
+        leftAxis.enabled = false
+        rightAxis.enabled = false
+        drawGridBackgroundEnabled = false
+        rightAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        xAxis.labelPosition = .bottom
+        xAxis.valueFormatter = XAxisValueFormatter()
+        xAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .regular)
+        xAxis.avoidFirstLastClippingEnabled = true
+        xAxis.granularity = 3600.0 // minimum interval between xAxis values
     }
 
 }

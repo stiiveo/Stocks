@@ -59,8 +59,7 @@ class WatchlistFooterView: UIView {
     // MARK: - Private
     
     private func setUpFooterStackView() {
-        footerStackView.addArrangedSubview(titleLabel)
-        footerStackView.addArrangedSubview(marketStatusLabel)
+        footerStackView.addArrangedSubviews(titleLabel, marketStatusLabel)
         self.addSubview(footerStackView)
         footerStackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([

@@ -197,8 +197,8 @@ class WatchListViewController: UIViewController {
                           width: titleView.width - 20,
                           height: titleView.height - 20)
         )
-        label.text = "Stocks"
-        label.font = .systemFont(ofSize: 28, weight: .bold)
+        label.text = "U.S. Stocks"
+        label.font = .systemFont(ofSize: 26, weight: .heavy)
         titleView.addSubview(label)
         
         navigationItem.titleView = titleView
@@ -339,10 +339,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         cell.delegate = self
         cell.configure(with: viewModels[indexPath.row])
         return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return WatchListTableViewCell.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

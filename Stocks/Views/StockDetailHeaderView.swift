@@ -61,29 +61,30 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        let sideInset: CGFloat = 15
+        let leadingPadding: CGFloat = 20.0
+        let trailingPadding: CGFloat = -15.0
         
         titleView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            titleView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            titleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: sideInset * -1),
-            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
+            titleView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20.0),
+            titleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
+            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15.0),
             titleView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.titleViewHeight)
         ])
         
         chartView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            chartView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
-            chartView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
-            chartView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 10)
+            chartView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingPadding),
+            chartView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
+            chartView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 10.0)
         ])
         
         metricsView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            metricsView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: sideInset),
-            metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: sideInset * -1),
-            metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor),
-            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15),
+            metricsView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingPadding),
+            metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
+            metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 10.0),
+            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15.0),
             metricsView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.metricsViewHeight)
         ])
     }

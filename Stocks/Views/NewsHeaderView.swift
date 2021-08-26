@@ -68,8 +68,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     }
     
     private func setUpStackView() {
-        stackView.addArrangedSubview(titleLabel)
-        stackView.addArrangedSubview(subtitleLabel)
+        stackView.addArrangedSubviews(titleLabel, subtitleLabel)
         contentView.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
