@@ -111,7 +111,9 @@ class WatchListViewController: UIViewController {
                 switch result {
                 case .success(let stockData):
                     self?.watchListData[symbol] = stockData
-                    self?.footerView.updateMarketStatusLabel()
+                    DispatchQueue.main.async {
+                        self?.footerView.updateMarketStatusLabel()
+                    }
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
@@ -235,8 +237,8 @@ class WatchListViewController: UIViewController {
                         self?.createViewModels()
                         DispatchQueue.main.async {
                             self?.tableView.reloadData()
+                            self?.footerView.updateMarketStatusLabel()
                         }
-                        self?.footerView.updateMarketStatusLabel()
                     case .failure(let error):
                         print(error)
                     }

@@ -84,13 +84,16 @@ class WatchlistFooterView: UIView {
     
     // MARK: - Public
     
+    /// Update the market status label based on the market status and current time.
+    /// If the market is open when this method is called, the formatted date in
+    /// New York will be shown in the status label.
+    /// - Important: Use this method in main thread only as the text property of UILabel
+    ///         is used.
     func updateMarketStatusLabel() {
         let calendarManager = CalendarManager.shared
         if calendarManager.isMarketOpen {
             let formattedDate = calendarManager.currentNewYorkDate
-            DispatchQueue.main.async { [weak self] in
-                self?.marketStatusLabel.text = "Updated: " + formattedDate
-            }
+            marketStatusLabel.text = "Updated: " + formattedDate
         }
         else {
             marketStatusLabel.text = "Market Closed"
