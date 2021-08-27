@@ -51,6 +51,9 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         addSubviews(titleView, chartView, metricsView)
         metricsView.delegate = self
         metricsView.dataSource = self
+        
+        let flowLayout = (metricsView.collectionViewLayout as! UICollectionViewFlowLayout)
+        flowLayout.minimumLineSpacing = 10.0
     }
     
     required init?(coder: NSCoder) {
@@ -121,7 +124,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: width / 2,
+        return CGSize(width: width / 2.3,
                       height: StockDetailHeaderView.metricsViewHeight / 3)
     }
     

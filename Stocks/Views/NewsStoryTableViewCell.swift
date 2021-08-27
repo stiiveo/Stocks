@@ -105,40 +105,40 @@ class NewsStoryTableViewCell: UITableViewCell {
     private let imageViewSize: CGFloat = 90.0
     
     private func setUpImageView() {
-        addSubview(storyImageView)
+        contentView.addSubview(storyImageView)
         storyImageView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            storyImageView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: trailingPadding),
-            storyImageView.topAnchor.constraint(equalTo: topAnchor, constant: 25.0),
-            storyImageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -25.0),
+            storyImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: trailingPadding),
+            storyImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25.0),
+            storyImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -25.0),
             storyImageView.widthAnchor.constraint(equalToConstant: imageViewSize),
-            storyImageView.heightAnchor.constraint(equalToConstant: imageViewSize)
+            storyImageView.heightAnchor.constraint(equalTo: storyImageView.widthAnchor, multiplier: 1.0)
         ])
     }
     
     private func setUpSourceLabel() {
-        addSubview(sourceLabel)
+        contentView.addSubview(sourceLabel)
         sourceLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            sourceLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
-            sourceLabel.topAnchor.constraint(equalTo: topAnchor, constant: topPadding)
+            sourceLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: leadingPadding),
+            sourceLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: topPadding)
         ])
     }
     
     private func setUpDateLabel() {
-        addSubview(dateLabel)
+        contentView.addSubview(dateLabel)
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            dateLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
-            dateLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: bottomPadding),
+            dateLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: leadingPadding),
+            dateLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: bottomPadding),
         ])
     }
     
     private func setUpHeadlineLabel() {
-        addSubview(headlineLabel)
+        contentView.addSubview(headlineLabel)
         headlineLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            headlineLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            headlineLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: leadingPadding),
             headlineLabel.trailingAnchor.constraint(equalTo: storyImageView.leadingAnchor, constant: -20),
             headlineLabel.topAnchor.constraint(equalTo: sourceLabel.bottomAnchor, constant: 6.0),
             headlineLabel.bottomAnchor.constraint(lessThanOrEqualTo: dateLabel.topAnchor, constant: -10.0),
