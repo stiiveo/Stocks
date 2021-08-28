@@ -21,42 +21,6 @@ class Calendar_Manager_Tests: XCTestCase {
         return calendar
     }
     
-    private let marketHolidays: [CalendarDate] = [
-        .init(year: 2021, month: 1, day: 1),
-        .init(year: 2021, month: 1, day: 18),
-        .init(year: 2021, month: 2, day: 15),
-        .init(year: 2021, month: 4, day: 2),
-        .init(year: 2021, month: 5, day: 31),
-        .init(year: 2021, month: 7, day: 5),
-        .init(year: 2021, month: 9, day: 6),
-        .init(year: 2021, month: 11, day: 25),
-        .init(year: 2021, month: 12, day: 24),
-        .init(year: 2022, month: 1, day: 17),
-        .init(year: 2022, month: 2, day: 21),
-        .init(year: 2022, month: 4, day: 15),
-        .init(year: 2022, month: 5, day: 30),
-        .init(year: 2022, month: 7, day: 4),
-        .init(year: 2022, month: 9, day: 5),
-        .init(year: 2022, month: 11, day: 24),
-        .init(year: 2022, month: 12, day: 26),
-        .init(year: 2023, month: 1, day: 2),
-        .init(year: 2023, month: 1, day: 16),
-        .init(year: 2023, month: 2, day: 20),
-        .init(year: 2023, month: 4, day: 7),
-        .init(year: 2023, month: 5, day: 29),
-        .init(year: 2023, month: 7, day: 4),
-        .init(year: 2023, month: 9, day: 4),
-        .init(year: 2023, month: 11, day: 23),
-        .init(year: 2023, month: 12, day: 25),
-    ]
-    
-    private let earlyCloseDates: [CalendarDate] = [
-        .init(year: 2021, month: 11, day: 26),
-        .init(year: 2022, month: 11, day: 25),
-        .init(year: 2023, month: 7, day: 3),
-        .init(year: 2023, month: 11, day: 24)
-    ]
-    
     func test_latest_trading_time_interval() {
         let providedTradingTime = manager.latestTradingTime
         let openDate = providedTradingTime.open
@@ -72,7 +36,7 @@ class Calendar_Manager_Tests: XCTestCase {
         let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: openDate),
                                         month: newYorkCalendar.component(.month, from: openDate),
                                         day: newYorkCalendar.component(.day, from: openDate))
-        XCTAssertFalse(marketHolidays.contains(calendarDate), "Open date is a holiday.")
+        XCTAssertFalse(CalendarDate.marketHolidays.contains(calendarDate), "Open date is a holiday.")
         
         // Test if the market open time is correct.
         XCTAssert(newYorkCalendar.component(.hour, from: openDate) == 9)
@@ -81,7 +45,7 @@ class Calendar_Manager_Tests: XCTestCase {
         // Test if the market closing time is correct.
         XCTAssert(newYorkCalendar.component(.minute, from: closeDate) == 0)
         
-        if earlyCloseDates.contains(calendarDate) {
+        if CalendarDate.marketEarlyCloseDates.contains(calendarDate) {
             XCTAssert(newYorkCalendar.component(.hour, from: closeDate) == 13)
         } else {
             XCTAssert(newYorkCalendar.component(.hour, from: closeDate) == 16)

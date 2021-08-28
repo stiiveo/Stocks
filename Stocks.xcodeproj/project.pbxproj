@@ -42,6 +42,7 @@
 		8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */; };
 		8FB254C2269D8254004FF1C1 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254C1269D8254004FF1C1 /* StockChartView.swift */; };
 		8FEFA99A26D4F4730083931E /* WatchlistFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */; };
+		8FEFA99C26D900BE0083931E /* CalendarDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEFA99B26D900BE0083931E /* CalendarDate.swift */; };
 		90A45978F98F376669627D96 /* Pods_Stocks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */; };
 /* End PBXBuildFile section */
 
@@ -97,6 +98,7 @@
 		8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListTableViewCell.swift; sourceTree = "<group>"; };
 		8FB254C1269D8254004FF1C1 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
 		8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistFooterView.swift; sourceTree = "<group>"; };
+		8FEFA99B26D900BE0083931E /* CalendarDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDate.swift; sourceTree = "<group>"; };
 		AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Stocks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -170,6 +172,7 @@
 				8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */,
 				8F878BFD269F11B200ACE8AF /* StockData.swift */,
 				8F878BFF26A02EC200ACE8AF /* Metrics.swift */,
+				8FEFA99B26D900BE0083931E /* CalendarDate.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -405,6 +408,7 @@
 				8F89E45F26CFD386002BD69E /* CalendarManager.swift in Sources */,
 				8F11B9642699485F00F4AFD1 /* SearchResultTableViewCell.swift in Sources */,
 				8F11B95A26986DF000F4AFD1 /* StockDetailsViewController.swift in Sources */,
+				8FEFA99C26D900BE0083931E /* CalendarDate.swift in Sources */,
 				8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */,
 				8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */,
 				8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */,

@@ -7,17 +7,11 @@
 
 import UIKit
 
-protocol WatchListTableViewCellDelegate: AnyObject {
-    func didUpdateMaxWidth()
-}
-
 class WatchListTableViewCell: UITableViewCell {
     
     // MARK: - Properties
 
     static let identifier = "WatchListTableViewCell"
-    static let preferredHeight: CGFloat = 70
-    weak var delegate: WatchListTableViewCellDelegate?
     
     struct ViewModel {
         let symbol: String

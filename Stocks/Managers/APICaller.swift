@@ -26,7 +26,7 @@ final class APICaller {
     /// - Parameters:
     ///   - query: "Searching keyword as query used to send API request."
     ///   - completion: Method to call after response from API is received. 
-    public func search(
+    func search(
         query: String,
         completion: @escaping (Result<SearchResponse, Error>) -> Void
     ) {
@@ -47,7 +47,7 @@ final class APICaller {
         case topStories, company(symbol: String)
     }
     
-    public func fetchNews(
+    func fetchNews(
         for type: NewsType,
         completion: @escaping (Result<[NewsStory], Error>) -> Void
     ) {
@@ -74,59 +74,7 @@ final class APICaller {
         }
     }
     
-    /// Fetch specified stock's quote and candle sticks data from API.
-    /// - Parameters:
-    ///   - symbol: Symbol of the company.
-    ///   - historyDuration: Number of days of candle sticks data to fetch.
-    ///   - completion: A StockData object is provided once the fetching process succeeded. An error object is provided otherwise.
-    public func fetchStockData(
-        symbol: String,
-        timeSpan: CalendarManager.TimeSpan,
-        completion: @escaping (Result<StockData, Error>) -> Void
-    ) {
-        var stockQuote: StockQuote?
-        var stockPriceHistory: [PriceHistory]?
-        let group = DispatchGroup()
-        
-        group.enter()
-        fetchStockQuote(for: symbol) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let response):
-                stockQuote = response
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }
-        
-        group.enter()
-        fetchPriceHistory(symbol, timeSpan: timeSpan) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let response):
-                stockPriceHistory = response.priceHistory
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }
-        
-        group.notify(queue: .global(qos: .default)) {
-            guard let quote = stockQuote,
-                  let priceHistory = stockPriceHistory else {
-                completion(.failure(APIError.failedToGetStockData))
-                return
-            }
-            
-            let stockData = StockData(quote: quote, priceHistory: priceHistory)
-            completion(.success(stockData))
-        }
-    }
-    
-    public func fetchStockQuote(
+    func fetchStockQuote(
         for symbol: String,
         completion: @escaping (Result<StockQuote, Error>) -> Void
     ) {
@@ -146,7 +94,7 @@ final class APICaller {
         case month = "M"
     }
     
-    public func fetchPriceHistory(
+    func fetchPriceHistory(
         _ symbol: String,
         timeSpan: CalendarManager.TimeSpan,
         completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
@@ -170,7 +118,7 @@ final class APICaller {
     /// - Parameters:
     ///   - symbol: Symbol of the company.
     ///   - completion: A Metrics object is provided once the fetching process finishes successfully. An error object is provided otherwise.
-    public func fetchStockMetrics(
+    func fetchStockMetrics(
         symbol: String,
         completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
     ) {

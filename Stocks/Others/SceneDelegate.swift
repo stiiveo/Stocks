@@ -11,14 +11,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     /// Main application window.
     var window: UIWindow?
-    private let watchlistVC = WatchListViewController.sharedInstance
+    private let watchlistVC = WatchListViewController.shared
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        let vc = watchlistVC
-        let navVC = UINavigationController(rootViewController: vc)
+        let navVC = UINavigationController(rootViewController: watchlistVC)
         window.rootViewController = navVC
         window.makeKeyAndVisible()
         

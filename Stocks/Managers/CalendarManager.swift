@@ -7,12 +7,6 @@
 
 import Foundation
 
-struct CalendarDate: Equatable {
-    let year: Int
-    let month: Int
-    let day: Int
-}
-
 final class CalendarManager {
     
     // MARK: - Properties
@@ -30,57 +24,13 @@ final class CalendarManager {
         return calendar
     }
     
-    /// Holidays of New York Stock Exchange.
-    /// Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
-    /// - Description: The market is closed on these dates.
-    /// - Note: Provides calendar date info in unit of year, month and day only.
-    private let marketHolidays: [CalendarDate] = [
-        .init(year: 2021, month: 1, day: 1),
-        .init(year: 2021, month: 1, day: 18),
-        .init(year: 2021, month: 2, day: 15),
-        .init(year: 2021, month: 4, day: 2),
-        .init(year: 2021, month: 5, day: 31),
-        .init(year: 2021, month: 7, day: 5),
-        .init(year: 2021, month: 9, day: 6),
-        .init(year: 2021, month: 11, day: 25),
-        .init(year: 2021, month: 12, day: 24),
-        .init(year: 2022, month: 1, day: 17),
-        .init(year: 2022, month: 2, day: 21),
-        .init(year: 2022, month: 4, day: 15),
-        .init(year: 2022, month: 5, day: 30),
-        .init(year: 2022, month: 7, day: 4),
-        .init(year: 2022, month: 9, day: 5),
-        .init(year: 2022, month: 11, day: 24),
-        .init(year: 2022, month: 12, day: 26),
-        .init(year: 2023, month: 1, day: 2),
-        .init(year: 2023, month: 1, day: 16),
-        .init(year: 2023, month: 2, day: 20),
-        .init(year: 2023, month: 4, day: 7),
-        .init(year: 2023, month: 5, day: 29),
-        .init(year: 2023, month: 7, day: 4),
-        .init(year: 2023, month: 9, day: 4),
-        .init(year: 2023, month: 11, day: 23),
-        .init(year: 2023, month: 12, day: 25),
-    ]
-    
-    /// Early market close dates of New York Stock Exchange.
-    /// - Source: [NYSE](https://www.nyse.com/markets/hours-calendars)
-    /// - Description: The market close early at 13:00 on these dates.
-    /// - Note: Provides calendar date info in unit of year, month and day only.
-    private let earlyCloseDates: [CalendarDate] = [
-        .init(year: 2021, month: 11, day: 26),
-        .init(year: 2022, month: 11, day: 25),
-        .init(year: 2023, month: 7, day: 3),
-        .init(year: 2023, month: 11, day: 24)
-    ]
-    
     // MARK: - Private Methods
     
     private func isInHoliday(date: Date) -> Bool {
         let calendarDate = CalendarDate(year: newYorkCalendar.component(.year, from: date),
                                 month: newYorkCalendar.component(.month, from: date),
                                 day: newYorkCalendar.component(.day, from: date))
-        return marketHolidays.contains(calendarDate)
+        return CalendarDate.marketHolidays.contains(calendarDate)
     }
     
     private func marketOpenTime(on date: Date) -> Date {
@@ -99,7 +49,7 @@ final class CalendarManager {
         
         // Change the market close hour to 13:00 if the provided calendar date is
         // the early close date.
-        return earlyCloseDates.contains(calendarDate) ? earlyCloseDate : preciseCloseTime
+        return CalendarDate.marketEarlyCloseDates.contains(calendarDate) ? earlyCloseDate : preciseCloseTime
     }
     
     /// Returns if the specified time is before the market is opened (i.e. Before 09:30 Eastern Time).

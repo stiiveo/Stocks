@@ -10,7 +10,7 @@ import FloatingPanel
 
 class WatchListViewController: UIViewController {
     
-    static let sharedInstance = WatchListViewController()
+    static let shared = WatchListViewController()
     
     private var panel: FloatingPanelController?
     
@@ -32,6 +32,8 @@ class WatchListViewController: UIViewController {
     private var lastContentOffset: CGFloat = 0
     
     private let calendarManager = CalendarManager.shared
+    
+    private let apiCaller = APICaller.shared
     
     private var dataFetchingTimer: Timer?
     
@@ -88,41 +90,6 @@ class WatchListViewController: UIViewController {
         ) { [weak self] _ in
             self?.viewModels.removeAll()
             self?.fetchWatchlistData()
-        }
-    }
-    
-    /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
-    /// - Parameter timeSpan: The time span of the candle stick data.
-    private func fetchWatchlistData() {
-        let symbols = PersistenceManager.shared.watchList
-        let group = DispatchGroup()
-        
-        for symbol in symbols {
-            group.enter()
-            
-            APICaller.shared.fetchStockData(
-                symbol: symbol,
-                timeSpan: .day) { [weak self] result in
-                
-                defer {
-                    group.leave()
-                }
-                
-                switch result {
-                case .success(let stockData):
-                    self?.watchListData[symbol] = stockData
-                    DispatchQueue.main.async {
-                        self?.footerView.updateMarketStatusLabel()
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
-            }
-        }
-        
-        group.notify(queue: .main) { [weak self] in
-            self?.createViewModels()
-            self?.tableView.reloadData()
         }
     }
     
@@ -223,29 +190,6 @@ class WatchListViewController: UIViewController {
             footerView.heightAnchor.constraint(equalToConstant: 86)
         ])
     }
-    
-    /// Update any data in the watchlist if its quote time is before the market closing time.
-    private func updateWatchlistData() {
-        let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
-        for (symbol, stockData) in watchListData {
-            let quoteTime = stockData.quote.time
-            if TimeInterval(quoteTime) < marketCloseTime {
-                APICaller.shared.fetchStockData(symbol: symbol, timeSpan: .day) { [weak self] result in
-                    switch result {
-                    case .success(let stockData):
-                        self?.watchListData[symbol] = stockData
-                        self?.createViewModels()
-                        DispatchQueue.main.async {
-                            self?.tableView.reloadData()
-                            self?.footerView.updateMarketStatusLabel()
-                        }
-                    case .failure(let error):
-                        print(error)
-                    }
-                }
-            }
-        }
-    }
 
 }
 
@@ -274,9 +218,9 @@ extension WatchListViewController: UISearchResultsUpdating {
         
         // Kick off new timer
         // Optimize to reduce number of searches for when user stops typing
-        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
             // Call API to search
-            APICaller.shared.search(query: query) { result in
+            self?.apiCaller.search(query: query) { result in
                 switch result {
                 case .success(let response):
                     DispatchQueue.main.async {
@@ -289,7 +233,7 @@ extension WatchListViewController: UISearchResultsUpdating {
                     print(error)
                 }
             }
-        })
+        }
     }
     
 }
@@ -339,7 +283,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
-        cell.delegate = self
         cell.configure(with: viewModels[indexPath.row])
         return cell
     }
@@ -400,13 +343,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-extension WatchListViewController: WatchListTableViewCellDelegate {
-    func didUpdateMaxWidth() {
-        // Optimize: Only refresh rows prior to the current row that changes the max width.
-        tableView.reloadData()
-    }
-}
-
 class MyFullScreenLayout: FloatingPanelLayout {
     var position: FloatingPanelPosition {
         return .bottom
@@ -424,4 +360,109 @@ class MyFullScreenLayout: FloatingPanelLayout {
         ]
         
     }
+}
+
+extension WatchListViewController {
+    
+    /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
+    /// - Parameter timeSpan: The time span of the candle stick data.
+    private func fetchWatchlistData() {
+        let symbols = PersistenceManager.shared.watchList
+        
+        for symbol in symbols {
+            fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
+                [weak self] result in
+                
+                switch result {
+                case .success(let stockData):
+                    self?.watchListData[symbol] = stockData
+                    self?.createViewModels()
+                    DispatchQueue.main.async {
+                        self?.footerView.updateMarketStatusLabel()
+                        self?.tableView.reloadData()
+                    }
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    /// Fetch specified stock's quote and candle sticks data from API.
+    /// - Note: If an error is returned when fetching stock's quote or candle sticks data, an `Error`
+    ///         will be provided and all remaining operations will be terminated.
+    ///
+    /// - Parameters:
+    ///   - symbol: Symbol of the company.
+    ///   - historyDuration: Number of days of candle sticks data to fetch.
+    ///   - completion: A `StockData` object is provided once the fetching process succeeded.
+    ///                 An error object is provided otherwise.
+    private func fetchQuoteAndCandlesData(
+        symbol: String,
+        timeSpan: CalendarManager.TimeSpan,
+        completion: @escaping (Result<StockData, Error>) -> Void
+    ) {
+        var stockQuote: StockQuote?
+        var stockPriceHistory: [PriceHistory]?
+        let group = DispatchGroup()
+        
+        group.enter()
+        apiCaller.fetchStockQuote(for: symbol) { result in
+            defer {
+                group.leave()
+            }
+            switch result {
+            case .success(let quote):
+                stockQuote = quote
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        
+        group.enter()
+        apiCaller.fetchPriceHistory(symbol, timeSpan: timeSpan) { result in
+            defer {
+                group.leave()
+            }
+            switch result {
+            case .success(let response):
+                stockPriceHistory = response.priceHistory
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        
+        group.notify(queue: .global(qos: .default)) {
+            guard let quote = stockQuote,
+                  let priceHistory = stockPriceHistory
+            else { return }
+            
+            let stockData = StockData(quote: quote, priceHistory: priceHistory)
+            completion(.success(stockData))
+        }
+    }
+    
+    /// Update any data in the watchlist if its quote time is before the market closing time.
+    private func updateWatchlistData() {
+        let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+        for (symbol, stockData) in watchListData {
+            let quoteTime = stockData.quote.time
+            if TimeInterval(quoteTime) < marketCloseTime {
+                fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) { [weak self] result in
+                    switch result {
+                    case .success(let stockData):
+                        self?.watchListData[symbol] = stockData
+                        self?.createViewModels()
+                        DispatchQueue.main.async {
+                            self?.tableView.reloadData()
+                            self?.footerView.updateMarketStatusLabel()
+                        }
+                    case .failure(let error):
+                        print(error)
+                    }
+                }
+            }
+        }
+    }
+    
 }

@@ -18,22 +18,11 @@ class Persistence_Manager_Tests: XCTestCase {
     private let testCompanyName = "Company Inc."
     
     // User defaults keys.
-    private let watchlistKey = "watchList"
-    private let onboardKey = "hasOnboarded"
-    
-    // Default watchlist
-    private let defaultStocks: [String: String] = [
-        "AAPL": "Apple Inc.",
-        "MSFT": "Microsoft Corporation",
-        "GOOG": "Alphabet Inc.",
-        "AMZN": "Amazon Inc.",
-        "NVDA": "Nvidia Corporation",
-        "FB": "Facebook Inc.",
-        "SQ": "Square Inc.",
-    ]
+    private let watchlistKey = StockDefaults.watchlistKey
+    private let onboardKey = StockDefaults.onboardKey
     
     // Watchlist stored in the persistence storage.
-    private var watchlist: [String] {
+    private var storedWatchlist: [String] {
         userDefaults.stringArray(forKey: watchlistKey) ?? []
     }
     
@@ -43,21 +32,21 @@ class Persistence_Manager_Tests: XCTestCase {
         let retrievedWatchlist = manager.watchList
         
         // Assertion
-        XCTAssert(retrievedWatchlist == watchlist,
+        XCTAssert(retrievedWatchlist == storedWatchlist,
                   "Retrieved watchlist does not match with the actual one.")
         
-        let defaultSymbols = defaultStocks.map{ $0.key }
-        XCTAssert(watchlist.containsSameElement(as: defaultSymbols),
-                  "Watchlist (\(watchlist)) does not contain same elements as the default one.")
+        let defaultSymbols = StockDefaults.defaultStocks.map{ $0.key }
+        XCTAssert(storedWatchlist.containsSameElement(as: defaultSymbols),
+                  "Watchlist (\(storedWatchlist)) does not contain same elements as the default one.")
     }
     
     func test_watchlist_retrieving() {
-        XCTAssert(manager.watchList == watchlist,
-                  "Retrieved watchlist (\(watchlist)) does not match with the stored one.")
+        XCTAssert(manager.watchList == storedWatchlist,
+                  "Retrieved watchlist (\(storedWatchlist)) does not match with the stored one.")
     }
     
     func test_watchlist_addition() {
-        let originalWatchlist = watchlist
+        let originalWatchlist = storedWatchlist
         
         // Correct watchlist
         var correctList = userDefaults.stringArray(forKey: watchlistKey) ?? []
@@ -66,7 +55,7 @@ class Persistence_Manager_Tests: XCTestCase {
         manager.addToWatchlist(symbol: testSymbol, companyName: testCompanyName)
         
         // Assertion
-        XCTAssert(watchlist == correctList)
+        XCTAssert(storedWatchlist == correctList)
         
         let retrievedCompanyName = userDefaults.string(forKey: testSymbol)
         XCTAssert(retrievedCompanyName == testCompanyName)
@@ -77,10 +66,10 @@ class Persistence_Manager_Tests: XCTestCase {
     }
     
     func test_watchlist_deletion() {
-        let originalWatchlist = watchlist
+        let originalWatchlist = storedWatchlist
         
         // Add test company symbol and name to watchlist before deletion test.
-        var testSymbolAddedWatchlist = watchlist
+        var testSymbolAddedWatchlist = storedWatchlist
         testSymbolAddedWatchlist.append(testSymbol)
         userDefaults.setValue(testSymbolAddedWatchlist, forKey: watchlistKey)
         userDefaults.setValue(testCompanyName, forKey: testSymbol)
@@ -89,17 +78,17 @@ class Persistence_Manager_Tests: XCTestCase {
         manager.removeFromWatchlist(symbol: testSymbol)
         
         // Assertion
-        XCTAssert(watchlist.sorted() == originalWatchlist.sorted(),
+        XCTAssert(storedWatchlist.sorted() == originalWatchlist.sorted(),
                   "Watchlist after deletion is not identical to the original one")
         XCTAssert(userDefaults.string(forKey: testSymbol) == nil,
                   "Company name is not removed.")
     }
     
     func test_contains_func() {
-        let originalWatchlist = watchlist
+        let originalWatchlist = storedWatchlist
         
         // Add test symbol to the watchlist
-        var list = watchlist
+        var list = storedWatchlist
         list.append(testSymbol)
         userDefaults.setValue(list, forKey: watchlistKey)
         
