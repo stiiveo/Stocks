@@ -20,6 +20,18 @@ final class APICaller {
     
     private init() {}
     
+    /// Time interval between each data set.
+    enum DataResolution: String {
+        case minute = "1"
+        case fiveMinutes = "5"
+        case fifteenMinutes = "15"
+        case thirtyMinutes = "30"
+        case hour = "60"
+        case day = "D"
+        case week = "W"
+        case month = "M"
+    }
+    
     // MARK: - Public
     
     /// Send search request to API with provided query string.
@@ -80,18 +92,6 @@ final class APICaller {
     ) {
         let url = url(for: .quote, queryParams: ["symbol": symbol])
         request(url: url, expecting: StockQuote.self, completion: completion)
-    }
-    
-    /// Time interval between each data set.
-    enum DataResolution: String {
-        case minute = "1"
-        case fiveMinutes = "5"
-        case fifteenMinutes = "15"
-        case thirtyMinutes = "30"
-        case hour = "60"
-        case day = "D"
-        case week = "W"
-        case month = "M"
     }
     
     func fetchPriceHistory(

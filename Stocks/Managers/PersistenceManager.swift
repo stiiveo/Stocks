@@ -33,6 +33,10 @@ struct StockDefaults {
     ]
 }
 
+protocol PersistenceManagerDelegate: AnyObject {
+    func didAddNewCompanyToWatchlist(symbol: String)
+}
+
 final class PersistenceManager {
     
     // MARK: - Properties
@@ -40,6 +44,8 @@ final class PersistenceManager {
     static let shared = PersistenceManager()
     
     private let userDefaults: UserDefaults = .standard
+    
+    weak var delegate: PersistenceManagerDelegate?
     
     private init() {}
     
@@ -65,8 +71,7 @@ final class PersistenceManager {
         currentList.append(symbol)
         userDefaults.set(currentList, forKey: StockDefaults.watchlistKey)
         userDefaults.set(companyName, forKey: symbol)
-        // Notify the observer that a new company is added to the watch list.
-        NotificationCenter.default.post(name: .didAddToWatchList, object: nil)
+        delegate?.didAddNewCompanyToWatchlist(symbol: symbol)
     }
     
     /// Remove specified company from the watchlist.
