@@ -8,6 +8,7 @@
 import Foundation
 
 struct StockData {
+    let symbol: String
     let quote: StockQuote
     let priceHistory: [PriceHistory]
 }

@@ -16,9 +16,9 @@ class WatchListViewController: UIViewController {
     
     static var maxPriceLabelWidth: CGFloat = 0
     
-    private var watchlistData: [String: StockData] = [:]
+    private var watchlistData = [StockData]()
     
-    private var viewModels = [WatchListTableViewCell.ViewModel]()
+    private var viewModel = WatchlistTableViewCellViewModel()
     
     private let tableView: UITableView = {
         let table = UITableView()
@@ -83,36 +83,6 @@ class WatchListViewController: UIViewController {
     }
     
     // MARK: - Private
-    
-    private func createViewModels() {
-        var viewModels = [WatchListTableViewCell.ViewModel]()
-            
-        for (symbol, stockData) in watchlistData {
-            let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map{
-                .init(timeInterval: $0.time, price: $0.close)
-            }
-            let currentPrice = stockData.quote.current
-            let previousClose = stockData.quote.prevClose
-            let priceChange = (currentPrice / previousClose) - 1
-            let priceChangePercentage = priceChange.signedPercentageString()
-            
-            let model = WatchListTableViewCell.ViewModel(
-                symbol: symbol,
-                companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
-                price: currentPrice.stringFormatted(by: .decimalFormatter),
-                changeColor: priceChange < 0 ? .systemRed : .systemGreen,
-                changePercentage: priceChangePercentage,
-                chartViewModel: .init(
-                    data: lineChartData,
-                    previousClose: previousClose,
-                    showAxis: false
-                )
-            )
-            viewModels.append(model)
-        }
-        
-        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
-    }
     
     private func setUpTableView() {
         view.addSubview(tableView)
@@ -264,7 +234,7 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
 
 extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModels.count
+        return viewModel.all().count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -274,7 +244,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
-        cell.configure(with: viewModels[indexPath.row])
+        cell.configure(with: viewModel.all()[indexPath.row])
         return cell
     }
     
@@ -290,10 +260,16 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.beginUpdates()
             
-            let symbol = viewModels[indexPath.row].symbol
-            watchlistData[symbol] = nil
+            let symbol = viewModel.all()[indexPath.row].symbol
+            if let index = watchlistData.firstIndex(where: { $0.symbol == symbol }) {
+                watchlistData.remove(at: index)
+                do {
+                    try viewModel.remove(from: index)
+                } catch {
+                    print(error)
+                }
+            }
             PersistenceManager.shared.removeFromWatchlist(symbol: symbol)
-            viewModels.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
             
             tableView.endUpdates()
@@ -309,11 +285,11 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         HapticsManager.shared.vibrateForSelection()
         
         // Show selected stock details
-        let viewModel = viewModels[indexPath.row]
+        let viewModel = viewModel.all()[indexPath.row]
         let stockDetailsVC = StockDetailsViewController(
             symbol: viewModel.symbol,
             companyName: viewModel.companyName,
-            priceHistory: watchlistData[viewModel.symbol]?.priceHistory ?? []
+            priceHistory: watchlistData[indexPath.row].priceHistory
         )
         let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)
@@ -359,13 +335,13 @@ extension WatchListViewController {
     /// - Parameter timeSpan: The time span of the candle stick data.
     private func fetchWatchlistData() {
         for symbol in persistenceManager.watchList {
-            fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
+            apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
                 [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let stockData):
-                    self.watchlistData[symbol] = stockData
-                    self.addTableViewCellViewModel(symbol: symbol, stockData: stockData)
+                    self.watchlistData.append(stockData)
+                    self.viewModel.add(with: stockData)
                     DispatchQueue.main.async {
                         self.footerView.updateMarketStatusLabel()
                         self.tableView.reloadData()
@@ -377,74 +353,26 @@ extension WatchListViewController {
         }
     }
     
-    /// Fetch specified stock's quote and candle sticks data from API.
-    /// - Note: If an error is returned when fetching stock's quote or candle sticks data, an `Error`
-    ///         will be provided and all remaining operations will be terminated.
-    ///
-    /// - Parameters:
-    ///   - symbol: Symbol of the company.
-    ///   - historyDuration: Number of days of candle sticks data to fetch.
-    ///   - completion: A `StockData` object is provided once the fetching process succeeded.
-    ///                 An error object is provided otherwise.
-    private func fetchQuoteAndCandlesData(
-        symbol: String,
-        timeSpan: CalendarManager.TimeSpan,
-        completion: @escaping (Result<StockData, Error>) -> Void
-    ) {
-        var stockQuote: StockQuote?
-        var stockPriceHistory: [PriceHistory]?
-        let group = DispatchGroup()
-        
-        group.enter()
-        apiCaller.fetchStockQuote(for: symbol) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let quote):
-                stockQuote = quote
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-        
-        group.enter()
-        apiCaller.fetchPriceHistory(symbol, timeSpan: timeSpan) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let response):
-                stockPriceHistory = response.priceHistory
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-        
-        group.notify(queue: .global(qos: .default)) {
-            guard let quote = stockQuote,
-                  let priceHistory = stockPriceHistory
-            else { return }
-            
-            let stockData = StockData(quote: quote, priceHistory: priceHistory)
-            completion(.success(stockData))
-        }
-    }
-    
     /// Update any data in the watchlist if its quote time is before the market closing time.
     private func updateWatchlistData() {
         let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
-        for (symbol, stockData) in watchlistData {
-            let quoteTime = stockData.quote.time
+        for index in 0..<watchlistData.count {
+            let data = watchlistData[index]
+            let quoteTime = data.quote.time
             if TimeInterval(quoteTime) < marketCloseTime {
-                fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) { [weak self] result in
+                apiCaller.fetchQuoteAndCandlesData(symbol: data.symbol, timeSpan: .day) { [weak self] result in
                     guard let self = self else { return }
                     switch result {
                     case .success(let stockData):
-                        self.watchlistData[symbol] = stockData
-                        self.createViewModels()
+                        self.watchlistData[index] = stockData
+                        do {
+                            try self.viewModel.update(index, with: stockData)
+                        } catch {
+                            print(error)
+                        }
                         DispatchQueue.main.async {
-                            self.tableView.reloadData()
+                            self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)],
+                                                      with: .automatic)
                             self.footerView.updateMarketStatusLabel()
                         }
                     case .failure(let error):
@@ -459,44 +387,21 @@ extension WatchListViewController {
 
 extension WatchListViewController: PersistenceManagerDelegate {
     func didAddNewCompanyToWatchlist(symbol: String) {
-        fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) { [weak self] result in
+        apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
+            [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let stockData):
-                self.addTableViewCellViewModel(symbol: symbol, stockData: stockData)
-                self.watchlistData[symbol] = stockData
+                self.watchlistData.append(stockData)
+                self.viewModel.add(with: stockData)
                 DispatchQueue.main.async {
-                    self.tableView.reloadData()
-//                    let rowIndex = self.watchListData.count
-//                    self.tableView.reloadRows(at: [IndexPath(row: rowIndex, section: 0)], with: .automatic)
+                    let newRowIndex = self.watchlistData.count - 1
+                    self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
+                                              with: .automatic)
                 }
             case .failure(let error):
                 print(error)
             }
         }
-    }
-    
-    private func addTableViewCellViewModel(symbol: String, stockData: StockData) {
-        let currentPrice = stockData.quote.current
-        let previousClose = stockData.quote.prevClose
-        let priceChange = (currentPrice / previousClose) - 1
-        let priceChangePercentage = priceChange.signedPercentageString()
-        
-        let model = WatchListTableViewCell.ViewModel(
-            symbol: symbol,
-            companyName: UserDefaults.standard.string(forKey: symbol) ?? symbol,
-            price: currentPrice.stringFormatted(by: .decimalFormatter),
-            changeColor: priceChange < 0 ? .systemRed : .systemGreen,
-            changePercentage: priceChangePercentage,
-            chartViewModel: .init(
-                data: stockData.priceHistory.map{
-                    .init(timeInterval: $0.time, price: $0.close)},
-                previousClose: previousClose,
-                showAxis: false
-            )
-        )
-        var models = viewModels
-        models.append(model)
-        viewModels = models.sorted(by: {$0.symbol < $1.symbol})
     }
 }

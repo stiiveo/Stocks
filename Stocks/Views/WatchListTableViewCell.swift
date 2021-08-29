@@ -13,15 +13,6 @@ class WatchListTableViewCell: UITableViewCell {
 
     static let identifier = "WatchListTableViewCell"
     
-    struct ViewModel {
-        let symbol: String
-        let companyName: String
-        let price: String // formatted
-        let changeColor: UIColor // red or green
-        let changePercentage: String // formatted
-        let chartViewModel: StockChartView.ViewModel
-    }
-    
     private let titleStackView: UIStackView = {
         let view = UIStackView()
         view.axis = .vertical
@@ -106,7 +97,7 @@ class WatchListTableViewCell: UITableViewCell {
     
     // MARK: - Public
     
-    public func configure(with viewModel: ViewModel) {
+    func configure(with viewModel: WatchlistTableViewCellViewModel.ViewModel) {
         symbolLabel.text = viewModel.symbol
         nameLabel.text = viewModel.companyName
         priceLabel.text = viewModel.price
