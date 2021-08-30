@@ -8,7 +8,7 @@
 import UIKit
 import FloatingPanel
 
-class WatchListViewController: UIViewController {
+final class WatchListViewController: UIViewController {
     
     static let shared = WatchListViewController()
     
@@ -26,23 +26,20 @@ class WatchListViewController: UIViewController {
                        forCellReuseIdentifier: WatchListTableViewCell.identifier)
         return table
     }()
+    private let footerView = WatchlistFooterView()
     
     private var observer: NSObjectProtocol?
     
     private var lastContentOffset: CGFloat = 0
     
     private let persistenceManager = PersistenceManager.shared
-    
     private let calendarManager = CalendarManager.shared
-    
     private let apiCaller = APICaller.shared
     
     private var dataFetchingTimer: Timer?
-    
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
-    private let footerView = WatchlistFooterView()
     
     // MARK: - Init
     
@@ -73,6 +70,7 @@ class WatchListViewController: UIViewController {
     func initiateDataFetchingTimer() {
         // Update the watchlist data before initiating the timer.
         updateWatchlistData()
+        // Update watchlist's data every 20 seconds.
         dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
             self?.updateWatchlistData()
         }
@@ -82,7 +80,7 @@ class WatchListViewController: UIViewController {
         dataFetchingTimer?.invalidate()
     }
     
-    // MARK: - Private
+    // MARK: - Private Methods
     
     private func setUpTableView() {
         view.addSubview(tableView)
@@ -96,7 +94,7 @@ class WatchListViewController: UIViewController {
     private func setUpFloatingPanel() {
         let vc = NewsViewController()
         let panel = FloatingPanelController()
-        panel.layout = MyFullScreenLayout()
+        panel.layout = WatchlistFloatingPanelLayout()
         panel.surfaceView.backgroundColor = .secondarySystemBackground
         panel.set(contentViewController: vc)
         panel.addPanel(toParent: self)
@@ -153,6 +151,31 @@ class WatchListViewController: UIViewController {
     }
 
 }
+
+// MARK: - Persistence Manager Delegate
+
+extension WatchListViewController: PersistenceManagerDelegate {
+    func didAddNewCompanyToWatchlist(symbol: String) {
+        apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
+            [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let stockData):
+                self.watchlistData.append(stockData)
+                self.viewModel.add(with: stockData)
+                DispatchQueue.main.async {
+                    let newRowIndex = self.watchlistData.count - 1
+                    self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
+                                              with: .automatic)
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+}
+
+// MARK: - Search Related Delegate
 
 extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
@@ -232,9 +255,11 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
     }
 }
 
+// MARK: - Table View Data Source & Delegate
+
 extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.all().count
+        return viewModel.all.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -244,7 +269,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
-        cell.configure(with: viewModel.all()[indexPath.row])
+        cell.configure(with: viewModel.all[indexPath.row])
         return cell
     }
     
@@ -260,7 +285,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.beginUpdates()
             
-            let symbol = viewModel.all()[indexPath.row].symbol
+            let symbol = viewModel.all[indexPath.row].symbol
             if let index = watchlistData.firstIndex(where: { $0.symbol == symbol }) {
                 watchlistData.remove(at: index)
                 do {
@@ -285,7 +310,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         HapticsManager.shared.vibrateForSelection()
         
         // Show selected stock details
-        let viewModel = viewModel.all()[indexPath.row]
+        let viewModel = viewModel.all[indexPath.row]
         let stockDetailsVC = StockDetailsViewController(
             symbol: viewModel.symbol,
             companyName: viewModel.companyName,
@@ -310,24 +335,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 }
 
-class MyFullScreenLayout: FloatingPanelLayout {
-    var position: FloatingPanelPosition {
-        return .bottom
-    }
-    
-    var initialState: FloatingPanelState {
-        return .half
-    }
-    
-    var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
-        return [
-            .full: FloatingPanelLayoutAnchor(absoluteInset: 150.0, edge: .top, referenceGuide: .superview),
-            .half: FloatingPanelLayoutAnchor(fractionalInset: 0.45, edge: .bottom, referenceGuide: .superview),
-            .tip: FloatingPanelLayoutAnchor(absoluteInset: 175.0, edge: .bottom, referenceGuide: .superview),
-        ]
-        
-    }
-}
+// MARK: - Data Fetching & Updating Methods
 
 extension WatchListViewController {
     
@@ -383,25 +391,4 @@ extension WatchListViewController {
         }
     }
     
-}
-
-extension WatchListViewController: PersistenceManagerDelegate {
-    func didAddNewCompanyToWatchlist(symbol: String) {
-        apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
-            [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let stockData):
-                self.watchlistData.append(stockData)
-                self.viewModel.add(with: stockData)
-                DispatchQueue.main.async {
-                    let newRowIndex = self.watchlistData.count - 1
-                    self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
-                                              with: .automatic)
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
 }

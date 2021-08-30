@@ -8,7 +8,7 @@
 import UIKit
 import SafariServices
 
-/// Controller to show news.
+/// Controller used to present top and company news.
 class NewsViewController: UIViewController {
     
     // MARK: - Properties
