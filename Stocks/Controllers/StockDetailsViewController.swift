@@ -155,15 +155,6 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             height: StockDetailHeaderView.titleViewHeight + chartHeight + StockDetailHeaderView.metricsViewHeight
         )
         
-        let metricsViewModels: [MetricCollectionViewCell.ViewModel] = [
-            .init(name: "52W H", value: metrics != nil ? metrics!.annualHigh.stringFormatted(by: .decimalFormatter) : "-"),
-            .init(name: "52W L", value: metrics != nil ? metrics!.annualLow.stringFormatted(by: .decimalFormatter) : "-"),
-            .init(name: "52W L Date", value: metrics != nil ? String(metrics!.annualLowDate) : "-"),
-            .init(name: "52W Return", value: metrics != nil ? metrics!.annualWeekPriceReturnDaily.stringFormatted(by: .decimalFormatter) : "-"),
-            .init(name: "10D Volume", value: metrics != nil ? metrics!.tenDayAverageVolume.stringFormatted(by: .decimalFormatter) : "-"),
-            .init(name: "Beta", value: metrics != nil ? metrics!.beta.stringFormatted(by: .decimalFormatter) : "-")
-        ]
-        
         let lineChartData: [StockChartView.StockLineChartData] = priceHistory.map{
             .init(timeInterval: $0.time, price: $0.close)
         }
@@ -171,6 +162,19 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         let quote = stockQuote?.current
         let prevClose = stockQuote?.prevClose
         let priceChange = (quote != nil && prevClose != nil) ? (quote! / stockQuote!.prevClose) - 1 : nil
+        
+        guard let metrics = metrics else { return }
+        let metricsViewModels: [MetricCollectionViewCell.ViewModel] = [
+            .init(name: "Open", value: stockQuote?.open.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "High", value: stockQuote?.high.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "Low", value: stockQuote?.low.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "Mkt Cap", value: metrics.marketCap?.marketCapTextRepresentation() ?? "–"),
+            .init(name: "P/E", value: metrics.priceToEarnings?.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "P/S", value: metrics.priceToSales?.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "52W H", value: metrics.annualHigh?.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "52W L", value: metrics.annualLow?.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "beta", value: metrics.beta?.stringFormatted(by: .decimalFormatter) ?? "-")
+        ]
         
         headerView.configure(
             titleViewModel: .init(

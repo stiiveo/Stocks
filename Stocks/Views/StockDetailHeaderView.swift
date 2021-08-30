@@ -26,7 +26,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 0
-        layout.minimumLineSpacing = 0
+        layout.minimumLineSpacing = 20
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(
@@ -51,9 +51,6 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         addSubviews(titleView, chartView, metricsView)
         metricsView.delegate = self
         metricsView.dataSource = self
-        
-        let flowLayout = (metricsView.collectionViewLayout as! UICollectionViewFlowLayout)
-        flowLayout.minimumLineSpacing = 10.0
     }
     
     required init?(coder: NSCoder) {
@@ -65,7 +62,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     override func layoutSubviews() {
         super.layoutSubviews()
         let leadingPadding: CGFloat = 20.0
-        let trailingPadding: CGFloat = -15.0
+        let trailingPadding: CGFloat = -20.0
         
         titleView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -124,7 +121,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: width / 2.3,
+        return CGSize(width: 135.0,
                       height: StockDetailHeaderView.metricsViewHeight / 3)
     }
     

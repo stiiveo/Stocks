@@ -129,8 +129,8 @@ class WatchListTableViewCell: UITableViewCell {
         addSubview(chartView)
         chartView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            chartView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin + 5.0),
-            chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 5.0),
+            chartView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin + 3.0),
+            chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 3.0),
             chartView.trailingAnchor.constraint(equalTo: priceStackView.leadingAnchor, constant: -15),
             chartView.widthAnchor.constraint(equalToConstant: 80)
         ])

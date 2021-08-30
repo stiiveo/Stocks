@@ -12,19 +12,22 @@ struct FinancialMetricsResponse: Codable {
 }
 
 struct Metrics: Codable {
-    let tenDayAverageVolume: Double
-    let annualHigh: Double
-    let annualLow: Double
-    let annualLowDate: String
-    let annualWeekPriceReturnDaily: Double
-    let beta: Double
+    let open: Double?
+    let high: Double?
+    let low: Double?
+    let marketCap: Double?
+    let annualHigh: Double?
+    let annualLow: Double?
+    let beta: Double?
+    let priceToEarnings: Double?
+    let priceToSales: Double?
     
     enum CodingKeys: String, CodingKey {
-        case tenDayAverageVolume = "10DayAverageTradingVolume"
+        case open, high, low, beta
         case annualHigh = "52WeekHigh"
         case annualLow = "52WeekLow"
-        case annualLowDate = "52WeekLowDate"
-        case annualWeekPriceReturnDaily = "52WeekPriceReturnDaily"
-        case beta
+        case marketCap = "marketCapitalization"
+        case priceToEarnings = "peNormalizedAnnual"
+        case priceToSales = "psTTM"
     }
 }

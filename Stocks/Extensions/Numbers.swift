@@ -10,17 +10,16 @@ import Foundation
 // MARK: - Number Formatter
 
 extension NumberFormatter {
-    /// Number formatter with percentage style with maximum of 2 digits.
+    /// Number formatter with percentage style and 2 decimal places.
     static let percentageFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
-        formatter.locale = .current
         formatter.numberStyle = .percent
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter
     }()
     
-    /// Number formatter with decimal style with maximum of 2 digits.
+    /// Number formatter with decimal style and 2 decimal places.
     static let decimalFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.locale = .current
@@ -51,4 +50,23 @@ extension Double {
         let signedPercentage = self > 0 ? "+" + percentage : percentage
         return signedPercentage
     }
+    
+    func marketCapTextRepresentation() -> String {
+        if Int(self / 1_000_000) > 0 {
+            // Number is equal or bigger than one trillion.
+            let formattedString = String(format: "%.3f", self / 1_000_000)
+            return formattedString + "T"
+        }
+        else if Int(self / 1_000) > 0 {
+            // Number is equal or bigger than one billion.
+            let formattedString = String(format: "%.1f", self / 1_000)
+            return formattedString + "B"
+        }
+        else {
+            // Number is equal or bigger than one million.
+            let formattedString = String(format: "%.0f", self / 1_000)
+            return formattedString + "M"
+        }
+    }
+    
 }
