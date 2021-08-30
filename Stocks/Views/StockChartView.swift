@@ -107,7 +107,7 @@ class StockChartView: LineChartView {
 
 }
 
-final class XAxisValueFormatter: IAxisValueFormatter {
+final class XAxisValueFormatter: AxisValueFormatter {
     func stringForValue( _ value: Double, axis _: AxisBase?) -> String {
         let formatter = DateFormatter()
         formatter.calendar = CalendarManager.shared.newYorkCalendar

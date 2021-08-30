@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,6 +23,9 @@
 		8F11B9662699BAEC00F4AFD1 /* SearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B9652699BAEC00F4AFD1 /* SearchResponse.swift */; };
 		8F1A309726DB3D010061A48A /* WatchlistTableViewCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1A309626DB3D010061A48A /* WatchlistTableViewCellViewModel.swift */; };
 		8F1A309A26DC99070061A48A /* WatchlistFloatingPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1A309926DC99070061A48A /* WatchlistFloatingPanelLayout.swift */; };
+		8F1A309E26DCA0360061A48A /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A309D26DCA0360061A48A /* Charts */; };
+		8F1A30A126DCA0680061A48A /* FloatingPanel in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A30A026DCA0680061A48A /* FloatingPanel */; };
+		8F1A30A426DCA0E00061A48A /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A30A326DCA0E00061A48A /* SDWebImage */; };
 		8F65B6B6269AE1B8001FC19D /* NewsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */; };
 		8F65B6B8269B3B98001FC19D /* NewsStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B7269B3B98001FC19D /* NewsStory.swift */; };
 		8F65B6BA269C2116001FC19D /* NewsStoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */; };
@@ -44,7 +47,6 @@
 		8FB254C2269D8254004FF1C1 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254C1269D8254004FF1C1 /* StockChartView.swift */; };
 		8FEFA99A26D4F4730083931E /* WatchlistFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */; };
 		8FEFA99C26D900BE0083931E /* CalendarDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FEFA99B26D900BE0083931E /* CalendarDate.swift */; };
-		90A45978F98F376669627D96 /* Pods_Stocks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,8 +60,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3FACF7EFFDBAD44899E988AD /* Pods-Stocks.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Stocks.debug.xcconfig"; path = "Target Support Files/Pods-Stocks/Pods-Stocks.debug.xcconfig"; sourceTree = "<group>"; };
-		6D6B2076100EBCB60072D3EB /* Pods-Stocks.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Stocks.release.xcconfig"; path = "Target Support Files/Pods-Stocks/Pods-Stocks.release.xcconfig"; sourceTree = "<group>"; };
 		8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "U.S. Stocks.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F11B93C26986C8000F4AFD1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8F11B93E26986C8000F4AFD1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -101,7 +101,6 @@
 		8FB254C1269D8254004FF1C1 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
 		8FEFA99926D4F4730083931E /* WatchlistFooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistFooterView.swift; sourceTree = "<group>"; };
 		8FEFA99B26D900BE0083931E /* CalendarDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDate.swift; sourceTree = "<group>"; };
-		AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Stocks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,7 +108,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				90A45978F98F376669627D96 /* Pods_Stocks.framework in Frameworks */,
+				8F1A30A426DCA0E00061A48A /* SDWebImage in Frameworks */,
+				8F1A309E26DCA0360061A48A /* Charts in Frameworks */,
+				8F1A30A126DCA0680061A48A /* FloatingPanel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,22 +124,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1A3026CD5E446DE06FED3506 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				AB7E5693F4F7CF09432B130F /* Pods_Stocks.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		8F11B93026986C8000F4AFD1 = {
 			isa = PBXGroup;
 			children = (
 				8F11B93B26986C8000F4AFD1 /* Stocks */,
 				8F878C0A26A1AC8200ACE8AF /* StocksUnitTests */,
 				8F11B93A26986C8000F4AFD1 /* Products */,
-				DE0D97711CCC397E51BE2EDE /* Pods */,
-				1A3026CD5E446DE06FED3506 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -268,15 +259,6 @@
 			path = StocksUnitTests;
 			sourceTree = "<group>";
 		};
-		DE0D97711CCC397E51BE2EDE /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3FACF7EFFDBAD44899E988AD /* Pods-Stocks.debug.xcconfig */,
-				6D6B2076100EBCB60072D3EB /* Pods-Stocks.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -284,17 +266,20 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8F11B94D26986C8200F4AFD1 /* Build configuration list for PBXNativeTarget "Stocks" */;
 			buildPhases = (
-				B094139F3C84D173149156F2 /* [CP] Check Pods Manifest.lock */,
 				8F11B93526986C8000F4AFD1 /* Sources */,
 				8F11B93626986C8000F4AFD1 /* Frameworks */,
 				8F11B93726986C8000F4AFD1 /* Resources */,
-				0D872C1E02D2C9128739063C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = Stocks;
+			packageProductDependencies = (
+				8F1A309D26DCA0360061A48A /* Charts */,
+				8F1A30A026DCA0680061A48A /* FloatingPanel */,
+				8F1A30A326DCA0E00061A48A /* SDWebImage */,
+			);
 			productName = Stocks;
 			productReference = 8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */;
 			productType = "com.apple.product-type.application";
@@ -344,6 +329,11 @@
 				Base,
 			);
 			mainGroup = 8F11B93026986C8000F4AFD1;
+			packageReferences = (
+				8F1A309C26DCA0360061A48A /* XCRemoteSwiftPackageReference "Charts" */,
+				8F1A309F26DCA0680061A48A /* XCRemoteSwiftPackageReference "FloatingPanel" */,
+				8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */,
+			);
 			productRefGroup = 8F11B93A26986C8000F4AFD1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -372,48 +362,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		0D872C1E02D2C9128739063C /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Stocks/Pods-Stocks-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Stocks/Pods-Stocks-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Stocks/Pods-Stocks-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B094139F3C84D173149156F2 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Stocks-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8F11B93526986C8000F4AFD1 /* Sources */ = {
@@ -605,7 +553,6 @@
 		};
 		8F11B94E26986C8200F4AFD1 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3FACF7EFFDBAD44899E988AD /* Pods-Stocks.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -625,7 +572,6 @@
 		};
 		8F11B94F26986C8200F4AFD1 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6D6B2076100EBCB60072D3EB /* Pods-Stocks.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -716,6 +662,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8F1A309C26DCA0360061A48A /* XCRemoteSwiftPackageReference "Charts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/danielgindi/Charts.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.1;
+			};
+		};
+		8F1A309F26DCA0680061A48A /* XCRemoteSwiftPackageReference "FloatingPanel" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scenee/FloatingPanel.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
+		8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8F1A309D26DCA0360061A48A /* Charts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8F1A309C26DCA0360061A48A /* XCRemoteSwiftPackageReference "Charts" */;
+			productName = Charts;
+		};
+		8F1A30A026DCA0680061A48A /* FloatingPanel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8F1A309F26DCA0680061A48A /* XCRemoteSwiftPackageReference "FloatingPanel" */;
+			productName = FloatingPanel;
+		};
+		8F1A30A326DCA0E00061A48A /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8F11B93126986C8000F4AFD1 /* Project object */;
 }
