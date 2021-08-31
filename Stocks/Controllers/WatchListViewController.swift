@@ -341,6 +341,7 @@ extension WatchListViewController {
     
     /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
     /// - Parameter timeSpan: The time span of the candle stick data.
+    /// - Note: The order of the list is determined by the order the data is fetched.
     private func fetchWatchlistData() {
         for symbol in persistenceManager.watchList {
             apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {

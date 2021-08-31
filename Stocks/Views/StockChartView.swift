@@ -57,10 +57,10 @@ class StockChartView: LineChartView {
         leftAxis.enabled = false
         rightAxis.enabled = false
         drawGridBackgroundEnabled = false
-        rightAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        rightAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         xAxis.labelPosition = .bottom
         xAxis.valueFormatter = XAxisValueFormatter()
-        xAxis.labelFont = UIFont.systemFont(ofSize: 14, weight: .regular)
+        xAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .regular)
         xAxis.avoidFirstLastClippingEnabled = true
         xAxis.granularity = 3600.0 // minimum interval between xAxis values
     }

@@ -39,7 +39,7 @@ class MetricCollectionViewCell: UICollectionViewCell {
     private let valueLabel: UILabel = {
         let label = UILabel()
         label.textColor = .label
-        label.font = .systemFont(ofSize: 14, weight: .semibold)
+        label.font = .monospacedDigitSystemFont(ofSize: 14.0, weight: .semibold)
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.8
         return label

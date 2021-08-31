@@ -46,7 +46,7 @@ class WatchListTableViewCell: UITableViewCell {
     
     private let priceLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .semibold)
+        label.font = .monospacedDigitSystemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .right
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.8
@@ -56,7 +56,7 @@ class WatchListTableViewCell: UITableViewCell {
     private let priceChangeButton: UIButton = {
         let button = UIButton()
         button.tintColor = .white
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+        button.titleLabel?.font = .monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         button.titleLabel?.textAlignment = .right
         button.layer.cornerRadius = 5
         button.contentEdgeInsets = UIEdgeInsets(top: 4, left: 13, bottom: 4, right: 4)
