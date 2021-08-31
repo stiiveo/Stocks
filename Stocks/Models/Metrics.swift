@@ -15,7 +15,7 @@ struct Metrics: Codable {
     let open: Double?
     let high: Double?
     let low: Double?
-    let marketCap: Double?
+    let marketCap: Double? // Unit: Million
     let annualHigh: Double?
     let annualLow: Double?
     let beta: Double?

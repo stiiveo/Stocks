@@ -28,6 +28,12 @@ extension NumberFormatter {
         formatter.minimumFractionDigits = 2
         return formatter
     }()
+    
+    static func maxFractionDigits(_ maxFractionDigits: Int) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = maxFractionDigits
+        return formatter
+    }
 }
 
 // MARK: - Double
@@ -51,22 +57,56 @@ extension Double {
         return signedPercentage
     }
     
-    func marketCapTextRepresentation() -> String {
-        if Int(self / 1_000_000) > 0 {
-            // Number is equal or bigger than one trillion.
-            let formattedString = String(format: "%.3f", self / 1_000_000)
-            return formattedString + "T"
+    /// Returns the closest number of powers of ten in *short scale* system of which the value is equal or less than the given value.
+    /// - Reference: [Wikipedia: Long and Short Scale Comparison](https://en.wikipedia.org/wiki/Long_and_short_scale#Comparison)
+    /// - Parameter value: The value used to determine the closest powers of ten in *short scale* system.
+    /// - Returns: The number of powers of ten
+    private func closestPowersOfTen(from value: Double) -> Int {
+        switch value {
+        case pow(10, 15)..<pow(10, 18):
+            return 15
+        case pow(10, 12)..<pow(10, 15):
+            return 12
+        case pow(10, 9)..<pow(10, 12):
+            return 9
+        case pow(10, 6)..<pow(10, 9):
+            return 6
+        case pow(10, 3)..<pow(10, 6):
+            return 3
+        default:
+            return 0
         }
-        else if Int(self / 1_000) > 0 {
-            // Number is equal or bigger than one billion.
-            let formattedString = String(format: "%.1f", self / 1_000)
-            return formattedString + "B"
+    }
+    
+    /// Short scale names for integer powers of ten. Each case's raw value represent the symbol of its metric prefix.
+    /// - Reference: [Wikipedia: Long and Short Scale Comparison](https://en.wikipedia.org/wiki/Long_and_short_scale#Comparison)
+    private func metricPrefix(inNumberOfPowersOfTen numberOfPowersOfTen: Int) -> String {
+        switch numberOfPowersOfTen {
+        case 15: return "P"
+        case 12: return "T"
+        case 9: return "B"
+        case 6: return "M"
+        case 3: return "k"
+        default: return ""
         }
-        else {
-            // Number is equal or bigger than one million.
-            let formattedString = String(format: "%.0f", self / 1_000)
-            return formattedString + "M"
-        }
+    }
+    
+    /// Convert the value to short scale text representation followed by the symbol of its metric prefix.
+    /// - Note: If the value is between a trillion and a million, it returns a text representation in unit of billion.
+    ///         Metric prefix examples: Million: *M*, Billion: *B*, Trillion: *T*, Quadrillion: *P*.
+    /// - Reference: [Wikipedia: Long and Short Scale Comparison](https://en.wikipedia.org/wiki/Long_and_short_scale#Comparison)
+    /// - Returns: Text representation of the value with 4 digits including the decimal number followed by an acronym of the unit.
+    func shortScaleText() -> String {
+        let numberOfDigits = Int(log10(self).rounded(.towardZero))
+        let closestPowersOfTen = closestPowersOfTen(from: self)
+        let maxIntegerDigits: Int = 4
+        
+        let valueInShortScaleUnit = self / pow(10, Double(closestPowersOfTen))
+        let integerDigits = numberOfDigits - closestPowersOfTen + 1
+        let maxFractionDigits = maxIntegerDigits - integerDigits
+        let formatter = NumberFormatter.maxFractionDigits(maxFractionDigits)
+        let formattedString = formatter.string(from: NSNumber(value: valueInShortScaleUnit))
+        return formattedString! + metricPrefix(inNumberOfPowersOfTen: closestPowersOfTen)
     }
     
 }
