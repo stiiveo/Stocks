@@ -283,21 +283,19 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            tableView.beginUpdates()
-            
-            let symbol = viewModel.all[indexPath.row].symbol
-            if let index = watchlistData.firstIndex(where: { $0.symbol == symbol }) {
-                watchlistData.remove(at: index)
-                do {
-                    try viewModel.remove(from: index)
-                } catch {
-                    print(error)
+            tableView.performBatchUpdates {
+                let symbol = viewModel.all[indexPath.row].symbol
+                if let index = watchlistData.firstIndex(where: { $0.symbol == symbol }) {
+                    watchlistData.remove(at: index)
+                    do {
+                        try viewModel.remove(from: index)
+                    } catch {
+                        print(error)
+                    }
                 }
+                PersistenceManager.shared.removeFromWatchlist(symbol: symbol)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
             }
-            PersistenceManager.shared.removeFromWatchlist(symbol: symbol)
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-            
-            tableView.endUpdates()
         }
     }
     
@@ -319,6 +317,8 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         let navVC = UINavigationController(rootViewController: stockDetailsVC)
         present(navVC, animated: true, completion: nil)
     }
+    
+    // MARK: - ScrollView Delegate Methods
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.lastContentOffset = scrollView.contentOffset.y

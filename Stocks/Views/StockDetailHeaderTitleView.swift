@@ -18,14 +18,14 @@ class StockDetailHeaderTitleView: UIView {
     private let quoteLabel: UILabel = {
         let label = UILabel()
         label.textColor = .label
-        label.font = .monospacedDigitSystemFont(ofSize: 17, weight: .black)
+        label.font = .systemFont(ofSize: 17, weight: .black)
         label.textAlignment = .left
         return label
     }()
     
     private let priceChangeLabel: UILabel = {
         let label = UILabel()
-        label.font = .monospacedDigitSystemFont(ofSize: 15, weight: .semibold)
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         label.textAlignment = .right
         return label
     }()
