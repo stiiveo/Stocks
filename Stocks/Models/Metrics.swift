@@ -21,6 +21,8 @@ struct Metrics: Codable {
     let beta: Double?
     let priceToEarnings: Double?
     let priceToSales: Double?
+    let yield: Double?
+    let eps: Double?
     
     enum CodingKeys: String, CodingKey {
         case open, high, low, beta
@@ -29,5 +31,7 @@ struct Metrics: Codable {
         case marketCap = "marketCapitalization"
         case priceToEarnings = "peNormalizedAnnual"
         case priceToSales = "psTTM"
+        case yield = "dividendYieldIndicatedAnnual"
+        case eps = "epsInclExtraItemsTTM"
     }
 }

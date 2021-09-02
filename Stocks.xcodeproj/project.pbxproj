@@ -189,9 +189,9 @@
 				8F11B9632699485F00F4AFD1 /* SearchResultTableViewCell.swift */,
 				8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */,
 				8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */,
-				8FB254C1269D8254004FF1C1 /* StockChartView.swift */,
 				8F878C0126A0330200ACE8AF /* StockDetailHeaderView.swift */,
 				8F89E44A26CCC3EC002BD69E /* StockDetailHeaderTitleView.swift */,
+				8FB254C1269D8254004FF1C1 /* StockChartView.swift */,
 				8F878C0326A0421700ACE8AF /* MetricCollectionViewCell.swift */,
 			);
 			path = Views;

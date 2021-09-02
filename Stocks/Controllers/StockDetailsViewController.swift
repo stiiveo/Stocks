@@ -165,16 +165,19 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         
         guard let metrics = metrics else { return }
         let metricsViewModels: [MetricCollectionViewCell.ViewModel] = [
-            .init(name: "Open", value: stockQuote?.open.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "High", value: stockQuote?.high.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "Low", value: stockQuote?.low.stringFormatted(by: .decimalFormatter) ?? "-"),
+            .init(name: "Open", value: stockQuote?.open.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "High", value: stockQuote?.high.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "Low", value: stockQuote?.low.stringFormatted(by: .decimalFormatter) ?? "–"),
             .init(name: "Mkt Cap",
-                  value: metrics.marketCap != nil ? (metrics.marketCap! * pow(10, 6)).shortScaleText() : "-"),
-            .init(name: "P/E", value: metrics.priceToEarnings?.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "P/S", value: metrics.priceToSales?.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "52W H", value: metrics.annualHigh?.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "52W L", value: metrics.annualLow?.stringFormatted(by: .decimalFormatter) ?? "-"),
-            .init(name: "beta", value: metrics.beta?.stringFormatted(by: .decimalFormatter) ?? "-")
+                  value: metrics.marketCap != nil ? (metrics.marketCap! * pow(10, 6)).shortScaleText() : "–"),
+            .init(name: "P/E", value: metrics.priceToEarnings?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "P/S", value: metrics.priceToSales?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "52W H", value: metrics.annualHigh?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "52W L", value: metrics.annualLow?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "Prev", value: prevClose?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "Yield", value: metrics.yield?.stringFormatted(by: .decimalFormatter).appending("%") ?? "–"),
+            .init(name: "Beta", value: metrics.beta?.stringFormatted(by: .decimalFormatter) ?? "–"),
+            .init(name: "EPS", value: metrics.eps?.stringFormatted(by: .decimalFormatter) ?? "–"),
         ]
         
         headerView.configure(
