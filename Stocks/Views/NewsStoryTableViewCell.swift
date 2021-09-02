@@ -76,17 +76,9 @@ class NewsStoryTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        sourceLabel.text = nil
-        headlineLabel.text = nil
-        dateLabel.text = nil
-        storyImageView.image = nil
-    }
-    
     // MARK: - Public Methods
     
-    public func configure(with viewModel: ViewModel) {
+    func configure(with viewModel: ViewModel) {
         headlineLabel.text = viewModel.headline
         sourceLabel.text = viewModel.source
         dateLabel.text = viewModel.dateString
@@ -94,6 +86,13 @@ class NewsStoryTableViewCell: UITableViewCell {
         let scale = UIScreen.main.scale
         let thumbnailSize = CGSize(width: 100 * scale, height: 100 * scale)
         storyImageView.sd_setImage(with: viewModel.imageURL, placeholderImage: nil, context: [.imageThumbnailPixelSize: thumbnailSize])
+    }
+    
+    func reset() {
+        headlineLabel.text = nil
+        sourceLabel.text = nil
+        dateLabel.text = nil
+        storyImageView.image = nil
     }
     
     // MARK: - Private Methods

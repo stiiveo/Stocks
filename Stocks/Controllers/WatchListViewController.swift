@@ -267,6 +267,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
+        cell.reset()
         cell.configure(with: viewModel.all[indexPath.row])
         return cell
     }

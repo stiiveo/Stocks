@@ -96,7 +96,9 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         chartViewModel: StockChartView.ViewModel,
         metricViewModels: [MetricCollectionViewCell.ViewModel]
     ) {
+        titleView.reset()
         titleView.configure(viewModel: titleViewModel)
+        chartView.reset()
         chartView.configure(with: chartViewModel)
         self.metricViewModels = metricViewModels
         metricsView.reloadData()
@@ -109,13 +111,14 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let viewModel = metricViewModels[indexPath.item]
         guard let cell = collectionView.dequeueReusableCell(
             withReuseIdentifier: MetricCollectionViewCell.identifier,
             for: indexPath
         ) as? MetricCollectionViewCell else {
             fatalError()
         }
+        cell.reset()
+        let viewModel = metricViewModels[indexPath.item]
         cell.configure(with: viewModel)
         return cell
     }

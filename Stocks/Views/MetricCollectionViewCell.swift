@@ -57,17 +57,16 @@ class MetricCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        nameLabel.text = nil
-        valueLabel.text = nil
-    }
-    
     // MARK: - Public Methods
     
     func configure(with viewModel: ViewModel) {
         self.nameLabel.text = viewModel.name
         self.valueLabel.text = viewModel.value
+    }
+    
+    func reset() {
+        nameLabel.text = nil
+        valueLabel.text = nil
     }
     
     // MARK: - Private Methods

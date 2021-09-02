@@ -223,6 +223,7 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
         ) as? NewsStoryTableViewCell else {
             fatalError()
         }
+        cell.reset()
         cell.configure(with: .init(news: stories[indexPath.row]))
         return cell
     }

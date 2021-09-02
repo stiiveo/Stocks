@@ -85,16 +85,6 @@ class WatchListTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        symbolLabel.text = nil
-        nameLabel.text = nil
-        priceLabel.text = nil
-        priceChangeButton.setTitle(nil, for: .normal)
-        chartView.reset()
-    }
-    
     // MARK: - Public
     
     func configure(with viewModel: WatchlistTableViewCellViewModel.ViewModel) {
@@ -104,6 +94,14 @@ class WatchListTableViewCell: UITableViewCell {
         priceChangeButton.setTitle(viewModel.changePercentage, for: .normal)
         priceChangeButton.backgroundColor = viewModel.changeColor
         chartView.configure(with: viewModel.chartViewModel)
+    }
+    
+    func reset() {
+        symbolLabel.text = nil
+        nameLabel.text = nil
+        priceLabel.text = nil
+        priceChangeButton.setTitle(nil, for: .normal)
+        chartView.reset()
     }
     
     // MARK: - Private

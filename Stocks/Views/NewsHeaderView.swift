@@ -9,6 +9,8 @@ import UIKit
 
 class NewsHeaderView: UITableViewHeaderFooterView {
     
+    // MARK: - Properties
+    
     static let identifier = "NewsHeaderView"
     
     struct ViewModel {
@@ -57,14 +59,17 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
+    // MARK: - Public
+    
+    func configure(with viewModel: ViewModel) {
+        titleLabel.text = viewModel.title
+    }
+    
+    func reset() {
         titleLabel.text = nil
     }
     
-    public func configure(with viewModel: ViewModel) {
-        titleLabel.text = viewModel.title
-    }
+    // MARK: - Private Methods
     
     private func setUpStackView() {
         stackView.addArrangedSubviews(titleLabel, subtitleLabel)

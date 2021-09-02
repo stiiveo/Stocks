@@ -71,6 +71,7 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
         guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else {
             return nil
         }
+        header.reset()
         header.configure(with: .init(title: "Top Stories")
         )
         return header
@@ -89,6 +90,7 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
                 as? NewsStoryTableViewCell else {
             fatalError()
         }
+        cell.reset()
         cell.configure(with: .init(news: stories[indexPath.row]))
         return cell
     }
