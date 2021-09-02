@@ -70,11 +70,16 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         stackView.addArrangedSubviews(titleLabel, subtitleLabel)
         contentView.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Bottom constraint with custom priority.
+        let bottomConstraint = stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+        bottomConstraint.priority = UILayoutPriority(999)
+        
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            bottomConstraint
         ])
     }
     

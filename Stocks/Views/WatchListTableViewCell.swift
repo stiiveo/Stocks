@@ -117,22 +117,32 @@ class WatchListTableViewCell: UITableViewCell {
         priceStackView.addArrangedSubviews(priceLabel, priceChangeButton)
         addSubview(priceStackView)
         priceStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Custom bottom constraint
+        let bottomConstraint = priceStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
+        bottomConstraint.priority = UILayoutPriority(999)
+        
         NSLayoutConstraint.activate([
             priceStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin),
-            priceStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin),
             priceStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingMargin),
-            priceStackView.widthAnchor.constraint(equalToConstant: 75)
+            priceStackView.widthAnchor.constraint(equalToConstant: 75),
+            bottomConstraint
         ])
     }
     
     private func setUpChartView() {
         addSubview(chartView)
         chartView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Custom bottom constraint
+        let bottomConstraint = chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 3.0)
+        bottomConstraint.priority = UILayoutPriority(999)
+        
         NSLayoutConstraint.activate([
             chartView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin + 3.0),
-            chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 3.0),
             chartView.trailingAnchor.constraint(equalTo: priceStackView.leadingAnchor, constant: -15),
-            chartView.widthAnchor.constraint(equalToConstant: 80)
+            chartView.widthAnchor.constraint(equalToConstant: 80),
+            bottomConstraint
         ])
     }
     
@@ -140,11 +150,16 @@ class WatchListTableViewCell: UITableViewCell {
         titleStackView.addArrangedSubviews(symbolLabel, nameLabel)
         addSubview(titleStackView)
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Custom bottom constraint
+        let bottomConstraint = titleStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
+        bottomConstraint.priority = UILayoutPriority(999)
+        
         NSLayoutConstraint.activate([
             titleStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin),
-            titleStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin),
             titleStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingMargin),
-            titleStackView.trailingAnchor.constraint(equalTo: chartView.leadingAnchor, constant: -15)
+            titleStackView.trailingAnchor.constraint(equalTo: chartView.leadingAnchor, constant: -15),
+            bottomConstraint
         ])
     }
 

@@ -57,9 +57,9 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         fetchFinancialData()
         fetchNews()
     }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
         tableView.frame = view.bounds
     }
 

@@ -28,8 +28,6 @@ final class WatchListViewController: UIViewController {
     }()
     private let footerView = WatchlistFooterView()
     
-    private var observer: NSObjectProtocol?
-    
     private var lastContentOffset: CGFloat = 0
     
     private let persistenceManager = PersistenceManager.shared

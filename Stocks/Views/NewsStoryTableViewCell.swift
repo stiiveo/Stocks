@@ -107,12 +107,17 @@ class NewsStoryTableViewCell: UITableViewCell {
     private func setUpImageView() {
         contentView.addSubview(storyImageView)
         storyImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Custom width priority.
+        let widthConstraint = storyImageView.widthAnchor.constraint(equalToConstant: imageViewSize)
+        widthConstraint.priority = UILayoutPriority(999)
+        
         NSLayoutConstraint.activate([
             storyImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: trailingPadding),
             storyImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25.0),
             storyImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -25.0),
-            storyImageView.widthAnchor.constraint(equalToConstant: imageViewSize),
-            storyImageView.heightAnchor.constraint(equalTo: storyImageView.widthAnchor, multiplier: 1.0)
+            storyImageView.heightAnchor.constraint(equalTo: storyImageView.widthAnchor, multiplier: 1.0),
+            widthConstraint
         ])
     }
     
