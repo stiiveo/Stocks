@@ -1,6 +1,6 @@
 #  U.S. Stocks
 
-U.S. Stocks is an iOS App for users to easily stay informed with their favorite stocks.
+Stay informed with your favorite stocks.
 
 ![Screenshots](./Docs/Stocks-screenshots.png)
 
@@ -9,12 +9,12 @@ U.S. Stocks is an iOS App for users to easily stay informed with their favorite 
 [Finnhub](https://finnhub.io/) is the data source of all stock quotes, price history and financial metrics used in this App.
 **To run this App, a valid API key needs to be provided.**
 
-## Required: Provide Your API Key
+## API Key Required
 
 Go to [Finnhub](https://finnhub.io/) and register an account to generate the api key.
-Please place the key at the following location of the source code:
+Place the key at the specified location as followed:
 
-```text
+```
 // Go to the file: stocks/Managers/APICaller.swift
 
 final class APICaller {
@@ -23,7 +23,7 @@ final class APICaller {
     }
 }
 ```
-If the provided key is invalid, an error message will be printed in the console.
+If the provided key is invalid, an error message will be printed when the data request is sent.
 
 ### API Limit
 
