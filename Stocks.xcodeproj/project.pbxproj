@@ -26,6 +26,7 @@
 		8F1A309E26DCA0360061A48A /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A309D26DCA0360061A48A /* Charts */; };
 		8F1A30A126DCA0680061A48A /* FloatingPanel in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A30A026DCA0680061A48A /* FloatingPanel */; };
 		8F1A30A426DCA0E00061A48A /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = 8F1A30A326DCA0E00061A48A /* SDWebImage */; };
+		8F1A30A626E0716C0061A48A /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1A30A526E0716C0061A48A /* Credentials.swift */; };
 		8F65B6B6269AE1B8001FC19D /* NewsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */; };
 		8F65B6B8269B3B98001FC19D /* NewsStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B7269B3B98001FC19D /* NewsStory.swift */; };
 		8F65B6BA269C2116001FC19D /* NewsStoryTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */; };
@@ -78,6 +79,7 @@
 		8F11B9652699BAEC00F4AFD1 /* SearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResponse.swift; sourceTree = "<group>"; };
 		8F1A309626DB3D010061A48A /* WatchlistTableViewCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistTableViewCellViewModel.swift; sourceTree = "<group>"; };
 		8F1A309926DC99070061A48A /* WatchlistFloatingPanelLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistFloatingPanelLayout.swift; sourceTree = "<group>"; };
+		8F1A30A526E0716C0061A48A /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
 		8F65B6B5269AE1B8001FC19D /* NewsHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsHeaderView.swift; sourceTree = "<group>"; };
 		8F65B6B7269B3B98001FC19D /* NewsStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStory.swift; sourceTree = "<group>"; };
 		8F65B6B9269C2116001FC19D /* NewsStoryTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsStoryTableViewCell.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				8F1A309B26DC9A0F0061A48A /* Utilities */,
 				8F11B95426986D4700F4AFD1 /* Others */,
 				8F11B94A26986C8200F4AFD1 /* Info.plist */,
+				8F1A30A526E0716C0061A48A /* Credentials.swift */,
 			);
 			path = Stocks;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */,
 				8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */,
 				8F878C0426A0421700ACE8AF /* MetricCollectionViewCell.swift in Sources */,
+				8F1A30A626E0716C0061A48A /* Credentials.swift in Sources */,
 				8F1A309A26DC99070061A48A /* WatchlistFloatingPanelLayout.swift in Sources */,
 				8F70574C26D23CBA00F94E37 /* Date and Calendar.swift in Sources */,
 				8F11B93F26986C8000F4AFD1 /* SceneDelegate.swift in Sources */,

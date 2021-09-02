@@ -12,8 +12,9 @@ final class APICaller {
     static let shared = APICaller()
     
     private struct Constants {
-        static let apiKey = "c3khjtaad3i8d96s5cug"
-        static let sandboxApiKey = "sandbox_c3khjtaad3i8d96s5cv0"
+        
+        static var apiKey = "PLACE-YOUR-API-KEY-HERE" // Place your own API Key here.
+        
         static let baseUrl = "https://finnhub.io/api/v1/"
         static let secondsInADay: TimeInterval = 3600 * 24
     }
@@ -202,6 +203,10 @@ final class APICaller {
         case failedToGetStockData
     }
     
+    private var apiKey: String {
+        return Constants.apiKey != "PLACE-YOUR-API-KEY-HERE" ? Constants.apiKey : Credentials.apiKey
+    }
+    
     private func url(
         for endpoint: Endpoint,
         queryParams: [String: String] = [:]
@@ -211,7 +216,7 @@ final class APICaller {
             { URLQueryItem(name: $0.key, value: $0.value) }
         )
         // Add token query item.
-        queryItems.append(.init(name: "token", value: Constants.apiKey))
+        queryItems.append(.init(name: "token", value: apiKey))
         
         // Convert query items to suffix string
         guard var components = URLComponents(string: urlString) else {
