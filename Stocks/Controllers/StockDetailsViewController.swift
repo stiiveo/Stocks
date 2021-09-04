@@ -13,9 +13,10 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     // MARK: - Properties
     
     private lazy var headerView = StockDetailHeaderView()
-
-    private var stockData: StockData
     
+    private var symbol: String
+    private var quoteData: StockQuote
+    private var chartData: [PriceHistory]
     private var metrics: Metrics?
 
     private let tableView: UITableView = {
@@ -30,15 +31,23 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     private var stories: [NewsStory] = []
     
     private var companyName: String {
-        return UserDefaults.standard.string(forKey: stockData.symbol) ?? stockData.symbol
+        return UserDefaults.standard.string(forKey: symbol) ?? symbol
     }
+    
+    private var updateTimer: Timer?
 
     // MARK: - Init
 
     init(
-        stockData: StockData
+        symbol: String,
+        quoteData: StockQuote,
+        chartData: [PriceHistory],
+        metricsData: Metrics? = nil
     ) {
-        self.stockData = stockData
+        self.symbol = symbol
+        self.quoteData = quoteData
+        self.chartData = chartData
+        self.metrics = metricsData
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -56,17 +65,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         setUpHeaderView()
         setUpTableView()
         configureHeaderViewData()
-        fetchFinancialData()
+        fetchMetricsData()
         fetchNews()
-    }
-    
-    // MARK: - Public
-    
-    func updateHeaderViewData(with data: StockData) {
-        self.stockData = data
-        DispatchQueue.main.async { [weak self] in
-            self?.configureHeaderViewData()
-        }
     }
 
     // MARK: - Private
@@ -89,10 +89,36 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         tableView.delegate = self
         tableView.dataSource = self
     }
+    
+    private func fetchQuoteData() {
+        APICaller.shared.fetchStockQuote(for: symbol) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let stockQuote):
+                self.quoteData = stockQuote
+                self.configureHeaderViewData()
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+    
+    private func fetchChartData() {
+        APICaller.shared.fetchPriceHistory(symbol, timeSpan: .day) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let candlesData):
+                self.chartData = candlesData.priceHistory
+                self.configureHeaderViewData()
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
 
     /// Fetch financial metrics.
-    private func fetchFinancialData() {
-        APICaller.shared.fetchStockMetrics(symbol: stockData.symbol) { [weak self] result in
+    private func fetchMetricsData() {
+        APICaller.shared.fetchStockMetrics(symbol: symbol) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let metricsResponse):
@@ -107,7 +133,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     }
 
     private func fetchNews() {
-        APICaller.shared.fetchNews(for: .company(symbol: stockData.symbol)) { [weak self] result in
+        APICaller.shared.fetchNews(for: .company(symbol: symbol)) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let stories):
@@ -134,20 +160,20 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     }
     
     private func configureHeaderViewData() {
-        let lineChartData: [StockChartView.StockLineChartData] = stockData.priceHistory.map{
+        let lineChartData: [StockChartView.StockLineChartData] = chartData.map{
             .init(timeInterval: $0.time, price: $0.close)
         }
         
         let metricsViewModel: StockMetricsView.ViewModel = {
-            .init(openPrice: stockData.quote.open,
-                  highestPrice: stockData.quote.high,
-                  lowestPrice: stockData.quote.low,
+            .init(openPrice: quoteData.open,
+                  highestPrice: quoteData.high,
+                  lowestPrice: quoteData.low,
                   marketCap: metrics?.marketCap,
                   priceEarningsRatio: metrics?.priceToEarnings,
                   priceSalesRatio: metrics?.priceToSales,
                   annualHigh: metrics?.annualHigh,
                   annualLow: metrics?.annualLow,
-                  previousPrice: stockData.quote.prevClose,
+                  previousPrice: quoteData.prevClose,
                   yield: metrics?.yield,
                   beta: metrics?.beta,
                   eps: metrics?.eps)
@@ -155,14 +181,14 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         
         headerView.configure(
             titleViewModel: .init(
-                quote: stockData.quote.current,
-                priceChange: (stockData.quote.current / stockData.quote.prevClose) - 1,
-                showAddingButton: !PersistenceManager.shared.watchListContains(stockData.symbol),
+                quote: quoteData.current,
+                priceChange: (quoteData.current / quoteData.prevClose) - 1,
+                showAddingButton: !PersistenceManager.shared.watchListContains(symbol),
                 delegate: self
             ),
             chartViewModel: .init(
                 data: lineChartData,
-                previousClose: stockData.quote.prevClose,
+                previousClose: quoteData.prevClose,
                 showAxis: true
             ),
             metricsViewModels: metricsViewModel
@@ -174,7 +200,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     func didTapAddingButton() {
         HapticsManager.shared.vibrate(for: .success)
-        PersistenceManager.shared.addToWatchlist(symbol: stockData.symbol, companyName: companyName)
+        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: companyName)
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
 

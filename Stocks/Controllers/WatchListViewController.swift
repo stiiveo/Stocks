@@ -35,7 +35,7 @@ final class WatchListViewController: UIViewController {
     private let calendarManager = CalendarManager.shared
     private let apiCaller = APICaller.shared
     
-    private var dataFetchingTimer: Timer?
+    private var watchlistDataUpdateTimer: Timer?
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
@@ -61,7 +61,7 @@ final class WatchListViewController: UIViewController {
         setUpNavigationBar()
         setUpSearchController()
         setUpTableView()
-        fetchWatchlistData()
+        fetchStockData()
         setUpFloatingPanel()
         setUpFooterView()
         persistenceManager.delegate = self
@@ -73,13 +73,13 @@ final class WatchListViewController: UIViewController {
         // Update the watchlist data before initiating the timer.
         updateWatchlistData()
         // Update watchlist's data every 20 seconds.
-        dataFetchingTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
+        watchlistDataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
             self?.updateWatchlistData()
         }
     }
     
     func invalidateDataFetchingTimer() {
-        dataFetchingTimer?.invalidate()
+        watchlistDataUpdateTimer?.invalidate()
     }
     
     // MARK: - Private Methods
@@ -231,25 +231,25 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         navigationItem.searchController?.searchBar.resignFirstResponder()
         HapticsManager.shared.vibrateForSelection()
         
-        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let stockData):
-                // Present stock details view controller initialized with fetched stock data.
-                DispatchQueue.main.async {
-                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
-                    self.shownStockDetailsVC!.title = searchResult.description
-                    
-                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
-                    self.present(navVC, animated: true, completion: nil)
-                }
-            case .failure(let error):
-                print("Failed to present details view controller due to data fetching error: \(error)")
-                DispatchQueue.main.async {
-                    self.presentAPIErrorAlert()
-                }
-            }
-        }
+//        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [weak self] result in
+//            guard let self = self else { return }
+//            switch result {
+//            case .success(let stockData):
+//                // Present stock details view controller initialized with fetched stock data.
+//                DispatchQueue.main.async {
+//                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
+//                    self.shownStockDetailsVC!.title = searchResult.description
+//
+//                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
+//                    self.present(navVC, animated: true, completion: nil)
+//                }
+//            case .failure(let error):
+//                print("Failed to present details view controller due to data fetching error: \(error)")
+//                DispatchQueue.main.async {
+//                    self.presentAPIErrorAlert()
+//                }
+//            }
+//        }
         
         
     }
@@ -325,7 +325,8 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Show selected stock's details view controller.
         selectedCellIndex = indexPath.row
-        shownStockDetailsVC = StockDetailsViewController(stockData: watchlistData[indexPath.row])
+        let stockData = watchlistData[indexPath.row]
+        shownStockDetailsVC = StockDetailsViewController(symbol: stockData.symbol, quoteData: stockData.quote, chartData: stockData.priceHistory)
         let navVC = UINavigationController(rootViewController: shownStockDetailsVC!)
         present(navVC, animated: true, completion: nil)
     }
@@ -354,7 +355,7 @@ extension WatchListViewController {
     /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
     /// - Parameter timeSpan: The time span of the candle stick data.
     /// - Note: The order of the list is determined by the order the data is fetched.
-    private func fetchWatchlistData() {
+    private func fetchStockData() {
         for symbol in persistenceManager.watchList {
             apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
                 [weak self] result in
@@ -397,10 +398,10 @@ extension WatchListViewController {
                             self.footerView.updateMarketStatusLabel()
                         }
                         
-                        if index == self.selectedCellIndex {
-                            // Update stock details view controller's data if there's any.
-                            self.shownStockDetailsVC?.updateHeaderViewData(with: stockData)
-                        }
+//                        if index == self.selectedCellIndex {
+//                             Update stock details view controller's data if there's any.
+//                            self.shownStockDetailsVC?.updateHeaderViewData(with: stockData)
+//                        }
                     case .failure(let error):
                         print(error)
                     }
