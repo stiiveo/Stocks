@@ -154,6 +154,16 @@ final class WatchListViewController: UIViewController {
 
 }
 
+extension WatchListViewController: StockDetailsViewControllerDelegate {
+    func stockDetailsViewControllerIsShown() {
+        invalidateDataFetchingTimer()
+    }
+    
+    func stockDetailsViewControllerWillBeDismissed() {
+        initiateDataFetchingTimer()
+    }
+}
+
 // MARK: - Persistence Manager Delegate
 
 extension WatchListViewController: PersistenceManagerDelegate {
@@ -320,16 +330,16 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     ///   - tableView: TableView used to layout the cells containing each company's data.
     ///   - indexPath: IndexPath pointing to the selected tableView row.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // Stop updating stocks data in watchlist.
-        invalidateDataFetchingTimer()
-        
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
         
         // Show selected stock's details view controller.
         selectedCellIndex = indexPath.row
         let stockData = watchlistData[indexPath.row]
-        shownStockDetailsVC = StockDetailsViewController(symbol: stockData.symbol, quoteData: stockData.quote, chartData: stockData.priceHistory)
+        shownStockDetailsVC = StockDetailsViewController(symbol: stockData.symbol,
+                                                         quoteData: stockData.quote,
+                                                         chartData: stockData.priceHistory)
+        shownStockDetailsVC?.delegate = self
         let navVC = UINavigationController(rootViewController: shownStockDetailsVC!)
         present(navVC, animated: true, completion: nil)
     }

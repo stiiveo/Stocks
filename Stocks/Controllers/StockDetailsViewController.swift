@@ -8,6 +8,11 @@
 import UIKit
 import SafariServices
 
+protocol StockDetailsViewControllerDelegate: AnyObject {
+    func stockDetailsViewControllerIsShown()
+    func stockDetailsViewControllerWillBeDismissed()
+}
+
 class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDelegate {
 
     // MARK: - Properties
@@ -35,6 +40,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     }
     
     private var updateTimer: Timer?
+    
+    weak var delegate: StockDetailsViewControllerDelegate?
 
     // MARK: - Init
 
@@ -71,6 +78,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        delegate?.stockDetailsViewControllerIsShown()
+        
         // Start auto-updating timer.
         let updateInterval: TimeInterval = 4.0
         
@@ -90,6 +99,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         updateTimer?.invalidate()
+        delegate?.stockDetailsViewControllerWillBeDismissed()
     }
 
     // MARK: - Private
