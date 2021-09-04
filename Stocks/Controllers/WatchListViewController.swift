@@ -38,6 +38,9 @@ final class WatchListViewController: UIViewController {
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
+    private var selectedCellIndex = 0
+    private var shownStockDetailsVC: StockDetailsViewController?
+    
     
     // MARK: - Init
     
@@ -227,14 +230,24 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         navigationItem.searchController?.searchBar.resignFirstResponder()
         HapticsManager.shared.vibrateForSelection()
         
-        let stockDetailVC = StockDetailsViewController(
-            symbol: searchResult.displaySymbol,
-            companyName: searchResult.description
-        )
-        stockDetailVC.title = searchResult.description
+        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let stockData):
+                // Present stock details view controller initialized with fetched stock data.
+                DispatchQueue.main.async {
+                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
+                    self.shownStockDetailsVC!.title = searchResult.description
+                    
+                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
+                    self.present(navVC, animated: true, completion: nil)
+                }
+            case .failure(let error):
+                print("Failed to present details view controller due to data fetching error:\n\(error)")
+            }
+        }
         
-        let navVC = UINavigationController(rootViewController: stockDetailVC)
-        present(navVC, animated: true, completion: nil)
+        
     }
     
     func scrollViewWillBeginDragging() {
@@ -306,14 +319,10 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
         
-        // Show selected stock details
-        let viewModel = viewModel.all[indexPath.row]
-        let stockDetailsVC = StockDetailsViewController(
-            symbol: viewModel.symbol,
-            companyName: viewModel.companyName,
-            priceHistory: watchlistData[indexPath.row].priceHistory
-        )
-        let navVC = UINavigationController(rootViewController: stockDetailsVC)
+        // Show selected stock's details view controller.
+        selectedCellIndex = indexPath.row
+        shownStockDetailsVC = StockDetailsViewController(stockData: watchlistData[indexPath.row])
+        let navVC = UINavigationController(rootViewController: shownStockDetailsVC!)
         present(navVC, animated: true, completion: nil)
     }
     
@@ -382,6 +391,11 @@ extension WatchListViewController {
                             self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)],
                                                       with: .automatic)
                             self.footerView.updateMarketStatusLabel()
+                        }
+                        
+                        if index == self.selectedCellIndex {
+                            // Update stock details view controller's data if there's any.
+                            self.shownStockDetailsVC?.updateHeaderViewData(with: stockData)
                         }
                     case .failure(let error):
                         print(error)

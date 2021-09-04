@@ -81,14 +81,14 @@ class StockDetailHeaderTitleView: UIView {
     // MARK: - Public Methods
     
     func configure(viewModel: ViewModel) {
-        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? ""
-        priceChangeLabel.text = viewModel.priceChange?.signedPercentageString() ?? ""
+        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? "–"
+        priceChangeLabel.text = viewModel.priceChange?.signedPercentageString() ?? "–"
         priceChangeLabel.textColor = viewModel.priceChange ?? 0 < 0 ? .stockPriceDown : .stockPriceUp
         watchlistAddingButton.isHidden = !viewModel.showAddingButton
         delegate = viewModel.delegate
     }
     
-    func reset() {
+    func resetData() {
         quoteLabel.text = nil
         priceChangeLabel.text = nil
     }

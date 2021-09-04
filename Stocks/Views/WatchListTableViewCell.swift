@@ -101,7 +101,7 @@ class WatchListTableViewCell: UITableViewCell {
         nameLabel.text = nil
         priceLabel.text = nil
         priceChangeButton.setTitle(nil, for: .normal)
-        chartView.reset()
+        chartView.resetData()
     }
     
     // MARK: - Private

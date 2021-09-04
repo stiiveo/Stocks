@@ -37,7 +37,7 @@ class StockChartView: LineChartView {
     // MARK: - Public Methods
     
     // Reset chart view
-    func reset() {
+    func resetData() {
         data = nil
     }
     

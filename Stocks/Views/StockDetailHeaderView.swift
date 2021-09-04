@@ -8,13 +8,11 @@
 import UIKit
 import Charts
 
-class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+class StockDetailHeaderView: UIView {
     
     // MARK: - Properties
     
-    private let titleView: StockDetailHeaderTitleView = {
-        return StockDetailHeaderTitleView()
-    }()
+    private let titleView = StockDetailHeaderTitleView()
 
     private let chartView: StockChartView = {
         let chart = StockChartView()
@@ -22,23 +20,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         return chart
     }()
     
-    private let metricsView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumInteritemSpacing = 0
-        layout.minimumLineSpacing = 20
-        
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.register(
-            MetricCollectionViewCell.self,
-            forCellWithReuseIdentifier: MetricCollectionViewCell.identifier
-        )
-        collectionView.backgroundColor = .systemBackground
-        
-        return collectionView
-    }()
-    
-    private var metricViewModels = [MetricCollectionViewCell.ViewModel]()
+    private let metricsView = StockMetricsView()
     
     static let titleViewHeight: CGFloat = 25
     static let metricsViewHeight: CGFloat = 70
@@ -49,18 +31,16 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         super.init(frame: frame)
         clipsToBounds = true
         addSubviews(titleView, chartView, metricsView)
-        metricsView.delegate = self
-        metricsView.dataSource = self
+        setUpSubviews()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - UI Layout
+    // MARK: - Private
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    private func setUpSubviews() {
         let leadingPadding: CGFloat = 20.0
         let trailingPadding: CGFloat = -20.0
         
@@ -91,41 +71,24 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     // MARK: - Public
     
+    /// Reset and configure data used by subviews of this view.
+    /// - Parameters:
+    ///   - titleViewModel: View model of the title view.
+    ///   - chartViewModel: View model of the chart view.
+    ///   - metricViewModels: View model of the metrics view.
     func configure(
         titleViewModel: StockDetailHeaderTitleView.ViewModel,
         chartViewModel: StockChartView.ViewModel,
-        metricViewModels: [MetricCollectionViewCell.ViewModel]
+        metricsViewModels: StockMetricsView.ViewModel
     ) {
-        titleView.reset()
+        titleView.resetData()
         titleView.configure(viewModel: titleViewModel)
-        chartView.reset()
+        
+        chartView.resetData()
         chartView.configure(with: chartViewModel)
-        self.metricViewModels = metricViewModels
-        metricsView.reloadData()
-    }
-    
-    // MARK: - Metrics Collection View
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return metricViewModels.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: MetricCollectionViewCell.identifier,
-            for: indexPath
-        ) as? MetricCollectionViewCell else {
-            fatalError()
-        }
-        cell.reset()
-        let viewModel = metricViewModels[indexPath.item]
-        cell.configure(with: viewModel)
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 130.0,
-                      height: StockDetailHeaderView.metricsViewHeight / 3)
+        
+        metricsView.resetData()
+        metricsView.configure(viewModel: metricsViewModels)
     }
     
 }
