@@ -19,7 +19,9 @@ final class APICaller {
         static let secondsInADay: TimeInterval = 3600 * 24
     }
     
-    private init() {}
+    struct ExplicitAPIError: Codable, Error {
+        let error: String
+    }
     
     /// Time interval between each data set.
     enum DataResolution: String {
@@ -32,6 +34,8 @@ final class APICaller {
         case week = "W"
         case month = "M"
     }
+    
+    private init() {}
     
     // MARK: - Public
     
@@ -273,14 +277,12 @@ final class APICaller {
                 let result = try JSONDecoder().decode(type, from: data)
                 completion(.success(result))
             } catch {
-                completion(.failure(error))
-                
-                // Print converted json data returned from API if the returned json data could not be decoded.
+                // Try decode the data into ExplicitAPIError type to get error from API.
                 do {
-                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-                    print("jsonObject:", jsonObject)
+                    let explicitAPIError = try JSONDecoder().decode(ExplicitAPIError.self, from: data)
+                    completion(.failure(explicitAPIError))
                 } catch {
-                    print("Failed to serialize json object: \(error)")
+                    completion(.failure(error))
                 }
             }
         }
