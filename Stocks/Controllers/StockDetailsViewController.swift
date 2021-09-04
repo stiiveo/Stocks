@@ -68,6 +68,29 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         fetchMetricsData()
         fetchNews()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Start auto-updating timer.
+        let updateInterval: TimeInterval = 4.0
+        
+        updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Update data if the market is still open.
+            let marketCloseDate = CalendarManager.shared.latestTradingTime.close
+            guard Date() <= marketCloseDate.addingTimeInterval(updateInterval) else { return }
+            
+            self.fetchQuoteData()
+            self.fetchChartData()
+            self.fetchMetricsData()
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateTimer?.invalidate()
+    }
 
     // MARK: - Private
     
@@ -96,7 +119,9 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             switch result {
             case .success(let stockQuote):
                 self.quoteData = stockQuote
-                self.configureHeaderViewData()
+                DispatchQueue.main.async {
+                    self.configureHeaderViewData()
+                }
             case .failure(let error):
                 print(error)
             }
@@ -109,7 +134,9 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             switch result {
             case .success(let candlesData):
                 self.chartData = candlesData.priceHistory
-                self.configureHeaderViewData()
+                DispatchQueue.main.async {
+                    self.configureHeaderViewData()
+                }
             case .failure(let error):
                 print(error)
             }

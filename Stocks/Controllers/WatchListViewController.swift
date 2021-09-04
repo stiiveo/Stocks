@@ -320,6 +320,9 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     ///   - tableView: TableView used to layout the cells containing each company's data.
     ///   - indexPath: IndexPath pointing to the selected tableView row.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Stop updating stocks data in watchlist.
+        invalidateDataFetchingTimer()
+        
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
         
@@ -398,10 +401,6 @@ extension WatchListViewController {
                             self.footerView.updateMarketStatusLabel()
                         }
                         
-//                        if index == self.selectedCellIndex {
-//                             Update stock details view controller's data if there's any.
-//                            self.shownStockDetailsVC?.updateHeaderViewData(with: stockData)
-//                        }
                     case .failure(let error):
                         print(error)
                     }
