@@ -157,7 +157,7 @@ final class APICaller {
             case .success(let quote):
                 stockQuote = quote
             case .failure(let error):
-                completion(.failure(error))
+                print(error)
             }
         }
         
@@ -170,14 +170,26 @@ final class APICaller {
             case .success(let response):
                 stockPriceHistory = response.priceHistory
             case .failure(let error):
-                completion(.failure(error))
+                print(error)
             }
         }
         
         group.notify(queue: .global(qos: .default)) {
             guard let quote = stockQuote,
-                  let priceHistory = stockPriceHistory
-            else { return }
+                  let priceHistory = stockPriceHistory else {
+                // Stock quote and/or price history data is not fetched.
+                switch (stockQuote == nil, stockPriceHistory == nil) {
+                case (true, true):
+                    completion(.failure(APIError.noQuoteAndPriceHistoryReturned))
+                case (false, true):
+                    completion(.failure(APIError.noPriceHistoryDataReturned))
+                case (true, false):
+                    completion(.failure(APIError.noQuoteDataReturned))
+                default:
+                    return
+                }
+                return
+            }
             
             let stockData = StockData(symbol: symbol, quote: quote, priceHistory: priceHistory)
             completion(.success(stockData))
@@ -200,7 +212,9 @@ final class APICaller {
     private enum APIError: Error {
         case noDataReturned
         case invalidUrl
-        case failedToGetStockData
+        case noQuoteDataReturned
+        case noPriceHistoryDataReturned
+        case noQuoteAndPriceHistoryReturned
     }
     
     private var apiKey: String {

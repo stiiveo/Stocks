@@ -7,6 +7,7 @@
 
 import UIKit
 import FloatingPanel
+import SafariServices
 
 final class WatchListViewController: UIViewController {
     
@@ -243,7 +244,10 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
                     self.present(navVC, animated: true, completion: nil)
                 }
             case .failure(let error):
-                print("Failed to present details view controller due to data fetching error:\n\(error)")
+                print("Failed to present details view controller due to data fetching error: \(error)")
+                DispatchQueue.main.async {
+                    self.presentAPIErrorAlert()
+                }
             }
         }
         
