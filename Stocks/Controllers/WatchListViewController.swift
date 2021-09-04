@@ -241,25 +241,29 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         navigationItem.searchController?.searchBar.resignFirstResponder()
         HapticsManager.shared.vibrateForSelection()
         
-//        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success(let stockData):
-//                // Present stock details view controller initialized with fetched stock data.
-//                DispatchQueue.main.async {
-//                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
-//                    self.shownStockDetailsVC!.title = searchResult.description
-//
-//                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
-//                    self.present(navVC, animated: true, completion: nil)
-//                }
-//            case .failure(let error):
-//                print("Failed to present details view controller due to data fetching error: \(error)")
-//                DispatchQueue.main.async {
-//                    self.presentAPIErrorAlert()
-//                }
-//            }
-//        }
+        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let stockData):
+                // Present stock details view controller initialized with fetched stock data.
+                DispatchQueue.main.async {
+                    self.shownStockDetailsVC = StockDetailsViewController(
+                        symbol: stockData.symbol,
+                        quoteData: stockData.quote,
+                        chartData: stockData.priceHistory)
+                    self.shownStockDetailsVC!.title = searchResult.description
+                    self.shownStockDetailsVC!.delegate = self
+
+                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
+                    self.present(navVC, animated: true, completion: nil)
+                }
+            case .failure(let error):
+                print("Failed to present details view controller due to data fetching error: \(error)")
+                DispatchQueue.main.async {
+                    self.presentAPIErrorAlert()
+                }
+            }
+        }
         
         
     }
