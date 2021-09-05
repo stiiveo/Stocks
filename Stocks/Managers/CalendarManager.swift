@@ -59,9 +59,9 @@ final class CalendarManager {
         return date < marketOpenTime(on: date)
     }
     
-    /// The last date on which the trading takes place.
-    /// - Note: If the date on which this method is called is a valid trading day but the market is not opened yet,
-    /// this method will return the previous trading date.
+    /// A `Date` value which is within the previous trading day.
+    /// - Note: If the current time is within a trading day but the market is not opened yet,
+    ///         it returns a `Date` value within the previous trading day.
     private var latestTradingDate: Date {
         var date = isBeforeMarketOpenTime(at: currentTime) ? newYorkCalendar.date(byAdding: .day, value: -1, to: currentTime)! : currentTime
         while newYorkCalendar.isDateInWeekend(date) || isInHoliday(date: date) {
@@ -106,6 +106,34 @@ final class CalendarManager {
         }
     }
     
+    /// Returns a `Boolean` value indicating whether the current time is within the trading day.
+    private var todayIsTradingDay: Bool {
+        let todayIsInWeekend = newYorkCalendar.isDateInWeekend(currentTime)
+        return !todayIsInWeekend && !isInHoliday(date: currentTime)
+    }
+    
+    /// Returns a `Date` value which is within the trading day after today.
+    private var dateInNextTradingDay: Date {
+        var date = newYorkCalendar.date(byAdding: .day, value: 1, to: currentTime)!
+        while newYorkCalendar.isDateInWeekend(date) || isInHoliday(date: date) {
+            date = newYorkCalendar.date(byAdding: .day, value: 1, to: date)!
+        }
+        return date
+    }
+    
+    /// Returns a `TradingTime` value of the next trading day.
+    /// If today is trading day but the market is not opened yet, it returns today's `TradingTime`;
+    /// If today is not a trading day or the market is opened already, it returns the next trading day's `TradingTime`.
+    private var nextTradingTime: TradingTime {
+        if todayIsTradingDay && currentTime < marketOpenTime(on: currentTime) {
+            return TradingTime(open: marketOpenTime(on: currentTime),
+                               close: marketCloseTime(from: currentTime))
+        } else {
+            return TradingTime(open: marketOpenTime(on: dateInNextTradingDay),
+                               close: marketCloseTime(from: dateInNextTradingDay))
+        }
+    }
+    
     // MARK: - Public
     
     /// The time span of the candle sticks data which starts from the specified time to the latest trading day.
@@ -140,8 +168,11 @@ final class CalendarManager {
         let close: Date
     }
     
-    /// The start and end of the latest market trading time.
-    /// - Note: If current time is in weekend or a holiday, the method returns the time at the last trading date.
+    /// A `TradingTime` object indicating the latest trading day's trading time.
+    ///
+    /// If the current time is within a trading day and is after the market is opened,
+    /// it returns today's `TradingTime`;
+    /// If current time is in weekend or a holiday, it returns the previous trading day's `TradingTime`.
     var latestTradingTime: TradingTime {
         let openTime = marketOpenTime(on: latestTradingDate)
         let closeTime = marketCloseTime(from: latestTradingDate)
@@ -149,10 +180,12 @@ final class CalendarManager {
         return TradingTime(open: openTime, close: closeTime)
     }
     
+    /// A `Boolean` value indicating whether the current time is within the trading time.
     var isMarketOpen: Bool {
         return currentTime >= latestTradingTime.open && currentTime < latestTradingTime.close
     }
     
+    /// A `String` value of the current New York time formatted by preset date formatter.
     var currentNewYorkDate: String {
         return dateFormatter.string(from: currentTime)
     }
@@ -172,6 +205,26 @@ final class CalendarManager {
             }
         }
         return time
+    }
+    
+    /// Time (seconds) until the next trading session started.
+    /// If the market is opened when this property is requested, this property will be 0.
+    var timeToOpen: TimeInterval {
+        if isMarketOpen {
+            return 0
+        } else {
+            return nextTradingTime.open.timeIntervalSince1970 - currentTime.timeIntervalSince1970
+        }
+    }
+    
+    /// Time (seconds) until the current trading session ends.
+    /// If the market is closed when this property is requested, this property will be 0.
+    var timeToClose: TimeInterval {
+        if isMarketOpen {
+            return latestTradingTime.close.timeIntervalSince1970 - currentTime.timeIntervalSince1970
+        } else {
+            return 0
+        }
     }
     
 }

@@ -16,23 +16,24 @@ class WatchlistFooterView: UIView {
         label.font = .systemFont(ofSize: 16, weight: .bold)
         label.textAlignment = .left
         label.textColor = .tertiaryLabel
-        label.text = "'Stocks' Replica"
+        label.text = "U.S. Stocks"
         return label
     }()
     
     private let marketStatusLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 13, weight: .regular)
+        label.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
         label.textAlignment = .right
         label.textColor = .secondaryLabel
-        label.text = ""
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
         return label
     }()
     
     private let footerStackView: UIStackView = {
         let view = UIStackView()
         view.axis = .horizontal
-        view.alignment = .top
+        view.alignment = .center
         view.spacing = 10
         view.backgroundColor = .secondarySystemBackground
         return view
@@ -44,16 +45,31 @@ class WatchlistFooterView: UIView {
         return view
     }()
     
+    // MARK: - Status Timer
+    
+    private var timer: Timer?
+    
     // MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .secondarySystemBackground
         setUpFooterView()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.updateMarketStatusLabel()
+            }
+        }
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - De-init
+    
+    deinit {
+        timer?.invalidate()
     }
     
     // MARK: - Private
@@ -66,7 +82,7 @@ class WatchlistFooterView: UIView {
             footerStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
             footerStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
             footerStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15),
-            footerStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20)
+            footerStackView.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor, constant: -20)
         ])
     }
     
@@ -82,21 +98,19 @@ class WatchlistFooterView: UIView {
         setUpFooterStackView()
     }
     
-    // MARK: - Public
-    
-    /// Update the market status label based on the market status and current time.
-    /// If the market is open when this method is called, the formatted date in
-    /// New York will be shown in the status label.
-    /// - Important: Use this method in main thread only as the text property of UILabel
-    ///         is used.
-    func updateMarketStatusLabel() {
+    /// Update the text property of the market status label based on the current time.
+    /// If the market is open when this method is called, the label denotes the remaining time until the market is closed;
+    /// otherwise, is denotes the remaining time until the next trading session starts.
+    /// - Important: Use this method in main thread only since the text property of UILabel is used.
+    private func updateMarketStatusLabel() {
         let calendarManager = CalendarManager.shared
+        
         if calendarManager.isMarketOpen {
-            let formattedDate = calendarManager.currentNewYorkDate
-            marketStatusLabel.text = "Updated: " + formattedDate
-        }
-        else {
-            marketStatusLabel.text = "Market Closed"
+            let formattedTimeToClose = calendarManager.timeToClose.formatted
+            marketStatusLabel.text = "Market Closes in " + formattedTimeToClose
+        } else {
+            let formattedTimeToOpen = calendarManager.timeToOpen.formatted
+            marketStatusLabel.text = "Market Opens in " + formattedTimeToOpen
         }
     }
     

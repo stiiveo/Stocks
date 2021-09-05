@@ -351,7 +351,6 @@ extension WatchListViewController {
                     self.watchlistData.append(stockData)
                     self.viewModel.add(with: stockData)
                     DispatchQueue.main.async {
-                        self.footerView.updateMarketStatusLabel()
                         self.tableView.reloadData()
                     }
                 case .failure(let error):
@@ -379,9 +378,9 @@ extension WatchListViewController {
                             print(error)
                         }
                         DispatchQueue.main.async {
-                            self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)],
-                                                      with: .automatic)
-                            self.footerView.updateMarketStatusLabel()
+                            self.tableView.reloadRows(
+                                at: [IndexPath(row: index, section: 0)],
+                                with: .automatic)
                         }
                     case .failure(let error):
                         print(error)
