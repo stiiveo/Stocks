@@ -147,7 +147,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     private func configureHeaderView() {
         let headerView = StockDetailHeaderView()
-        let chartHeight = view.width * 0.6
+        let chartHeight = view.width * 0.7
         headerView.frame = CGRect(
             x: 0,
             y: 0,

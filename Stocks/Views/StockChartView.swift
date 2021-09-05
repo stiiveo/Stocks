@@ -44,6 +44,7 @@ class StockChartView: LineChartView {
     func configure(with viewModel: ViewModel) {
         // Switch the appearance of the right and x axis.
         rightAxis.enabled = viewModel.showAxis
+        extraTopOffset = viewModel.showAxis ? 8.0 : 0
         xAxis.enabled = viewModel.showAxis
         setUpChartData(with: viewModel)
     }
@@ -58,7 +59,9 @@ class StockChartView: LineChartView {
         rightAxis.enabled = false
         drawGridBackgroundEnabled = false
         rightAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
+        rightAxis.setLabelCount(4, force: true)
         xAxis.labelPosition = .bottom
+        xAxis.setLabelCount(6, force: true)
         xAxis.valueFormatter = XAxisValueFormatter()
         xAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .regular)
         xAxis.avoidFirstLastClippingEnabled = true
@@ -134,7 +137,7 @@ final class XAxisValueFormatter: IAxisValueFormatter {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: "America/New_York")
         formatter.calendar = CalendarManager.shared.newYorkCalendar
-        formatter.dateFormat = "h"
+        formatter.dateFormat = "H"
         return formatter.string(from: Date(timeIntervalSince1970: value))
     }
 }
