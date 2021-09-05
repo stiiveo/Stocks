@@ -74,14 +74,13 @@ class WatchlistTableViewCellViewModel {
         let currentPrice = stockData.quote.current
         let previousClose = stockData.quote.prevClose
         let priceChange = (currentPrice / previousClose) - 1
-        let priceChangePercentage = priceChange.signedPercentageString()
         
         let model = ViewModel(
             symbol: stockData.symbol,
             companyName: UserDefaults.standard.string(forKey: stockData.symbol) ?? stockData.symbol,
             price: currentPrice.stringFormatted(by: .decimalFormatter),
-            changeColor: priceChange < 0 ? .systemRed : .systemGreen,
-            changePercentage: priceChangePercentage,
+            changeColor: (currentPrice - previousClose).rounded() < 0 ? .stockPriceDown : .stockPriceUp,
+            changePercentage: priceChange.signedPercentageString(),
             chartViewModel: .init(
                 data: stockData.priceHistory.map{
                     .init(timeInterval: $0.time, price: $0.close)},
