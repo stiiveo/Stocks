@@ -15,6 +15,8 @@ class StockChartView: LineChartView {
     struct ViewModel {
         let data: [StockLineChartData]
         let previousClose: Double
+        let highestPrice: Double
+        let lowestPrice: Double
         let showAxis: Bool
     }
     
@@ -22,6 +24,8 @@ class StockChartView: LineChartView {
         let timeInterval: Double
         let price: Double
     }
+    
+    private let calendarManager = CalendarManager.shared
     
     // MARK: - Init
     
@@ -78,21 +82,20 @@ class StockChartView: LineChartView {
     
     private func setUpChartData(with viewModel: ViewModel) {
         // Chart Data Entries
-        let entries: [ChartDataEntry] = viewModel.data.map{
+        let priceDataEntries: [ChartDataEntry] = viewModel.data.map{
             .init(x: $0.timeInterval, y: $0.price)
         }
-        guard entries.count >= 2 else { return }
+        guard priceDataEntries.count >= 2,
+              let firstValue = viewModel.data.first?.price,
+              let latestValue = viewModel.data.last?.price,
+              let firstTimestamp = priceDataEntries.first?.x,
+              let lastTimestamp = priceDataEntries.last?.x else { return }
         
-        let latestOpenTime = CalendarManager.shared.latestTradingTime.open.timeIntervalSince1970
-        let latestCloseTime = CalendarManager.shared.latestTradingTime.close.timeIntervalSince1970
-        let timeIntervalBetweenLatestTradingDay = latestCloseTime - latestOpenTime
-        guard let firstDataTimeStamp = entries.first?.x,
-              let lastDataTimeStamp = entries.last?.x else { return }
-        let isTimeRangeWithinLatestTradingTimeRange = (lastDataTimeStamp - firstDataTimeStamp) <= timeIntervalBetweenLatestTradingDay
+        let latestOpenTime = calendarManager.latestTradingTime.open.timeIntervalSince1970
+        let latestCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+        let latestTradingDayDuration = latestCloseTime - latestOpenTime
         
-        guard let startPrice = viewModel.data.first?.price,
-              let latestValue = viewModel.data.last?.price else { return }
-        let valueChange = latestValue - startPrice
+        let isTimeRangeWithinLatestTradingTimeRange = (lastTimestamp - firstTimestamp) <= latestTradingDayDuration
         
         /*
          Since the opening price of a stock could be higher or lower than its
@@ -108,15 +111,47 @@ class StockChartView: LineChartView {
          last price in the data entry.
          */
         var fillColor: UIColor = .stockPriceUp
+        let previousPriceDataSet = staticLineChartDataSet(value: viewModel.previousClose,
+                                                          startTime: priceDataEntries[0].x,
+                                                          endTime: latestCloseTime,
+                                                          dashLengths: [2])
+        var drawPreviousPriceLine = false
         
         // Set x-axis' maximum value if the data's time range is within the latest trading time span.
         if isTimeRangeWithinLatestTradingTimeRange {
             xAxis.axisMaximum = latestCloseTime
             fillColor = (latestValue - viewModel.previousClose < 0) ? .stockPriceDown : .stockPriceUp
+            
+            // Draw previous close dash line if it's within defined tolerated price range.
+            let previousPrice = viewModel.previousClose
+            let highestPrice = viewModel.highestPrice
+            let lowestPrice = viewModel.lowestPrice
+            let tolerance = 0.05
+            if previousPrice <= (highestPrice * (1 + tolerance)) &&
+                previousPrice >= (lowestPrice * (1 - tolerance)) {
+                // Draw a horizontal dash line across the whole time line with previous close value.
+                drawPreviousPriceLine = true
+            }
         } else {
+            let valueChange = latestValue - firstValue
             fillColor = valueChange < 0 ? .stockPriceDown : .stockPriceUp
         }
         
+        let priceDataSet = lineChartDataSetWithGradientFill(priceDataEntries, fillColor: fillColor)
+        var lineChartDataSets = [priceDataSet]
+        if drawPreviousPriceLine {
+            lineChartDataSets.append(previousPriceDataSet)
+        }
+        
+        self.data = LineChartData(dataSets: lineChartDataSets)
+    }
+    
+    /// Returns a `LineChartDataSet` object created from provided `ChartDataEntry` array filled with specified gradient color.
+    /// - Parameters:
+    ///   - entries: Data entries used to create a line chart data set.
+    ///   - fillColor: An `UIColor` object used as the fill color.
+    /// - Returns: Returns a `LineChartDataSet` object created from provided `ChartDataEntry` array filled with specified gradient color.
+    private func lineChartDataSetWithGradientFill(_ entries: [ChartDataEntry], fillColor: UIColor) -> LineChartDataSet {
         let dataSet = LineChartDataSet(entries: entries)
         dataSet.drawCirclesEnabled = false
         dataSet.drawIconsEnabled = false
@@ -125,7 +160,6 @@ class StockChartView: LineChartView {
         dataSet.setColor(fillColor)
         dataSet.lineWidth = 1.5
         
-        // Set up gradient color fill.
         let gradientColors = [fillColor.cgColor, UIColor.clear.cgColor] as CFArray
         let gradientLocations: [CGFloat] = [1.0, 0.0]
         if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
@@ -133,9 +167,29 @@ class StockChartView: LineChartView {
                                      locations: gradientLocations) {
             dataSet.fill = Fill.fillWithLinearGradient(gradient, angle: 90.0)
         }
-        
-        let data = LineChartData(dataSet: dataSet)
-        self.data = data
+        return dataSet
+    }
+    
+    /// A `LineChartDataSet` object created from provided `value`, `startTime` and `endTime`.
+    /// - Parameters:
+    ///   - value: The value of the data entries.
+    ///   - startTime: A `TimeInterval` value indicating the first time point of the data set.
+    ///   - endTime: A `TimeInterval` value indicating the last time point of the data set.
+    /// - Returns: Returns a `LineCharDataSet` object.
+    private func staticLineChartDataSet(value: Double,
+                                        startTime: TimeInterval,
+                                        endTime: TimeInterval,
+                                        dashLengths: [CGFloat]? = nil) -> LineChartDataSet {
+        let entries: [ChartDataEntry] = [.init(x: startTime, y: value),
+                                         .init(x: endTime, y: value)]
+        let dataSet = LineChartDataSet(entries: entries)
+        dataSet.drawCirclesEnabled = false
+        dataSet.drawIconsEnabled = false
+        dataSet.drawValuesEnabled = false
+        dataSet.setColor(.systemGray)
+        dataSet.lineWidth = 0.75
+        dataSet.lineDashLengths = dashLengths
+        return dataSet
     }
 
 }

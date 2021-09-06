@@ -198,10 +198,6 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         }
         
         let metricsViewModel: StockMetricsView.ViewModel = {
-            .init(timeInterval: $0.time, price: $0.close)
-        }
-        
-        let metricsViewModel: StockMetricsView.ViewModel = {
             .init(openPrice: quoteData.open,
                   highestPrice: quoteData.high,
                   lowestPrice: quoteData.low,
@@ -226,6 +222,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
             chartViewModel: .init(
                 data: lineChartData,
                 previousClose: quoteData.prevClose,
+                highestPrice: quoteData.high,
+                lowestPrice: quoteData.low,
                 showAxis: true
             ),
             metricsViewModels: metricsViewModel

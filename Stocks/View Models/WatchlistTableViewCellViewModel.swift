@@ -85,6 +85,8 @@ class WatchlistTableViewCellViewModel {
                 data: stockData.priceHistory.map{
                     .init(timeInterval: $0.time, price: $0.close)},
                 previousClose: previousClose,
+                highestPrice: stockData.quote.high,
+                lowestPrice: stockData.quote.low,
                 showAxis: false
             )
         )

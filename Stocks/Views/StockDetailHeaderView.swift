@@ -23,7 +23,7 @@ class StockDetailHeaderView: UIView {
     private let metricsView = StockMetricsView()
     
     private let titleViewHeight: CGFloat = 25
-    private let metricsViewHeight: CGFloat = 70
+    static let metricsViewHeight: CGFloat = 70
     
     // MARK: - Init
     
@@ -65,7 +65,7 @@ class StockDetailHeaderView: UIView {
             metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
             metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 20.0),
             metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20.0),
-            metricsView.heightAnchor.constraint(equalToConstant: metricsViewHeight)
+            metricsView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.metricsViewHeight)
         ])
     }
     
