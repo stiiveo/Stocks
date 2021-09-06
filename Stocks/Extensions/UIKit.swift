@@ -50,6 +50,33 @@ extension UIViewController {
         safariVC.modalPresentationStyle = style
         present(safariVC, animated: true, completion: nil)
     }
+    
+    /// Present error alert with web link to Finnhub's API limit page.
+    func presentAPIErrorAlert() {
+        let alert = UIAlertController(title: "Data Unavailable",
+                                      message: """
+                                                           
+                                               Some data sources are inaccessible due to API limits.
+                                               Please tap "API Limit" button for more info.
+                                               """,
+                                      preferredStyle: .alert)
+        
+        let dismissAction = UIAlertAction(title: "Dismiss", style: .default, handler: nil)
+        
+        let openLinkAction = UIAlertAction(title: "API Limit", style: .cancel) { _ in
+            let safariVC = SFSafariViewController(url: URL(string: "https://finnhub.io/pricing")!)
+            safariVC.dismissButtonStyle = .close
+            safariVC.modalPresentationStyle = .overFullScreen
+            self.present(safariVC, animated: true) {
+                alert.dismiss(animated: true, completion: nil)
+            }
+        }
+        
+        alert.addAction(openLinkAction)
+        alert.addAction(dismissAction)
+        present(alert, animated: true)
+    }
+    
 }
 
 // MARK: - UIImageView

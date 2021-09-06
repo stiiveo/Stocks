@@ -8,14 +8,20 @@
 import UIKit
 import SafariServices
 
+protocol StockDetailsViewControllerDelegate: AnyObject {
+    func stockDetailsViewControllerIsShown()
+    func stockDetailsViewControllerWillBeDismissed()
+}
+
 class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDelegate {
 
     // MARK: - Properties
-
-    private let symbol: String
-    private let companyName: String
-    private var stockQuote: StockQuote?
-    private var priceHistory: [PriceHistory]
+    
+    private lazy var headerView = StockDetailHeaderView()
+    
+    private var symbol: String
+    private var quoteData: StockQuote
+    private var chartData: [PriceHistory]
     private var metrics: Metrics?
 
     private let tableView: UITableView = {
@@ -28,17 +34,27 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     }()
 
     private var stories: [NewsStory] = []
+    
+    private var companyName: String {
+        return UserDefaults.standard.string(forKey: symbol) ?? symbol
+    }
+    
+    private var updateTimer: Timer?
+    
+    weak var delegate: StockDetailsViewControllerDelegate?
 
     // MARK: - Init
 
     init(
         symbol: String,
-        companyName: String,
-        priceHistory: [PriceHistory] = []
+        quoteData: StockQuote,
+        chartData: [PriceHistory],
+        metricsData: Metrics? = nil
     ) {
         self.symbol = symbol
-        self.companyName = companyName
-        self.priceHistory = priceHistory
+        self.quoteData = quoteData
+        self.chartData = chartData
+        self.metrics = metricsData
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -53,14 +69,37 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         view.backgroundColor = .systemBackground
         title = companyName
         setUpCloseButton()
-        setUpTable()
-        fetchFinancialData()
+        setUpHeaderView()
+        setUpTableView()
+        configureHeaderViewData()
+        fetchMetricsData()
         fetchNews()
     }
     
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        tableView.frame = view.bounds
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        delegate?.stockDetailsViewControllerIsShown()
+        
+        // Start auto-updating timer.
+        let updateInterval: TimeInterval = 4.0
+        
+        updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            // Update data if the market is still open.
+            let marketCloseDate = CalendarManager.shared.latestTradingTime.close
+            guard Date() <= marketCloseDate.addingTimeInterval(updateInterval) else { return }
+            
+            self.fetchQuoteData()
+            self.fetchChartData()
+            self.fetchMetricsData()
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        updateTimer?.invalidate()
+        delegate?.stockDetailsViewControllerWillBeDismissed()
     }
 
     // MARK: - Private
@@ -77,67 +116,21 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         dismiss(animated: true, completion: nil)
     }
 
-    private func setUpTable() {
+    private func setUpTableView() {
         view.addSubview(tableView)
+        tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
     }
-
-    /// Fetch financial metrics.
-    private func fetchFinancialData() {
-        let group = DispatchGroup()
-        
-        group.enter()
+    
+    private func fetchQuoteData() {
         APICaller.shared.fetchStockQuote(for: symbol) { [weak self] result in
-            defer { group.leave() }
+            guard let self = self else { return }
             switch result {
-            case .success(let quote):
-                self?.stockQuote = quote
-            case .failure(let error):
-                print(error)
-            }
-        }
-        
-        if priceHistory.isEmpty {
-            group.enter()
-            APICaller.shared.fetchPriceHistory(symbol, timeSpan: .day) {
-                [weak self] result in
-                defer { group.leave() }
-                
-                switch result {
-                case .success(let data):
-                    self?.priceHistory = data.priceHistory
-                case .failure(let error):
-                    print(error)
-                }
-            }
-        }
-        
-        // Fetch financial metrics
-        group.enter()
-        APICaller.shared.fetchStockMetrics(symbol: symbol) { [weak self] result in
-            defer { group.leave() }
-            
-            switch result {
-            case .success(let metricsResponse):
-                self?.metrics = metricsResponse.metric
-            case .failure(let error):
-                print(error)
-            }
-        }
-        
-        group.notify(queue: .main) { [weak self] in
-            self?.configureHeaderView()
-        }
-    }
-
-    private func fetchNews() {
-        APICaller.shared.fetchNews(for: .company(symbol: symbol)) { [weak self] result in
-            switch result {
-            case .success(let stories):
+            case .success(let stockQuote):
+                self.quoteData = stockQuote
                 DispatchQueue.main.async {
-                    self?.stories = stories
-                    self?.tableView.reloadData()
+                    self.configureHeaderViewData()
                 }
             case .failure(let error):
                 print(error)
@@ -145,53 +138,99 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         }
     }
     
-    private func configureHeaderView() {
-        let headerView = StockDetailHeaderView()
+    private func fetchChartData() {
+        APICaller.shared.fetchPriceHistory(symbol, timeSpan: .day) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let candlesData):
+                self.chartData = candlesData.priceHistory
+                DispatchQueue.main.async {
+                    self.configureHeaderViewData()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+
+    /// Fetch financial metrics.
+    private func fetchMetricsData() {
+        APICaller.shared.fetchStockMetrics(symbol: symbol) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let metricsResponse):
+                self.metrics = metricsResponse.metric
+                DispatchQueue.main.async {
+                    self.configureHeaderViewData()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+
+    private func fetchNews() {
+        APICaller.shared.fetchNews(for: .company(symbol: symbol)) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let stories):
+                DispatchQueue.main.async {
+                    self.stories = stories
+                    self.tableView.reloadData()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+    
+    private func setUpHeaderView() {
+        headerView = StockDetailHeaderView()
         
         // Define header view's frame.
         headerView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.width)
-        
-        let lineChartData: [StockChartView.StockLineChartData] = priceHistory.map{
+        tableView.tableHeaderView = headerView
+    }
+    
+    private func configureHeaderViewData() {
+        let lineChartData: [StockChartView.StockLineChartData] = chartData.map{
             .init(timeInterval: $0.time, price: $0.close)
         }
         
-        let quote = stockQuote?.current
-        let prevClose = stockQuote?.prevClose
-        let priceChange = (quote != nil && prevClose != nil) ? (quote! / stockQuote!.prevClose) - 1 : nil
+        let metricsViewModel: StockMetricsView.ViewModel = {
+            .init(timeInterval: $0.time, price: $0.close)
+        }
         
-        guard let metrics = metrics else { return }
-        let metricsViewModels: [MetricCollectionViewCell.ViewModel] = [
-            .init(name: "Open", value: stockQuote?.open.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "High", value: stockQuote?.high.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "Low", value: stockQuote?.low.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "Mkt Cap",
-                  value: metrics.marketCap != nil ? (metrics.marketCap! * pow(10, 6)).shortScaleText() : "–"),
-            .init(name: "P/E", value: metrics.priceToEarnings?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "P/S", value: metrics.priceToSales?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "52W H", value: metrics.annualHigh?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "52W L", value: metrics.annualLow?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "Prev", value: prevClose?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "Yield", value: metrics.yield?.stringFormatted(by: .decimalFormatter).appending("%") ?? "–"),
-            .init(name: "Beta", value: metrics.beta?.stringFormatted(by: .decimalFormatter) ?? "–"),
-            .init(name: "EPS", value: metrics.eps?.stringFormatted(by: .decimalFormatter) ?? "–"),
-        ]
+        let metricsViewModel: StockMetricsView.ViewModel = {
+            .init(openPrice: quoteData.open,
+                  highestPrice: quoteData.high,
+                  lowestPrice: quoteData.low,
+                  marketCap: metrics?.marketCap,
+                  priceEarningsRatio: metrics?.priceToEarnings,
+                  priceSalesRatio: metrics?.priceToSales,
+                  annualHigh: metrics?.annualHigh,
+                  annualLow: metrics?.annualLow,
+                  previousPrice: quoteData.prevClose,
+                  yield: metrics?.yield,
+                  beta: metrics?.beta,
+                  eps: metrics?.eps)
+        }()
         
         headerView.configure(
             titleViewModel: .init(
-                quote: quote,
-                priceChange: priceChange,
+                quote: quoteData.current,
+                priceChange: (quoteData.current / quoteData.prevClose) - 1,
                 showAddingButton: !PersistenceManager.shared.watchListContains(symbol),
                 delegate: self
             ),
             chartViewModel: .init(
                 data: lineChartData,
-                previousClose: stockQuote?.prevClose ?? 0.0,
+                previousClose: quoteData.prevClose,
                 showAxis: true
             ),
-            metricViewModels: metricsViewModels
+            metricsViewModels: metricsViewModel
         )
         
-        tableView.tableHeaderView = headerView
     }
     
     // MARK: - Delegate Methods

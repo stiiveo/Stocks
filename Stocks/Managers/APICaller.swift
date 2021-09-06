@@ -19,7 +19,9 @@ final class APICaller {
         static let secondsInADay: TimeInterval = 3600 * 24
     }
     
-    private init() {}
+    struct ExplicitAPIError: Codable, Error {
+        let error: String
+    }
     
     /// Time interval between each data set.
     enum DataResolution: String {
@@ -32,6 +34,8 @@ final class APICaller {
         case week = "W"
         case month = "M"
     }
+    
+    private init() {}
     
     // MARK: - Public
     
@@ -157,7 +161,7 @@ final class APICaller {
             case .success(let quote):
                 stockQuote = quote
             case .failure(let error):
-                completion(.failure(error))
+                print(error)
             }
         }
         
@@ -170,14 +174,26 @@ final class APICaller {
             case .success(let response):
                 stockPriceHistory = response.priceHistory
             case .failure(let error):
-                completion(.failure(error))
+                print(error)
             }
         }
         
         group.notify(queue: .global(qos: .default)) {
             guard let quote = stockQuote,
-                  let priceHistory = stockPriceHistory
-            else { return }
+                  let priceHistory = stockPriceHistory else {
+                // Stock quote and/or price history data is not fetched.
+                switch (stockQuote == nil, stockPriceHistory == nil) {
+                case (true, true):
+                    completion(.failure(APIError.noQuoteAndPriceHistoryReturned))
+                case (false, true):
+                    completion(.failure(APIError.noPriceHistoryDataReturned))
+                case (true, false):
+                    completion(.failure(APIError.noQuoteDataReturned))
+                default:
+                    return
+                }
+                return
+            }
             
             let stockData = StockData(symbol: symbol, quote: quote, priceHistory: priceHistory)
             completion(.success(stockData))
@@ -200,7 +216,9 @@ final class APICaller {
     private enum APIError: Error {
         case noDataReturned
         case invalidUrl
-        case failedToGetStockData
+        case noQuoteDataReturned
+        case noPriceHistoryDataReturned
+        case noQuoteAndPriceHistoryReturned
     }
     
     private var apiKey: String {
@@ -259,14 +277,12 @@ final class APICaller {
                 let result = try JSONDecoder().decode(type, from: data)
                 completion(.success(result))
             } catch {
-                completion(.failure(error))
-                
-                // Print converted json data returned from API if the returned json data could not be decoded.
+                // Try decode the data into ExplicitAPIError type to get error from API.
                 do {
-                    let jsonObject = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-                    print("jsonObject:", jsonObject)
+                    let explicitAPIError = try JSONDecoder().decode(ExplicitAPIError.self, from: data)
+                    completion(.failure(explicitAPIError))
                 } catch {
-                    print("Failed to serialize json object: \(error)")
+                    completion(.failure(error))
                 }
             }
         }
