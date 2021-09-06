@@ -36,6 +36,8 @@ class StockMetricsView: UICollectionView {
         customLayout.minimumInteritemSpacing = 0
         customLayout.minimumLineSpacing = 20
         super.init(frame: frame, collectionViewLayout: customLayout)
+        
+        self.showsHorizontalScrollIndicator = false
         register(
             MetricCollectionViewCell.self,
             forCellWithReuseIdentifier: MetricCollectionViewCell.identifier
