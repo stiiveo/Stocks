@@ -52,20 +52,28 @@ class StockChartView: LineChartView {
     // MARK: - Private
     
     private func setUpChartView() {
+        // Remove default padding around the chart.
         minOffset = 0.0
+        
         legend.enabled = false
-        xAxis.enabled = false
         leftAxis.enabled = false
-        rightAxis.enabled = false
         drawGridBackgroundEnabled = false
+        
+        // Right axis
+        rightAxis.enabled = false
         rightAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         rightAxis.setLabelCount(4, force: true)
+        rightAxis.gridLineWidth = 0.25
+        
+        // X-Axis
+        xAxis.enabled = false
         xAxis.labelPosition = .bottom
-        xAxis.setLabelCount(6, force: true)
+        xAxis.granularity = 3600.0 // minimum interval between xAxis values
         xAxis.valueFormatter = XAxisValueFormatter()
         xAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .regular)
         xAxis.avoidFirstLastClippingEnabled = true
-        xAxis.granularity = 3600.0 // minimum interval between xAxis values
+        xAxis.setLabelCount(6, force: true)
+        xAxis.gridLineWidth = 0.25
     }
     
     private func setUpChartData(with viewModel: ViewModel) {

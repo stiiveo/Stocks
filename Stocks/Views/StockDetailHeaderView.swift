@@ -40,8 +40,8 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     
     private var metricViewModels = [MetricCollectionViewCell.ViewModel]()
     
-    static let titleViewHeight: CGFloat = 25
-    static let metricsViewHeight: CGFloat = 70
+    private let titleViewHeight: CGFloat = 25
+    private let metricsViewHeight: CGFloat = 70
     
     // MARK: - Init
     
@@ -68,8 +68,8 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         NSLayoutConstraint.activate([
             titleView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20.0),
             titleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
-            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 15.0),
-            titleView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.titleViewHeight)
+            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 20.0),
+            titleView.heightAnchor.constraint(equalToConstant: titleViewHeight)
         ])
         
         chartView.translatesAutoresizingMaskIntoConstraints = false
@@ -83,9 +83,9 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
         NSLayoutConstraint.activate([
             metricsView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingPadding),
             metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
-            metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 10.0),
-            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -15.0),
-            metricsView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.metricsViewHeight)
+            metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 20.0),
+            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20.0),
+            metricsView.heightAnchor.constraint(equalToConstant: metricsViewHeight)
         ])
     }
     
@@ -124,8 +124,7 @@ class StockDetailHeaderView: UIView, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 130.0,
-                      height: StockDetailHeaderView.metricsViewHeight / 3)
+        return CGSize(width: 130.0, height: metricsViewHeight / 3)
     }
     
 }
