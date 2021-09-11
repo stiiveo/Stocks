@@ -57,9 +57,10 @@ class WatchListTableViewCell: UITableViewCell {
         let button = UIButton()
         button.tintColor = .white
         button.titleLabel?.font = .monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
-        button.titleLabel?.textAlignment = .right
+        button.contentHorizontalAlignment = .trailing
         button.layer.cornerRadius = 5
-        button.contentEdgeInsets = UIEdgeInsets(top: 4, left: 13, bottom: 4, right: 4)
+        button.titleEdgeInsets.left = 4 // add title left padding.
+        button.titleEdgeInsets.right = 4 // add title right padding.
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.titleLabel?.minimumScaleFactor = 0.8
         return button
@@ -77,6 +78,7 @@ class WatchListTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.clipsToBounds = true
+        setUpPriceButton()
         setUpPriceStackView()
         setUpChartView()
         setUpTitleStackView()
@@ -111,12 +113,20 @@ class WatchListTableViewCell: UITableViewCell {
     private let leadingMargin: CGFloat = 19.0
     private let trailingMargin: CGFloat = -19.0
     
+    private func setUpPriceButton() {
+        priceChangeButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            priceChangeButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 70.0),
+            priceChangeButton.heightAnchor.constraint(equalToConstant: 25.0)
+        ])
+    }
+    
     private func setUpPriceStackView() {
         priceStackView.addArrangedSubviews(priceLabel, priceChangeButton)
         addSubview(priceStackView)
         priceStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Custom bottom constraint
+        // Custom bottom constraint to silence conflict warning.
         let bottomConstraint = priceStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
         bottomConstraint.priority = UILayoutPriority(999)
         
@@ -132,7 +142,7 @@ class WatchListTableViewCell: UITableViewCell {
         addSubview(chartView)
         chartView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Custom bottom constraint
+        // Custom bottom constraint to silence conflict warning.
         let bottomConstraint = chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 3.0)
         bottomConstraint.priority = UILayoutPriority(999)
         
@@ -149,7 +159,7 @@ class WatchListTableViewCell: UITableViewCell {
         addSubview(titleStackView)
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Custom bottom constraint
+        // Custom bottom constraint to silence conflict warning.
         let bottomConstraint = titleStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
         bottomConstraint.priority = UILayoutPriority(999)
         
