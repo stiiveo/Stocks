@@ -27,8 +27,8 @@ struct StockDefaults {
         "MSFT": "Microsoft Corporation",
         "GOOG": "Alphabet Inc.",
         "AMZN": "Amazon Inc.",
-        "NVDA": "Nvidia Corporation",
         "FB": "Facebook Inc.",
+        "NVDA": "Nvidia Corporation",
         "SQ": "Square Inc.",
     ]
 }

@@ -40,13 +40,12 @@ class StockDetailHeaderTitleView: UIView {
     
     private let watchlistAddingButton: UIButton = {
         let button = UIButton()
-        button.tintColor = .black
-        button.backgroundColor = UIColor(red: 102/255, green: 209/255, blue: 255/255, alpha: 1.0)
         button.setTitle("Add to Watchlist", for: .normal)
-        button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 10, bottom: 15, right: 10)
-        button.sizeToFit()
+        button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 13, weight: .regular)
+        button.backgroundColor = UIColor(red: 102/255, green: 209/255, blue: 255/255, alpha: 1.0)
         button.layer.cornerRadius = 12
+        button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 10, bottom: 15, right: 10)
         return button
     }()
     

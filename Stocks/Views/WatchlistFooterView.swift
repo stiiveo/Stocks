@@ -104,14 +104,11 @@ class WatchlistFooterView: UIView {
     /// - Important: Use this method in main thread only since the text property of UILabel is used.
     private func updateMarketStatusLabel() {
         let calendarManager = CalendarManager.shared
-        
-        if calendarManager.isMarketOpen {
-            let formattedTimeToClose = calendarManager.timeToClose.formatted
-            marketStatusLabel.text = "Market Closes in " + formattedTimeToClose
-        } else {
-            let formattedTimeToOpen = calendarManager.timeToOpen.formatted
-            marketStatusLabel.text = "Market Opens in " + formattedTimeToOpen
-        }
+        let formattedTimeToClose = calendarManager.timeToClose.formatted
+        let formattedTimeToOpen = calendarManager.timeToOpen.formatted
+        marketStatusLabel.text = calendarManager.isMarketOpen ?
+            "Market Closes in " + formattedTimeToClose :
+            "Market Opens in " + formattedTimeToOpen
     }
     
 }
