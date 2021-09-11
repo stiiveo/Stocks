@@ -14,12 +14,12 @@ import SafariServices
 extension UIColor {
     /// Color used to represent a gainer stock.
     static let stockPriceUp: UIColor = {
-        .systemGreen
+        UIColor(red: 53/255, green: 199/255, blue: 89/255, alpha: 1.0)
     }()
     
     /// Color used to represent a loser stock.
     static let stockPriceDown: UIColor = {
-        .systemRed
+        UIColor(red: 254/255, green: 61/255, blue: 48/255, alpha: 1.0)
     }()
 }
 
