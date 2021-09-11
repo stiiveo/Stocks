@@ -39,7 +39,7 @@ class StockDetailHeaderTitleView: UIView {
     }()
     
     private let watchlistAddingButton: UIButton = {
-        let button = UIButton(type: .roundedRect)
+        let button = UIButton()
         button.tintColor = .black
         button.backgroundColor = UIColor(red: 102/255, green: 209/255, blue: 255/255, alpha: 1.0)
         button.setTitle("Add to Watchlist", for: .normal)
@@ -83,7 +83,7 @@ class StockDetailHeaderTitleView: UIView {
     func configure(viewModel: ViewModel) {
         quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? "–"
         priceChangeLabel.text = viewModel.priceChange?.signedPercentageString() ?? "–"
-        priceChangeLabel.textColor = viewModel.priceChange?.rounded() ?? 0 < 0 ? .stockPriceDown : .stockPriceUp
+        priceChangeLabel.textColor = viewModel.priceChange ?? 0 < 0 ? .stockPriceDown : .stockPriceUp
         watchlistAddingButton.isHidden = !viewModel.showAddingButton
         delegate = viewModel.delegate
     }

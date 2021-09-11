@@ -79,7 +79,7 @@ class WatchlistTableViewCellViewModel {
             symbol: stockData.symbol,
             companyName: UserDefaults.standard.string(forKey: stockData.symbol) ?? stockData.symbol,
             price: currentPrice.stringFormatted(by: .decimalFormatter),
-            changeColor: (currentPrice - previousClose).rounded() < 0 ? .stockPriceDown : .stockPriceUp,
+            changeColor: (currentPrice - previousClose) < 0 ? .stockPriceDown : .stockPriceUp,
             changePercentage: priceChange.signedPercentageString(),
             chartViewModel: .init(
                 data: stockData.priceHistory.map{
