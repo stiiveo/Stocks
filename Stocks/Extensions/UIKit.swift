@@ -55,9 +55,8 @@ extension UIViewController {
     func presentAPIErrorAlert() {
         let alert = UIAlertController(title: "Data Unavailable",
                                       message: """
-                                                           
-                                               Some data sources are inaccessible due to API limits.
-                                               Please tap "API Limit" button for more info.
+                                               Data sources are inaccessible due to \
+                                               API limits. Tap "API Limit" for more info.
                                                """,
                                       preferredStyle: .alert)
         

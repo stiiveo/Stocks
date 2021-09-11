@@ -72,11 +72,10 @@ class StockChartView: LineChartView {
         // X-Axis
         xAxis.enabled = false
         xAxis.labelPosition = .bottom
-        xAxis.granularity = 3600.0 // minimum interval between xAxis values
         xAxis.valueFormatter = XAxisValueFormatter()
-        xAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .regular)
+        xAxis.labelFont = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         xAxis.avoidFirstLastClippingEnabled = true
-        xAxis.setLabelCount(6, force: true)
+        xAxis.setLabelCount(7, force: true)
         xAxis.gridLineWidth = 0.25
     }
     
@@ -111,10 +110,11 @@ class StockChartView: LineChartView {
          last price in the data entry.
          */
         var fillColor: UIColor = .stockPriceUp
-        let previousPriceDataSet = staticLineChartDataSet(value: viewModel.previousClose,
-                                                          startTime: priceDataEntries[0].x,
-                                                          endTime: latestCloseTime,
-                                                          dashLengths: [2])
+        let previousPriceDataSet = staticLineChartDataSet(
+            value: viewModel.previousClose,
+            startTime: priceDataEntries[0].x,
+            endTime: latestCloseTime,
+            dashLengths: [2])
         var drawPreviousPriceLine = false
         
         // Set x-axis' maximum value if the data's time range is within the latest trading time span.
@@ -122,14 +122,14 @@ class StockChartView: LineChartView {
             xAxis.axisMaximum = latestCloseTime
             fillColor = (latestValue - viewModel.previousClose < 0) ? .stockPriceDown : .stockPriceUp
             
-            // Draw previous close dash line if it's within defined tolerated price range.
             let previousPrice = viewModel.previousClose
             let highestPrice = viewModel.highestPrice
             let lowestPrice = viewModel.lowestPrice
-            let tolerance = 0.05
+            let tolerance = 0.05 // Unit in percentage
+            
+            // Draw previous close dash line if it's within the tolerated price offset.
             if previousPrice <= (highestPrice * (1 + tolerance)) &&
                 previousPrice >= (lowestPrice * (1 - tolerance)) {
-                // Draw a horizontal dash line across the whole time line with previous close value.
                 drawPreviousPriceLine = true
             }
         } else {
@@ -139,7 +139,9 @@ class StockChartView: LineChartView {
         
         let priceDataSet = lineChartDataSetWithGradientFill(priceDataEntries, fillColor: fillColor)
         var lineChartDataSets = [priceDataSet]
+        
         if drawPreviousPriceLine {
+            // Draw a horizontal dash line across the whole time line with previous close value.
             lineChartDataSets.append(previousPriceDataSet)
         }
         
@@ -158,7 +160,7 @@ class StockChartView: LineChartView {
         dataSet.drawValuesEnabled = false
         dataSet.drawFilledEnabled = true
         dataSet.setColor(fillColor)
-        dataSet.lineWidth = 1.5
+        dataSet.lineWidth = 1.8
         
         let gradientColors = [fillColor.cgColor, UIColor.clear.cgColor] as CFArray
         let gradientLocations: [CGFloat] = [1.0, 0.0]
@@ -199,7 +201,13 @@ final class XAxisValueFormatter: IAxisValueFormatter {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: "America/New_York")
         formatter.calendar = CalendarManager.shared.newYorkCalendar
-        formatter.dateFormat = "H"
-        return formatter.string(from: Date(timeIntervalSince1970: value))
+        formatter.dateFormat = "H:mm"
+        let formattedString = formatter.string(from: Date(timeIntervalSince1970: value))
+        
+        if formattedString == "9:30" || formattedString == "16:00" {
+            return ""
+        } else {
+            return formattedString
+        }
     }
 }
