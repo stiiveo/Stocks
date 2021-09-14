@@ -33,7 +33,7 @@ struct StockCandlesResponse: Codable {
     }
 }
 
-struct PriceHistory {
+struct PriceHistory: Codable, Equatable {
     let time: TimeInterval
     let close: Double
 }

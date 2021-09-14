@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct StockQuote: Codable {
+struct StockQuote: Codable, Equatable {
     let open: Double
     let high: Double
     let low: Double

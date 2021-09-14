@@ -14,30 +14,41 @@
 
 import Foundation
 
-struct StockDefaults {
-    /// Key to access onboard status stored in the `UserDefaults`
-    static let onboardKey = "hasOnboarded"
-    
-    /// Key to access stock watchlist stored in the `UserDefaults`
-    static let watchlistKey = "watchList"
-    
-    /// The default stocks to be stored in the `UserDefaults` if the App is launched for the first time.
-    static let defaultStocks: [String: String] = [
-        "AAPL": "Apple Inc.",
-        "MSFT": "Microsoft Corporation",
-        "GOOG": "Alphabet Inc.",
-        "AMZN": "Amazon Inc.",
-        "NVDA": "Nvidia Corporation",
-        "FB": "Facebook Inc.",
-        "SQ": "Square Inc.",
-    ]
-}
-
 protocol PersistenceManagerDelegate: AnyObject {
     func didAddNewCompanyToWatchlist(symbol: String)
 }
 
 final class PersistenceManager {
+    
+    struct StockDefaults {
+        /// The default stocks to be stored in the `UserDefaults` if the App is launched for the first time.
+        static let defaultStocks: [String: String] = [
+            "AAPL": "Apple Inc.",
+            "MSFT": "Microsoft Corporation",
+            "GOOG": "Alphabet Inc.",
+            "AMZN": "Amazon Inc.",
+            "NVDA": "Nvidia Corporation",
+            "FB": "Facebook Inc.",
+            "SQ": "Square Inc.",
+        ]
+    }
+    
+    struct Constants {
+        /// Key to access onboard status stored in the `UserDefaults`
+        static let onboardKey = "hasOnboarded"
+        
+        /// Key to access stock watchlist stored in the `UserDefaults`
+        static let watchlistKey = "watchList"
+        
+        static let stocksDataDirectoryName = "StocksData"
+        static let stocksDataFileName = "StocksData"
+        static var stocksDataDirectoryUrl: URL {
+            let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+            let documentPath = paths[0]
+            let directoryUrl = documentPath.appendingPathComponent(Constants.stocksDataDirectoryName, isDirectory: true)
+            return directoryUrl
+        }
+    }
     
     // MARK: - Properties
     
@@ -56,10 +67,10 @@ final class PersistenceManager {
     ///         and the `onboard` status will be switched to `true`.
     var watchList: [String] {
         if !hasOnboarded {
-            userDefaults.set(true, forKey: StockDefaults.onboardKey)
+            userDefaults.set(true, forKey: Constants.onboardKey)
             setUpDefaults()
         }
-        return userDefaults.stringArray(forKey: StockDefaults.watchlistKey) ?? [] 
+        return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? []
     }
     
     /// Save specified company symbol and name to the watchlist.
@@ -69,7 +80,7 @@ final class PersistenceManager {
     func addToWatchlist(symbol: String, companyName: String) {
         var currentList = watchList
         currentList.append(symbol)
-        userDefaults.set(currentList, forKey: StockDefaults.watchlistKey)
+        userDefaults.set(currentList, forKey: Constants.watchlistKey)
         userDefaults.set(companyName, forKey: symbol)
         delegate?.didAddNewCompanyToWatchlist(symbol: symbol)
     }
@@ -81,7 +92,7 @@ final class PersistenceManager {
         for item in watchList where item != symbol {
             newList.append(item)
         }
-        userDefaults.set(newList, forKey: StockDefaults.watchlistKey)
+        userDefaults.set(newList, forKey: Constants.watchlistKey)
         userDefaults.set(nil, forKey: symbol)
     }
     
@@ -96,7 +107,7 @@ final class PersistenceManager {
     
     /// Returns if it's the first time the watchlist is accessed.
     private var hasOnboarded: Bool {
-        return userDefaults.bool(forKey: StockDefaults.onboardKey)
+        return userDefaults.bool(forKey: Constants.onboardKey)
     }
     
     /// Store preset companies to the watchlist as default.
@@ -104,11 +115,59 @@ final class PersistenceManager {
     private func setUpDefaults() {
         // Save all company's symbol.
         let symbols = StockDefaults.defaultStocks.map{ $0.key }
-        userDefaults.set(symbols, forKey: StockDefaults.watchlistKey)
+        userDefaults.set(symbols, forKey: Constants.watchlistKey)
         
         // Save each company's name.
         for (symbol, name) in StockDefaults.defaultStocks {
             userDefaults.set(name, forKey: symbol)
+        }
+    }
+    
+}
+
+// MARK: - Stock Data Persistence
+
+extension PersistenceManager {
+    
+    /// Encode specified array of `StockData` in JSON and write it to preserved file path.
+    /// - Parameter stocksData: Array of `StockData` to be written to preserved file path.
+    func persistStocksData(_ stocksData: [StockData]) {
+        let directoryUrl = Constants.stocksDataDirectoryUrl
+        if !FileManager.default.fileExists(atPath: directoryUrl.path) {
+            do {
+                try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: false)
+            } catch {
+                print("Failed to create stocks data directory for persistent storage.")
+                return
+            }
+        }
+        do {
+            let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataDirectoryName)
+            let encodedData = try JSONEncoder().encode(stocksData)
+            try encodedData.write(to: fileUrl, options: .atomic)
+        } catch {
+            print("Failed to persist stocks data.\n\(error)")
+        }
+    }
+    
+    /// The array of `StockData` persisted at the preserved path of device's local disk.
+    /// - Returns: Returns an empty array if the persisted file does not exist, cannot be retrieved or decoded.
+    func persistedStocksData() -> [StockData] {
+        do {
+            let directoryUrl = Constants.stocksDataDirectoryUrl
+            let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataFileName)
+            
+            if !FileManager.default.fileExists(atPath: directoryUrl.path) {
+                print("File does not exist at path \(directoryUrl.absoluteString)")
+                return []
+            }
+            
+            let persistedData = try Data(contentsOf: fileUrl)
+            let stocksData = try JSONDecoder().decode([StockData].self, from: persistedData)
+            return stocksData
+        } catch {
+            print("Failed to retrieve persisted stocks data.\n\(error)")
+            return []
         }
     }
     

@@ -18,8 +18,8 @@ class Persistence_Manager_Tests: XCTestCase {
     private let testCompanyName = "Company Inc."
     
     // User defaults keys.
-    private let watchlistKey = StockDefaults.watchlistKey
-    private let onboardKey = StockDefaults.onboardKey
+    private let watchlistKey = PersistenceManager.Constants.watchlistKey
+    private let onboardKey = PersistenceManager.Constants.onboardKey
     
     // Watchlist stored in the persistence storage.
     private var storedWatchlist: [String] {
@@ -35,7 +35,7 @@ class Persistence_Manager_Tests: XCTestCase {
         XCTAssert(retrievedWatchlist == storedWatchlist,
                   "Retrieved watchlist does not match with the actual one.")
         
-        let defaultSymbols = StockDefaults.defaultStocks.map{ $0.key }
+        let defaultSymbols = PersistenceManager.StockDefaults.defaultStocks.map{ $0.key }
         XCTAssert(storedWatchlist.containsSameElement(as: defaultSymbols),
                   "Watchlist (\(storedWatchlist)) does not contain same elements as the default one.")
     }
@@ -99,6 +99,21 @@ class Persistence_Manager_Tests: XCTestCase {
         
         // Restore the watchlist
         userDefaults.setValue(originalWatchlist, forKey: watchlistKey)
+    }
+    
+    func test_persisting_stocks_data() {
+        let dataToPersist = [
+            StockData(symbol: "AAPL",
+                      quote: StockQuote(open: 90, high: 110, low: 80, current: 100, prevClose: 50, time: 123456780),
+                      priceHistory: [PriceHistory(time: 123456789.0, close: 100)]),
+            StockData(symbol: "TSLA",
+                      quote: StockQuote(open: 800, high: 1100, low: 500, current: 1000, prevClose: 500, time: 123456780),
+                      priceHistory: [PriceHistory(time: 123456789.0, close: 500)]),
+        ]
+        manager.persistStocksData(dataToPersist)
+        let persistedData = manager.persistedStocksData()
+        
+        XCTAssertEqual(persistedData, dataToPersist)
     }
 
 }
