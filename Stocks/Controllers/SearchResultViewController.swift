@@ -33,15 +33,17 @@ class SearchResultViewController: UIViewController {
         setUpTable()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        results.removeAll()
+        tableView.reloadData()
     }
     
     // MARK: - Private Methods
     
     private func setUpTable() {
         view.addSubview(tableView)
+        tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
     }
