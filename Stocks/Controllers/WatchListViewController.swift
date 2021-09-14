@@ -68,10 +68,17 @@ final class WatchListViewController: UIViewController {
         setUpNavigationBar()
         setUpSearchController()
         setUpTableView()
-        fetchStockData()
         setUpFloatingPanel()
         setUpFooterView()
         persistenceManager.delegate = self
+        
+        if persistenceManager.hasOnboarded {
+            loadPersistedStocksData()
+            updateWatchlistData()
+        } else {
+            persistenceManager.onboard()
+            fetchStockData()
+        }
     }
     
     // MARK: - UI Setting
@@ -316,7 +323,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
                 if let index = stocksData.firstIndex(where: { $0.symbol == symbol }) {
                     stocksData.remove(at: index)
                     do {
-                        try watchlistCellViewModel.remove(from: index)
+                        try watchlistCellViewModel.removeModel(at: index)
                     } catch {
                         print(error)
                     }
@@ -371,15 +378,15 @@ extension WatchListViewController {
     
     // MARK: - Data-Fetching Timer
     
+    /// Initiate the repeating timer which triggers data updating method after the preset time interval.
     func initiateDataFetchingTimer() {
-        // Update the watchlist data before initiating the timer.
-        updateWatchlistData()
         // Update watchlist's data every 20 seconds.
-        watchlistDataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [weak self] _ in
-            self?.updateWatchlistData()
+        watchlistDataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [unowned self] _ in
+            updateWatchlistData()
         }
     }
     
+    /// Invalidate the timer of auto data fetching.
     func invalidateDataFetchingTimer() {
         watchlistDataUpdateTimer?.invalidate()
     }
@@ -390,14 +397,13 @@ extension WatchListViewController {
     private func fetchStockData() {
         for symbol in persistenceManager.watchList {
             apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
-                [weak self] result in
-                guard let self = self else { return }
+                [unowned self] result in
                 switch result {
                 case .success(let stockData):
-                    self.stocksData.append(stockData)
-                    self.watchlistCellViewModel.add(with: stockData)
+                    stocksData.append(stockData)
+                    watchlistCellViewModel.add(with: stockData)
                     DispatchQueue.main.async {
-                        self.tableView.reloadData()
+                        tableView.reloadData()
                     }
                 case .failure(let error):
                     print(error.localizedDescription)
@@ -413,18 +419,18 @@ extension WatchListViewController {
             let data = stocksData[index]
             let quoteTime = data.quote.time
             if TimeInterval(quoteTime) < marketCloseTime {
-                apiCaller.fetchQuoteAndCandlesData(symbol: data.symbol, timeSpan: .day) { [weak self] result in
-                    guard let self = self else { return }
+                apiCaller.fetchQuoteAndCandlesData(symbol: data.symbol, timeSpan: .day) {
+                    [unowned self] result in
                     switch result {
                     case .success(let stockData):
-                        self.stocksData[index] = stockData
+                        stocksData[index] = stockData
                         do {
-                            try self.watchlistCellViewModel.update(index, with: stockData)
+                            try watchlistCellViewModel.update(index, with: stockData)
                         } catch {
                             print(error)
                         }
                         DispatchQueue.main.async {
-                            self.tableView.reloadRows(
+                            tableView.reloadRows(
                                 at: [IndexPath(row: index, section: 0)],
                                 with: .automatic)
                         }
@@ -437,4 +443,22 @@ extension WatchListViewController {
         }
     }
     
+}
+
+// MARK: - Stock Data Persisting
+
+extension WatchListViewController {
+    /// Persist the stocks data cached in this class.
+    func persistStocksData() {
+        persistenceManager.persistStocksData(stocksData)
+    }
+    
+    /// Cache the persisted stocks data to this class and generate watchlist cell view models from it.
+    func loadPersistedStocksData() {
+        stocksData = persistenceManager.persistedStocksData()
+        watchlistCellViewModel.removeAllModels()
+        for stockData in stocksData {
+            watchlistCellViewModel.add(with: stockData)
+        }
+    }
 }

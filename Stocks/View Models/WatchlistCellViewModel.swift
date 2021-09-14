@@ -52,12 +52,17 @@ class WatchlistCellViewModel {
     /// Remove the stored `ViewModel` from this class' array of view models.
     /// - Parameter index: The index at which the `ViewModel` object is stored.
     /// - Throws: Throws `ViewModelError` in case the operation failed.
-    func remove(from index: Int) throws {
+    func removeModel(at index: Int) throws {
         if index >= 0 && index < models.count {
             models.remove(at: index)
         } else {
             throw ViewModelError.indexNotFound
         }
+    }
+    
+    /// Remove all models cached in this class.
+    func removeAllModels() {
+        models.removeAll()
     }
     
     // MARK: - Private Methods

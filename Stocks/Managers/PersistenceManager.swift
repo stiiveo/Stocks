@@ -62,15 +62,20 @@ final class PersistenceManager {
     
     // MARK: - Public
     
-    /// Array of company symbols saved in local device.
-    /// - Note: If the user has not onboarded yet, a default watchlist will be stored and returned
-    ///         and the `onboard` status will be switched to `true`.
+    /// Array of company symbols saved in defaults database.
     var watchList: [String] {
-        if !hasOnboarded {
-            userDefaults.set(true, forKey: Constants.onboardKey)
-            setUpDefaults()
-        }
         return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? []
+    }
+    
+    /// Returns if it's the first time the watchlist is accessed.
+    var hasOnboarded: Bool {
+        return userDefaults.bool(forKey: Constants.onboardKey)
+    }
+    
+    /// Set `hasOnboarded` status to true and save default stocks to defaults database.
+    func onboard() {
+        userDefaults.set(true, forKey: Constants.onboardKey)
+        savedDefaultStocks()
     }
     
     /// Save specified company symbol and name to the watchlist.
@@ -105,19 +110,14 @@ final class PersistenceManager {
     
     // MARK: - Private
     
-    /// Returns if it's the first time the watchlist is accessed.
-    private var hasOnboarded: Bool {
-        return userDefaults.bool(forKey: Constants.onboardKey)
-    }
-    
     /// Store preset companies to the watchlist as default.
     /// - Note: Any data previously stored in the watchlist will be replaced by the default ones.
-    private func setUpDefaults() {
-        // Save all company's symbol.
+    private func savedDefaultStocks() {
+        // Save company symbols.
         let symbols = StockDefaults.defaultStocks.map{ $0.key }
         userDefaults.set(symbols, forKey: Constants.watchlistKey)
         
-        // Save each company's name.
+        // Save company names.
         for (symbol, name) in StockDefaults.defaultStocks {
             userDefaults.set(name, forKey: symbol)
         }
