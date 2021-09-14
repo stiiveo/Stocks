@@ -50,7 +50,13 @@ class SearchResultViewController: UIViewController {
     
     public func update(with results: [SearchResult]) {
         self.results = results
+        
+        /*
+         Show no search result hint text on the view controller
+         */
+ 
         tableView.isHidden = results.isEmpty
+        
         tableView.reloadData()
         if !results.isEmpty {
             // Scroll to the first row after data is reloaded.

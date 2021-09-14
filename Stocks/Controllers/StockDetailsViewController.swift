@@ -19,7 +19,8 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     private lazy var headerView = StockDetailHeaderView()
     
-    private var symbol: String
+    private let symbol: String
+    private let companyName: String
     private var quoteData: StockQuote
     private var chartData: [PriceHistory]
     private var metrics: Metrics?
@@ -35,10 +36,6 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
 
     private var stories: [NewsStory] = []
     
-    private var companyName: String {
-        return UserDefaults.standard.string(forKey: symbol) ?? symbol
-    }
-    
     private var updateTimer: Timer?
     
     weak var delegate: StockDetailsViewControllerDelegate?
@@ -47,11 +44,13 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
 
     init(
         symbol: String,
+        companyName: String,
         quoteData: StockQuote,
         chartData: [PriceHistory],
         metricsData: Metrics? = nil
     ) {
         self.symbol = symbol
+        self.companyName = companyName
         self.quoteData = quoteData
         self.chartData = chartData
         self.metrics = metricsData

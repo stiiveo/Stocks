@@ -245,9 +245,9 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
                 DispatchQueue.main.async {
                     self.shownStockDetailsVC = StockDetailsViewController(
                         symbol: stockData.symbol,
+                        companyName: searchResult.description,
                         quoteData: stockData.quote,
                         chartData: stockData.priceHistory)
-                    self.shownStockDetailsVC!.title = searchResult.description
                     self.shownStockDetailsVC!.delegate = self
 
                     let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
@@ -338,7 +338,9 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         // Show selected stock's details view controller.
         selectedCellIndex = indexPath.row
         let stockData = stocksData[indexPath.row]
+        let companyName = UserDefaults.standard.string(forKey: stockData.symbol) ?? stockData.symbol
         shownStockDetailsVC = StockDetailsViewController(symbol: stockData.symbol,
+                                                         companyName: companyName,
                                                          quoteData: stockData.quote,
                                                          chartData: stockData.priceHistory)
         shownStockDetailsVC?.delegate = self
