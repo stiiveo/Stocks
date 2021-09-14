@@ -89,7 +89,7 @@ class WatchListTableViewCell: UITableViewCell {
     }
     // MARK: - Public
     
-    func configure(with viewModel: WatchlistTableViewCellViewModel.ViewModel) {
+    func configure(with viewModel: WatchlistCellViewModel.ViewModel) {
         symbolLabel.text = viewModel.symbol
         nameLabel.text = viewModel.companyName
         priceLabel.text = viewModel.price
