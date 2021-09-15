@@ -59,8 +59,8 @@ class WatchListTableViewCell: UITableViewCell {
         button.titleLabel?.font = .monospacedDigitSystemFont(ofSize: 14, weight: .semibold)
         button.contentHorizontalAlignment = .trailing
         button.layer.cornerRadius = 5
-        button.titleEdgeInsets.left = 4 // add title left padding.
-        button.titleEdgeInsets.right = 4 // add title right padding.
+        button.titleEdgeInsets.left = 4 // Add title left padding.
+        button.titleEdgeInsets.right = 4 // Add title right padding.
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.titleLabel?.minimumScaleFactor = 0.8
         return button
@@ -82,11 +82,22 @@ class WatchListTableViewCell: UITableViewCell {
         setUpPriceStackView()
         setUpChartView()
         setUpTitleStackView()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didChangeEditingMode),
+            name: .didChangeEditingMode,
+            object: nil)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .didChangeEditingMode, object: nil)
+    }
+    
     // MARK: - Public
     
     func configure(with viewModel: WatchlistCellViewModel.ViewModel) {
@@ -108,10 +119,11 @@ class WatchListTableViewCell: UITableViewCell {
     
     // MARK: - Private
     
-    private let topMargin: CGFloat = 15.0
-    private let bottomMargin: CGFloat = -15.0
-    private let leadingMargin: CGFloat = 19.0
-    private let trailingMargin: CGFloat = -19.0
+    private let topMargin: CGFloat = 12.5
+    private let bottomMargin: CGFloat = -12.5
+    private let leadingMargin: CGFloat = 20.0
+    private let trailingMargin: CGFloat = -20.0
+    private var priceStockViewTrailingConstraint: NSLayoutConstraint!
     
     private func setUpPriceButton() {
         priceChangeButton.translatesAutoresizingMaskIntoConstraints = false
@@ -123,31 +135,35 @@ class WatchListTableViewCell: UITableViewCell {
     
     private func setUpPriceStackView() {
         priceStackView.addArrangedSubviews(priceLabel, priceChangeButton)
-        addSubview(priceStackView)
+        contentView.addSubview(priceStackView)
         priceStackView.translatesAutoresizingMaskIntoConstraints = false
         
         // Custom bottom constraint to silence conflict warning.
-        let bottomConstraint = priceStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
+        let bottomConstraint = priceStackView.bottomAnchor.constraint(
+            equalTo: contentView.bottomAnchor, constant: bottomMargin)
         bottomConstraint.priority = UILayoutPriority(999)
         
+        priceStockViewTrailingConstraint = priceStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingMargin)
+        
         NSLayoutConstraint.activate([
-            priceStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin),
-            priceStackView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingMargin),
+            priceStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: topMargin),
+            priceStockViewTrailingConstraint,
             priceStackView.widthAnchor.constraint(equalToConstant: 75),
             bottomConstraint
         ])
     }
     
     private func setUpChartView() {
-        addSubview(chartView)
+        contentView.addSubview(chartView)
         chartView.translatesAutoresizingMaskIntoConstraints = false
         
         // Custom bottom constraint to silence conflict warning.
-        let bottomConstraint = chartView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin - 3.0)
+        let bottomConstraint = chartView.bottomAnchor.constraint(
+            equalTo: contentView.bottomAnchor, constant: bottomMargin - 3.0)
         bottomConstraint.priority = UILayoutPriority(999)
         
         NSLayoutConstraint.activate([
-            chartView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin + 3.0),
+            chartView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: topMargin + 3.0),
             chartView.trailingAnchor.constraint(equalTo: priceStackView.leadingAnchor, constant: -15),
             chartView.widthAnchor.constraint(equalToConstant: 80),
             bottomConstraint
@@ -156,19 +172,42 @@ class WatchListTableViewCell: UITableViewCell {
     
     private func setUpTitleStackView() {
         titleStackView.addArrangedSubviews(symbolLabel, nameLabel)
-        addSubview(titleStackView)
+        contentView.addSubview(titleStackView)
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
         
         // Custom bottom constraint to silence conflict warning.
-        let bottomConstraint = titleStackView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: bottomMargin)
+        let bottomConstraint = titleStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: bottomMargin)
         bottomConstraint.priority = UILayoutPriority(999)
         
         NSLayoutConstraint.activate([
-            titleStackView.topAnchor.constraint(equalTo: self.topAnchor, constant: topMargin),
-            titleStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingMargin),
+            titleStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: topMargin),
+            titleStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: leadingMargin),
             titleStackView.trailingAnchor.constraint(equalTo: chartView.leadingAnchor, constant: -15),
             bottomConstraint
         ])
+    }
+    
+    @objc private func didChangeEditingMode(_ notification: Notification) {
+        if let isEditing = notification.object as? Bool {
+            if isEditing {
+                // Hide chart view and price stack view.
+                self.priceStockViewTrailingConstraint.constant = 120
+                UIView.animate(withDuration: 0.2) {
+                    self.priceStackView.alpha = 0
+                    self.chartView.alpha = 0
+                    self.layoutIfNeeded()
+                }
+            }
+            else {
+                // Show chart view and price stack view.
+                self.priceStockViewTrailingConstraint.constant = trailingMargin
+                UIView.animate(withDuration: 0.3) {
+                    self.priceStackView.alpha = 1
+                    self.chartView.alpha = 1
+                    self.layoutIfNeeded()
+                }
+            }
+        }
     }
 
 }

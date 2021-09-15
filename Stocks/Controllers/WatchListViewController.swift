@@ -74,7 +74,7 @@ final class WatchListViewController: UIViewController {
         
         if persistenceManager.hasOnboarded {
             loadPersistedStocksData()
-            updateWatchlistData()
+            updateStocksData()
         } else {
             persistenceManager.onboard()
             fetchStockData()
@@ -108,22 +108,37 @@ final class WatchListViewController: UIViewController {
         navigationController?.navigationBar.isTranslucent = false
         extendedLayoutIncludesOpaqueBars = true
         setUpTitleView()
+        
+        // Add system edit bar button to the NavBar.
+        let buttonItem = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editButtonDidTap))
+        navigationItem.rightBarButtonItem = buttonItem
+    }
+    
+    @objc private func editButtonDidTap() {
+        if !tableView.isEditing {
+            // Enter editing mode.
+            tableView.setEditing(true, animated: true)
+            navigationItem.rightBarButtonItem?.title = "Done"
+            navigationItem.rightBarButtonItem?.style = .done
+            panel?.hide(animated: true)
+        } else {
+            // Leave editing mode.
+            tableView.setEditing(false, animated: true)
+            navigationItem.rightBarButtonItem?.title = "Edit"
+            navigationItem.rightBarButtonItem?.style = .plain
+            persistStocksData()
+            panel?.show(animated: true)
+        }
+        
+        // Notify all table view cells the table view's editing status.
+        NotificationCenter.default.post(name: .didChangeEditingMode, object: tableView.isEditing)
     }
     
     private func setUpTitleView() {
-        let titleView = UIView(
-            frame: CGRect(
-                x: 0,
-                y: 0,
-                width: view.width,
-                height: navigationController?.navigationBar.height ?? 100
-            )
-        )
-        let label = UILabel(
-            frame: CGRect(x: 10, y: 10,
-                          width: titleView.width - 20,
-                          height: titleView.height - 20)
-        )
+        let titleView = UIView()
+        titleView.frame = CGRect(x: 0, y: 0, width: 400, height: 30)
+        
+        let label = UILabel(frame: CGRect(x: 10, y: 0, width: 200, height: 30))
         label.text = "U.S. Stocks"
         label.font = .systemFont(ofSize: 26, weight: .heavy)
         titleView.addSubview(label)
@@ -312,8 +327,13 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         return true
     }
     
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        return .delete
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        stocksData.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        watchlistCellViewModel.models.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -322,11 +342,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
                 let symbol = watchlistCellViewModel.models[indexPath.row].symbol
                 if let index = stocksData.firstIndex(where: { $0.symbol == symbol }) {
                     stocksData.remove(at: index)
-                    do {
-                        try watchlistCellViewModel.removeModel(at: index)
-                    } catch {
-                        print(error)
-                    }
+                    watchlistCellViewModel.models.remove(at: index)
                 }
                 PersistenceManager.shared.removeFromWatchlist(symbol: symbol)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
@@ -382,7 +398,7 @@ extension WatchListViewController {
     func initiateDataFetchingTimer() {
         // Update watchlist's data every 20 seconds.
         watchlistDataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [unowned self] _ in
-            updateWatchlistData()
+            updateStocksData()
         }
     }
     
@@ -413,7 +429,7 @@ extension WatchListViewController {
     }
     
     /// Update any data in the watchlist if its quote time is before the market closing time.
-    private func updateWatchlistData() {
+    private func updateStocksData() {
         let marketCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
         for index in 0..<stocksData.count {
             let data = stocksData[index]
@@ -456,7 +472,7 @@ extension WatchListViewController {
     /// Cache the persisted stocks data to this class and generate watchlist cell view models from it.
     func loadPersistedStocksData() {
         stocksData = persistenceManager.persistedStocksData()
-        watchlistCellViewModel.removeAllModels()
+        watchlistCellViewModel.models.removeAll()
         for stockData in stocksData {
             watchlistCellViewModel.add(with: stockData)
         }

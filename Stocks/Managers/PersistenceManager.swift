@@ -133,6 +133,8 @@ extension PersistenceManager {
     /// - Parameter stocksData: Array of `StockData` to be written to preserved file path.
     func persistStocksData(_ stocksData: [StockData]) {
         let directoryUrl = Constants.stocksDataDirectoryUrl
+        
+        // Create a directory used to store the data if it does not exist yet.
         if !FileManager.default.fileExists(atPath: directoryUrl.path) {
             do {
                 try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: false)
