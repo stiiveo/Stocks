@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class WatchlistTableViewCellViewModel {
+class WatchlistCellViewModel {
     
     struct ViewModel {
         let symbol: String
@@ -22,19 +22,14 @@ class WatchlistTableViewCellViewModel {
     // MARK: - Properties
     
     /// Array of `ViewModel` used by the watchlist's table view cells as the data source.
-    private var viewModels = [ViewModel]()
+    var models = [ViewModel]()
     
     // MARK: - Public Methods
-    
-    /// Returns an array of all `ViewModel` objects stored in this class.
-    var all: [ViewModel] {
-        return viewModels
-    }
     
     /// Append a new `ViewModel` to this class.
     /// - Parameter stockData: `StockData` object used to create the `ViewModel` object.
     func add(with stockData: StockData) {
-        viewModels.append(viewModel(from: stockData))
+        models.append(model(from: stockData))
     }
     
     enum ViewModelError: Error {
@@ -47,19 +42,8 @@ class WatchlistTableViewCellViewModel {
     ///   - stockData: The `StockData` object used to update the existing `ViewModel`.
     /// - Throws: Throws `ViewModelError` in case the operation failed.
     func update(_ index: Int, with stockData: StockData) throws {
-        if index >= 0 && index < viewModels.count {
-            viewModels[index] = viewModel(from: stockData)
-        } else {
-            throw ViewModelError.indexNotFound
-        }
-    }
-    
-    /// Remove the stored `ViewModel` from this class' array of view models.
-    /// - Parameter index: The index at which the `ViewModel` object is stored.
-    /// - Throws: Throws `ViewModelError` in case the operation failed.
-    func remove(from index: Int) throws {
-        if index >= 0 && index < viewModels.count {
-            viewModels.remove(at: index)
+        if index >= 0 && index < models.count {
+            models[index] = model(from: stockData)
         } else {
             throw ViewModelError.indexNotFound
         }
@@ -70,7 +54,7 @@ class WatchlistTableViewCellViewModel {
     /// Returns a `ViewModel` created from the provided `StockData`.
     /// - Parameter stockData: `StockData` used to create `ViewModel`.
     /// - Returns: `ViewModel` used by watchlist view controller's table view cell.
-    private func viewModel(from stockData: StockData) -> ViewModel {
+    private func model(from stockData: StockData) -> ViewModel {
         let currentPrice = stockData.quote.current
         let previousClose = stockData.quote.prevClose
         let priceChange = (currentPrice / previousClose) - 1

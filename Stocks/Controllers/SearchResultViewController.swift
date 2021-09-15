@@ -9,7 +9,7 @@ import UIKit
 
 protocol SearchResultViewControllerDelegate: AnyObject {
     func searchResultViewControllerDidSelect(searchResult: SearchResult)
-    func scrollViewWillBeginDragging()
+    func searchResultScrollViewWillBeginDragging()
 }
 
 class SearchResultViewController: UIViewController {
@@ -33,15 +33,17 @@ class SearchResultViewController: UIViewController {
         setUpTable()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        results.removeAll()
+        tableView.reloadData()
     }
     
     // MARK: - Private Methods
     
     private func setUpTable() {
         view.addSubview(tableView)
+        tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -50,7 +52,13 @@ class SearchResultViewController: UIViewController {
     
     public func update(with results: [SearchResult]) {
         self.results = results
+        
+        /*
+         Show no search result hint text on the view controller
+         */
+ 
         tableView.isHidden = results.isEmpty
+        
         tableView.reloadData()
         if !results.isEmpty {
             // Scroll to the first row after data is reloaded.
@@ -85,7 +93,7 @@ extension SearchResultViewController: UITableViewDelegate, UITableViewDataSource
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        delegate?.scrollViewWillBeginDragging()
+        delegate?.searchResultScrollViewWillBeginDragging()
     }
     
 }

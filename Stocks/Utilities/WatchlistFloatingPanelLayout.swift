@@ -14,7 +14,7 @@ class WatchlistFloatingPanelLayout: FloatingPanelLayout {
     }
     
     var initialState: FloatingPanelState {
-        return .half
+        return .tip
     }
     
     var anchors: [FloatingPanelState: FloatingPanelLayoutAnchoring] {
