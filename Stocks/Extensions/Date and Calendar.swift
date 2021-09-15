@@ -45,18 +45,11 @@ extension TimeInterval {
     /// A `String` value created by formatting the value to conventional time units: days, hours, minutes and seconds.
     /// If the value is not large enough to be carried to days unit, the unit is omitted.
     /// - Note: The value is rounded using the schoolbook rounding before the formatting operation.
-    var formatted: String {
-        let totalSeconds = Int(self.rounded())
-        let seconds = totalSeconds % 60
-        let minutes = (totalSeconds / 60) % 60
-        let hours = (totalSeconds / 3600) % 24
-        let days = totalSeconds / 3600 / 24
-        
-        // Omit 'Days' unit if its value is 0.
-        if days > 0 {
-            return String(format: "%d Days, %02d:%02d:%02d", days, hours, minutes, seconds)
-        } else {
-            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-        }
+    var formattedString: String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.unitsStyle = .positional
+        formatter.zeroFormattingBehavior = .default
+        return formatter.string(from: self) ?? ""
     }
 }

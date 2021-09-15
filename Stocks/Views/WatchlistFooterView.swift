@@ -55,11 +55,8 @@ class WatchlistFooterView: UIView {
         super.init(frame: frame)
         backgroundColor = .secondarySystemBackground
         setUpFooterView()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateMarketStatusLabel()
-            }
-        }
+        timer = Timer(timeInterval: 1.0, target: self, selector: #selector(updateMarketStatusLabel), userInfo: nil, repeats: true)
+        RunLoop.main.add(timer!, forMode: .common)
     }
     
     required init?(coder: NSCoder) {
@@ -102,10 +99,10 @@ class WatchlistFooterView: UIView {
     /// If the market is open when this method is called, the label denotes the remaining time until the market is closed;
     /// otherwise, is denotes the remaining time until the next trading session starts.
     /// - Important: Use this method in main thread only since the text property of UILabel is used.
-    private func updateMarketStatusLabel() {
+    @objc private func updateMarketStatusLabel() {
         let calendarManager = CalendarManager.shared
-        let formattedTimeToClose = calendarManager.timeToClose.formatted
-        let formattedTimeToOpen = calendarManager.timeToOpen.formatted
+        let formattedTimeToClose = calendarManager.timeToClose.formattedString
+        let formattedTimeToOpen = calendarManager.timeToOpen.formattedString
         marketStatusLabel.text = calendarManager.isMarketOpen ?
             "Market Closes in " + formattedTimeToClose :
             "Market Opens in " + formattedTimeToOpen
