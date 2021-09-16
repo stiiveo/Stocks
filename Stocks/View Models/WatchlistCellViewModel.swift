@@ -1,5 +1,5 @@
 //
-//  WatchlistTableViewCellViewModel.swift
+//  WatchlistCellViewModel.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/8/29.
@@ -61,7 +61,7 @@ class WatchlistCellViewModel {
         
         let model = ViewModel(
             symbol: stockData.symbol,
-            companyName: UserDefaults.standard.string(forKey: stockData.symbol) ?? stockData.symbol,
+            companyName: UserDefaults.standard.string(forKey: stockData.symbol)?.capitalized ?? stockData.symbol,
             price: currentPrice.stringFormatted(by: .decimalFormatter),
             changeColor: (currentPrice - previousClose) < 0 ? .stockPriceDown : .stockPriceUp,
             changePercentage: priceChange.signedPercentageString(),
