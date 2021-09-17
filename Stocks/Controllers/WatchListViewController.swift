@@ -172,11 +172,11 @@ final class WatchListViewController: UIViewController {
 
 extension WatchListViewController: StockDetailsViewControllerDelegate {
     func stockDetailsViewControllerIsShown() {
-        invalidateDataFetchingTimer()
+        invalidateWatchlistUpdateTimer()
     }
     
     func stockDetailsViewControllerWillBeDismissed() {
-        initiateDataFetchingTimer()
+        initiateWatchlistUpdateTimer()
     }
 }
 
@@ -208,9 +208,11 @@ extension WatchListViewController: PersistenceManagerDelegate {
 extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
         self.panel?.hide(animated: true)
+        invalidateWatchlistUpdateTimer()
     }
     func willDismissSearchController(_ searchController: UISearchController) {
         self.panel?.show(animated: true)
+        initiateWatchlistUpdateTimer()
     }
 }
 
@@ -219,8 +221,14 @@ extension WatchListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text,
               query != prevSearchBarQuery, // Make sure the new query is diff from the prev one.
-              let resultVC = searchController.searchResultsController as? SearchResultViewController,
-              !query.trimmingCharacters(in: .whitespaces).isEmpty else {
+              let resultVC = searchController.searchResultsController as? SearchResultViewController else {
+            return
+        }
+        
+        if query.trimmingCharacters(in: .whitespaces).isEmpty {
+            DispatchQueue.main.async {
+                resultVC.update([], from: query)
+            }
             return
         }
         
@@ -230,19 +238,19 @@ extension WatchListViewController: UISearchResultsUpdating {
         
         // Kick off new timer
         // Optimize to reduce number of searches for when user stops typing
-        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
             // Call API to search
             self?.apiCaller.search(query: query) { result in
                 switch result {
                 case .success(let response):
                     DispatchQueue.main.async {
-                        resultVC.update(with: response.result)
+                        resultVC.update(response.result, from: query)
                     }
                 case .failure(let error):
                     DispatchQueue.main.async {
-                        resultVC.update(with: [])
+                        resultVC.update([], from: query)
                     }
-                    print(error)
+                    print("Failed to get valid search response: \(error)")
                 }
             }
         }
@@ -395,7 +403,7 @@ extension WatchListViewController {
     // MARK: - Data-Fetching Timer
     
     /// Initiate the repeating timer which triggers data updating method after the preset time interval.
-    func initiateDataFetchingTimer() {
+    func initiateWatchlistUpdateTimer() {
         // Update watchlist's data every 20 seconds.
         watchlistDataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 20.0, repeats: true) { [unowned self] _ in
             updateStocksData()
@@ -403,7 +411,7 @@ extension WatchListViewController {
     }
     
     /// Invalidate the timer of auto data fetching.
-    func invalidateDataFetchingTimer() {
+    func invalidateWatchlistUpdateTimer() {
         watchlistDataUpdateTimer?.invalidate()
     }
     

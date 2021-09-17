@@ -16,6 +16,8 @@ class SearchResultViewController: UIViewController {
     
     weak var delegate: SearchResultViewControllerDelegate?
     
+    // MARK: - Properties
+    
     private var results: [SearchResult] = []
     
     private let tableView: UITableView = {
@@ -26,11 +28,24 @@ class SearchResultViewController: UIViewController {
         table.isHidden = true
         return table
     }()
+    
+    private let noResultHint: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.8
+        label.textColor = .secondaryLabel
+        label.isHidden = true
+        return label
+    }()
+    
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpTable()
+        setUpNoResultHint()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -48,22 +63,30 @@ class SearchResultViewController: UIViewController {
         tableView.dataSource = self
     }
     
+    private func setUpNoResultHint() {
+        view.addSubview(noResultHint)
+        noResultHint.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            noResultHint.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+            noResultHint.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 130),
+        ])
+    }
+    
     // MARK: - Public Methods
     
-    public func update(with results: [SearchResult]) {
+    public func update(_ results: [SearchResult], from query: String) {
         self.results = results
-        
-        /*
-         Show no search result hint text on the view controller
-         */
- 
-        tableView.isHidden = results.isEmpty
-        
         tableView.reloadData()
         if !results.isEmpty {
             // Scroll to the first row after data is reloaded.
             tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
+            noResultHint.isHidden = true
+        } else {
+            // Display the hint text unless the query is empty.
+            noResultHint.text = query.isEmpty ? "" : #"No Result for "\#(query)""#
+            noResultHint.isHidden = query.isEmpty ? true : false
         }
+        tableView.isHidden = results.isEmpty
     }
 
 }

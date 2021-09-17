@@ -26,12 +26,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Initiate watchlist VC's data fetching timer.
-        watchlistVC.initiateDataFetchingTimer()
+        watchlistVC.initiateWatchlistUpdateTimer()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
         // Invalidate watchlist VC's data fetching timer.
-        watchlistVC.invalidateDataFetchingTimer()
+        watchlistVC.invalidateWatchlistUpdateTimer()
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
