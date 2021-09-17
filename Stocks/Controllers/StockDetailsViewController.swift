@@ -9,8 +9,7 @@ import UIKit
 import SafariServices
 
 protocol StockDetailsViewControllerDelegate: AnyObject {
-    func stockDetailsViewControllerIsShown()
-    func stockDetailsViewControllerWillBeDismissed()
+    func stockDetailsViewDisappeared()
 }
 
 class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDelegate {
@@ -77,31 +76,32 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        delegate?.stockDetailsViewControllerIsShown()
-        
-        // Start auto-updating timer.
-        let updateInterval: TimeInterval = 4.0
-        
-        updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            
-            // Update data if the market is still open.
-            let marketCloseDate = CalendarManager.shared.latestTradingTime.close
-            guard Date() <= marketCloseDate.addingTimeInterval(updateInterval) else { return }
-            
-            self.fetchQuoteData()
-            self.fetchChartData()
-            self.fetchMetricsData()
-        }
+        initiateUpdateTimer()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         updateTimer?.invalidate()
-        delegate?.stockDetailsViewControllerWillBeDismissed()
+        delegate?.stockDetailsViewDisappeared()
     }
 
     // MARK: - Private
+    
+    private func initiateUpdateTimer() {
+        let interval: TimeInterval = 10.0
+        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
+            [weak self] _ in
+            guard let self = self else { return }
+            
+            // Update data if the market is still open.
+            let marketCloseDate = CalendarManager.shared.latestTradingTime.close
+            if Date() <= marketCloseDate.addingTimeInterval(interval) {
+                self.fetchQuoteData()
+                self.fetchChartData()
+                self.fetchMetricsData()
+            }
+        }
+    }
     
     private func setUpCloseButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(

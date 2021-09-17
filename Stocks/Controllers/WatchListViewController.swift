@@ -171,11 +171,8 @@ final class WatchListViewController: UIViewController {
 // MARK: - Stock Details VC Delegate
 
 extension WatchListViewController: StockDetailsViewControllerDelegate {
-    func stockDetailsViewControllerIsShown() {
-        invalidateWatchlistUpdateTimer()
-    }
-    
-    func stockDetailsViewControllerWillBeDismissed() {
+    func stockDetailsViewDisappeared() {
+        updateStocksData()
         initiateWatchlistUpdateTimer()
     }
 }
@@ -365,6 +362,9 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
+        
+        // Stop data updating timer.
+        invalidateWatchlistUpdateTimer()
         
         // Show selected stock's details view controller.
         selectedCellIndex = indexPath.row
