@@ -14,9 +14,9 @@ class StockChartView: LineChartView {
     
     struct ViewModel {
         let data: [PriceHistory]
-        let previousClose: Double
-        let highestPrice: Double
-        let lowestPrice: Double
+        let previousClose: Double?
+        let highestClose: Double?
+        let lowestClose: Double?
         let showAxis: Bool
     }
     
@@ -76,6 +76,12 @@ class StockChartView: LineChartView {
     }
     
     private func setUpChartData(with viewModel: ViewModel) {
+        guard let previousClose = viewModel.previousClose,
+              let highestClose = viewModel.highestClose,
+              let lowestClose = viewModel.lowestClose else {
+            return
+        }
+        
         // Chart Data Entries
         let priceDataEntries: [ChartDataEntry] = viewModel.data.map{
             .init(x: $0.time, y: $0.close)
@@ -107,7 +113,7 @@ class StockChartView: LineChartView {
          */
         var fillColor: UIColor = .stockPriceUp
         let previousPriceDataSet = staticLineChartDataSet(
-            value: viewModel.previousClose,
+            value: previousClose,
             startTime: priceDataEntries[0].x,
             endTime: latestCloseTime,
             dashLengths: [2])
@@ -116,16 +122,12 @@ class StockChartView: LineChartView {
         // Set x-axis' maximum value if the data's time range is within the latest trading time span.
         if isTimeRangeWithinLatestTradingTimeRange {
             xAxis.axisMaximum = latestCloseTime
-            fillColor = (latestValue - viewModel.previousClose < 0) ? .stockPriceDown : .stockPriceUp
-            
-            let previousPrice = viewModel.previousClose
-            let highestPrice = viewModel.highestPrice
-            let lowestPrice = viewModel.lowestPrice
+            fillColor = (latestValue - previousClose < 0) ? .stockPriceDown : .stockPriceUp
             let tolerance = 0.05 // Unit in percentage
             
             // Draw previous close dash line if it's within the tolerated price offset.
-            if previousPrice <= (highestPrice * (1 + tolerance)) &&
-                previousPrice >= (lowestPrice * (1 - tolerance)) {
+            if previousClose <= (highestClose * (1 + tolerance)) &&
+                previousClose >= (lowestClose * (1 - tolerance)) {
                 drawPreviousPriceLine = true
             }
         } else {

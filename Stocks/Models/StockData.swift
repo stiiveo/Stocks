@@ -9,7 +9,7 @@ import Foundation
 
 struct StockData: Codable {
     let symbol: String
-    var quote: StockQuote
+    var quote: StockQuote?
     var priceHistory: [PriceHistory]
 }
 

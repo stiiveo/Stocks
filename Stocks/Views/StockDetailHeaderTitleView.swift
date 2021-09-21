@@ -53,7 +53,7 @@ class StockDetailHeaderTitleView: UIView {
     
     struct ViewModel {
         let quote: Double?
-        let priceChange: Double?
+        let previousClose: Double?
         let showAddingButton: Bool
         let delegate: StockDetailHeaderTitleViewDelegate
     }
@@ -80,11 +80,18 @@ class StockDetailHeaderTitleView: UIView {
     // MARK: - Public Methods
     
     func configure(viewModel: ViewModel) {
-        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? "–"
-        priceChangeLabel.text = viewModel.priceChange?.signedPercentageString() ?? "–"
-        priceChangeLabel.textColor = viewModel.priceChange ?? 0 < 0 ? .stockPriceDown : .stockPriceUp
+        quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? String.noDataExpression
         watchlistAddingButton.isHidden = !viewModel.showAddingButton
         delegate = viewModel.delegate
+        
+        if let quote = viewModel.quote,
+           let previousClose = viewModel.previousClose {
+            let priceChange = (quote / previousClose) - 1
+            priceChangeLabel.text = priceChange.signedPercentageString()
+            priceChangeLabel.textColor = priceChange >= 0 ? .stockPriceUp : .stockPriceDown
+        } else {
+            priceChangeLabel.text = ""
+        }
     }
     
     func resetData() {

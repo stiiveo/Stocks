@@ -27,9 +27,7 @@ final class PersistenceManager {
             "MSFT": "Microsoft Corporation",
             "GOOG": "Alphabet Inc.",
             "AMZN": "Amazon Inc.",
-            "NVDA": "Nvidia Corporation",
-            "FB": "Facebook Inc.",
-            "SQ": "Square Inc.",
+            "FB": "Facebook Inc."
         ]
     }
     
@@ -108,11 +106,9 @@ final class PersistenceManager {
         return watchList.contains(symbol)
     }
     
-    // MARK: - Private
-    
     /// Store preset companies to the watchlist as default.
     /// - Note: Any data previously stored in the watchlist will be replaced by the default ones.
-    private func savedDefaultStocks() {
+    func savedDefaultStocks() {
         // Save company symbols.
         let symbols = StockDefaults.defaultStocks.map{ $0.key }
         userDefaults.set(symbols, forKey: Constants.watchlistKey)
@@ -154,23 +150,27 @@ extension PersistenceManager {
     
     /// The array of `StockData` persisted at the preserved path of device's local disk.
     /// - Returns: Returns an empty array if the persisted file does not exist, cannot be retrieved or decoded.
-    func persistedStocksData() -> [StockData] {
-        do {
-            let directoryUrl = Constants.stocksDataDirectoryUrl
-            let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataFileName)
-            
-            if !FileManager.default.fileExists(atPath: directoryUrl.path) {
-                print("File does not exist at path \(directoryUrl.absoluteString)")
-                return []
-            }
-            
-            let persistedData = try Data(contentsOf: fileUrl)
-            let stocksData = try JSONDecoder().decode([StockData].self, from: persistedData)
-            return stocksData
-        } catch {
-            print("Failed to retrieve persisted stocks data.\n\(error)")
-            return []
+    func persistedStocksData() throws -> [StockData] {
+        let directoryUrl = Constants.stocksDataDirectoryUrl
+        let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataFileName)
+        
+        if !FileManager.default.fileExists(atPath: directoryUrl.path) {
+            throw PersistError.persistingFolderNotFound
         }
+        
+        guard let persistedData = try? Data(contentsOf: fileUrl) else {
+            throw PersistError.persistedDataNotRetrievable
+        }
+        guard let stocksData = try? JSONDecoder().decode([StockData].self, from: persistedData) else {
+            throw PersistError.persistedDataNotDecodable
+        }
+        return stocksData
+    }
+    
+    enum PersistError: Error {
+        case persistingFolderNotFound
+        case persistedDataNotRetrievable
+        case persistedDataNotDecodable
     }
     
 }

@@ -103,13 +103,13 @@ class WatchListTableViewCell: UITableViewCell {
     func configure(with stockData: StockData, showChartAxis: Bool) {
         symbolLabel.text = stockData.symbol
         nameLabel.text = stockData.companyName
-        priceLabel.text = stockData.quote.current.stringFormatted(by: .decimalFormatter)
-        priceChangeButton.setTitle(stockData.quote.changePercentage.signedPercentageString(), for: .normal)
-        priceChangeButton.backgroundColor = stockData.quote.changeColor
+        priceLabel.text = stockData.quote?.current.stringFormatted(by: .decimalFormatter) ?? "–"
+        priceChangeButton.setTitle(stockData.quote?.changePercentage.signedPercentageString() ?? "––", for: .normal)
+        priceChangeButton.backgroundColor = stockData.quote?.changeColor ?? .stockPriceUp
         chartView.configure(with: .init(data: stockData.priceHistory,
-                                        previousClose: stockData.quote.prevClose,
-                                        highestPrice: stockData.quote.high,
-                                        lowestPrice: stockData.quote.low,
+                                        previousClose: stockData.quote?.prevClose,
+                                        highestClose: stockData.quote?.high,
+                                        lowestClose: stockData.quote?.low,
                                         showAxis: showChartAxis))
     }
     

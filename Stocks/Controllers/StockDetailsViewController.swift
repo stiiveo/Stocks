@@ -20,7 +20,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     private let symbol: String
     private let companyName: String
-    private var quoteData: StockQuote
+    private var quoteData: StockQuote?
     private var chartData: [PriceHistory]
     private var metrics: Metrics?
 
@@ -42,7 +42,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     init(
         symbol: String,
         companyName: String,
-        quoteData: StockQuote,
+        quoteData: StockQuote?,
         chartData: [PriceHistory],
         metricsData: Metrics? = nil
     ) {
@@ -196,15 +196,15 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     
     private func configureHeaderViewData() {
         let metricsViewModel: StockMetricsView.ViewModel = {
-            .init(openPrice: quoteData.open,
-                  highestPrice: quoteData.high,
-                  lowestPrice: quoteData.low,
+            .init(openPrice: quoteData?.open,
+                  highestPrice: quoteData?.high,
+                  lowestPrice: quoteData?.low,
                   marketCap: metrics?.marketCap,
                   priceEarningsRatio: metrics?.priceToEarnings,
                   priceSalesRatio: metrics?.priceToSales,
                   annualHigh: metrics?.annualHigh,
                   annualLow: metrics?.annualLow,
-                  previousPrice: quoteData.prevClose,
+                  previousPrice: quoteData?.prevClose,
                   yield: metrics?.yield,
                   beta: metrics?.beta,
                   eps: metrics?.eps)
@@ -212,16 +212,16 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         
         headerView.configure(
             titleViewModel: .init(
-                quote: quoteData.current,
-                priceChange: (quoteData.current / quoteData.prevClose) - 1,
+                quote: quoteData?.current,
+                previousClose: quoteData?.prevClose,
                 showAddingButton: !PersistenceManager.shared.watchListContains(symbol),
                 delegate: self
             ),
             chartViewModel: .init(
                 data: chartData,
-                previousClose: quoteData.prevClose,
-                highestPrice: quoteData.high,
-                lowestPrice: quoteData.low,
+                previousClose: quoteData?.prevClose,
+                highestClose: quoteData?.high,
+                lowestClose: quoteData?.low,
                 showAxis: true
             ),
             metricsViewModels: metricsViewModel
