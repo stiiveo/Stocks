@@ -35,8 +35,6 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
 
     private var stories: [NewsStory] = []
     
-    private var updateTimer: Timer?
-    
     weak var delegate: StockDetailsViewControllerDelegate?
 
     // MARK: - Init
@@ -72,33 +70,38 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
         configureHeaderViewData()
         fetchMetricsData()
         fetchNews()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        initiateUpdateTimer()
+        initiateUpdateTimers()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        updateTimer?.invalidate()
+        quoteUpdateTimer?.invalidate()
+        chartUpdateTimer?.invalidate()
         delegate?.stockDetailsViewDisappeared()
     }
 
     // MARK: - Private
     
-    private func initiateUpdateTimer() {
-        let interval: TimeInterval = 10.0
-        updateTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) {
+    private var quoteUpdateTimer: Timer?
+    private var chartUpdateTimer: Timer?
+    
+    private func initiateUpdateTimers() {
+        let quoteUpdateInterval = 20.0
+        // Set this value no less than the minimum interval of chart data to save API calling quota.
+        let chartUpdateInterval = 60.0
+        let marketCloseDate = CalendarManager.shared.latestTradingTime.close
+        
+        quoteUpdateTimer = Timer.scheduledTimer(withTimeInterval: quoteUpdateInterval, repeats: true) {
             [weak self] _ in
-            guard let self = self else { return }
-            
-            // Update data if the market is still open.
-            let marketCloseDate = CalendarManager.shared.latestTradingTime.close
-            if Date() <= marketCloseDate.addingTimeInterval(interval) {
-                self.fetchQuoteData()
-                self.fetchChartData()
-                self.fetchMetricsData()
+            if Date() <= marketCloseDate.addingTimeInterval(quoteUpdateInterval) {
+                self?.fetchQuoteData()
+            }
+        }
+        
+        chartUpdateTimer = Timer.scheduledTimer(withTimeInterval: chartUpdateInterval, repeats: true) {
+            [weak self] _ in
+            if Date() <= marketCloseDate.addingTimeInterval(chartUpdateInterval) {
+                self?.fetchMetricsData()
             }
         }
     }
@@ -192,10 +195,6 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
     }
     
     private func configureHeaderViewData() {
-        let lineChartData: [StockChartView.StockLineChartData] = chartData.map{
-            .init(timeInterval: $0.time, price: $0.close)
-        }
-        
         let metricsViewModel: StockMetricsView.ViewModel = {
             .init(openPrice: quoteData.open,
                   highestPrice: quoteData.high,
@@ -219,7 +218,7 @@ class StockDetailsViewController: UIViewController, StockDetailHeaderTitleViewDe
                 delegate: self
             ),
             chartViewModel: .init(
-                data: lineChartData,
+                data: chartData,
                 previousClose: quoteData.prevClose,
                 highestPrice: quoteData.high,
                 lowestPrice: quoteData.low,

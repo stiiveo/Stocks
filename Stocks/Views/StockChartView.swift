@@ -13,16 +13,11 @@ class StockChartView: LineChartView {
     // MARK: - Properties
     
     struct ViewModel {
-        let data: [StockLineChartData]
+        let data: [PriceHistory]
         let previousClose: Double
         let highestPrice: Double
         let lowestPrice: Double
         let showAxis: Bool
-    }
-    
-    struct StockLineChartData {
-        let timeInterval: Double
-        let price: Double
     }
     
     private let calendarManager = CalendarManager.shared
@@ -62,6 +57,7 @@ class StockChartView: LineChartView {
         legend.enabled = false
         leftAxis.enabled = false
         drawGridBackgroundEnabled = false
+        noDataText = ""
         
         // Right axis
         rightAxis.enabled = false
@@ -82,11 +78,11 @@ class StockChartView: LineChartView {
     private func setUpChartData(with viewModel: ViewModel) {
         // Chart Data Entries
         let priceDataEntries: [ChartDataEntry] = viewModel.data.map{
-            .init(x: $0.timeInterval, y: $0.price)
+            .init(x: $0.time, y: $0.close)
         }
         guard priceDataEntries.count >= 2,
-              let firstValue = viewModel.data.first?.price,
-              let latestValue = viewModel.data.last?.price,
+              let firstValue = viewModel.data.first?.close,
+              let latestValue = viewModel.data.last?.close,
               let firstTimestamp = priceDataEntries.first?.x,
               let lastTimestamp = priceDataEntries.last?.x else { return }
         

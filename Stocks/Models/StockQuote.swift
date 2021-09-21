@@ -5,7 +5,7 @@
 //  Created by Jason Ou on 2021/7/14.
 //
 
-import Foundation
+import UIKit
 
 struct StockQuote: Codable, Equatable {
     let open: Double
@@ -22,5 +22,15 @@ struct StockQuote: Codable, Equatable {
         case current = "c"
         case prevClose = "pc"
         case time = "t"
+    }
+}
+
+extension StockQuote {
+    var changeColor: UIColor {
+        return (current - prevClose) >= 0 ? .stockPriceUp : .stockPriceDown
+    }
+    
+    var changePercentage: Double {
+        return (current / prevClose) - 1
     }
 }
