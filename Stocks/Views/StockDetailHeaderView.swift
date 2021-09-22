@@ -77,18 +77,31 @@ class StockDetailHeaderView: UIView {
     ///   - chartViewModel: View model of the chart view.
     ///   - metricViewModels: View model of the metrics view.
     func configure(
-        titleViewModel: StockDetailHeaderTitleView.ViewModel,
-        chartViewModel: StockChartView.ViewModel,
-        metricsViewModels: StockMetricsView.ViewModel
+        stockData: StockData,
+        metricsData: Metrics?
     ) {
-        titleView.resetData()
-        titleView.configure(viewModel: titleViewModel)
+//        titleView.resetData()
+        let quote = stockData.quote
+        titleView.configure(viewModel: .init(quote: stockData.quote?.current, previousClose: stockData.quote?.prevClose, showAddingButton: !PersistenceManager.shared.watchListContains(stockData.symbol)))
         
-        chartView.resetData()
-        chartView.configure(with: chartViewModel)
+//        chartView.resetData()
+        chartView.configure(with: .init(data: stockData.priceHistory, previousClose: stockData.quote?.prevClose, highestClose: stockData.quote?.high, lowestClose: stockData.quote?.low, showAxis: true))
         
-        metricsView.resetData()
-        metricsView.configure(viewModel: metricsViewModels)
+//        metricsView.resetData()
+        metricsView.configure(viewModel: .init(
+                                openPrice: quote?.open,
+                                highestPrice: quote?.high,
+                                lowestPrice: quote?.low,
+                                marketCap: metricsData?.marketCap,
+                                priceEarningsRatio: metricsData?.priceToEarnings,
+                                priceSalesRatio: metricsData?.priceToSales,
+                                annualHigh: metricsData?.annualHigh,
+                                annualLow: metricsData?.annualLow,
+                                previousPrice: quote?.prevClose,
+                                yield: metricsData?.yield,
+                                beta: metricsData?.beta,
+                                eps: metricsData?.eps)
+        )
     }
     
 }

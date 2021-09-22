@@ -12,16 +12,17 @@ class StockDetailsViewController: UIViewController {
 
     // MARK: - Properties
     
+    private var stockData: StockData
+    private var metrics: Metrics?
+    private var stories: [NewsStory] = []
+    var symbol: String {
+        return stockData.symbol
+    }
+    
+    // MARK: - UI Properties
+    
     private lazy var headerView = StockDetailHeaderView()
     
-    // ! Use `StockData` to cache data
-    
-    let symbol: String
-    private let companyName: String
-    private var quoteData: StockQuote?
-    private var chartData: [PriceHistory]
-    private var metrics: Metrics?
-
     private let tableView: UITableView = {
         let table = UITableView()
         table.register(NewsHeaderView.self,
@@ -31,22 +32,12 @@ class StockDetailsViewController: UIViewController {
         return table
     }()
 
-    private var stories: [NewsStory] = []
-
     // MARK: - Init
 
     init(
-        symbol: String,
-        companyName: String,
-        quoteData: StockQuote?,
-        chartData: [PriceHistory],
-        metricsData: Metrics? = nil
+        stockData: StockData
     ) {
-        self.symbol = symbol
-        self.companyName = companyName
-        self.quoteData = quoteData
-        self.chartData = chartData
-        self.metrics = metricsData
+        self.stockData = stockData
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -59,21 +50,27 @@ class StockDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = companyName
+        title = stockData.companyName.localizedCapitalized
         setUpCloseButton()
         setUpHeaderView()
         setUpTableView()
         DispatchQueue.main.async {
-            self.configureHeaderViewData()
+            self.configureHeaderView()
         }
         
         fetchMetricsData()
         fetchNews()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(addStockToWatchlist),
+            name: .didTapAddToWatchlist,
+            object: nil
+        )
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        
+        NotificationCenter.default.removeObserver(self)
 //        quoteUpdateTimer?.invalidate()
 //        chartUpdateTimer?.invalidate()
     }
@@ -132,7 +129,7 @@ class StockDetailsViewController: UIViewController {
 //            case .success(let stockQuote):
 //                self.quoteData = stockQuote
 //                DispatchQueue.main.async {
-//                    self.configureHeaderViewData()
+//                    self.configureHeaderView()
 //                }
 //            case .failure(let error):
 //                print(error)
@@ -147,7 +144,7 @@ class StockDetailsViewController: UIViewController {
 //            case .success(let candlesData):
 //                self.chartData = candlesData.priceHistory
 //                DispatchQueue.main.async {
-//                    self.configureHeaderViewData()
+//                    self.configureHeaderView()
 //                }
 //            case .failure(let error):
 //                print(error)
@@ -163,7 +160,7 @@ class StockDetailsViewController: UIViewController {
             case .success(let metricsResponse):
                 self.metrics = metricsResponse.metric
                 DispatchQueue.main.async {
-                    self.configureHeaderViewData()
+                    self.configureHeaderView()
                 }
             case .failure(let error):
                 print(error)
@@ -194,62 +191,29 @@ class StockDetailsViewController: UIViewController {
         tableView.tableHeaderView = headerView
     }
     
-    private func configureHeaderViewData() {
-        let metricsViewModel: StockMetricsView.ViewModel = {
-            .init(openPrice: quoteData?.open,
-                  highestPrice: quoteData?.high,
-                  lowestPrice: quoteData?.low,
-                  marketCap: metrics?.marketCap,
-                  priceEarningsRatio: metrics?.priceToEarnings,
-                  priceSalesRatio: metrics?.priceToSales,
-                  annualHigh: metrics?.annualHigh,
-                  annualLow: metrics?.annualLow,
-                  previousPrice: quoteData?.prevClose,
-                  yield: metrics?.yield,
-                  beta: metrics?.beta,
-                  eps: metrics?.eps)
-        }()
-        
-        headerView.configure(
-            titleViewModel: .init(
-                quote: quoteData?.current,
-                previousClose: quoteData?.prevClose,
-                showAddingButton: !PersistenceManager.shared.watchListContains(symbol),
-                delegate: self
-            ),
-            chartViewModel: .init(
-                data: chartData,
-                previousClose: quoteData?.prevClose,
-                highestClose: quoteData?.high,
-                lowestClose: quoteData?.low,
-                showAxis: true
-            ),
-            metricsViewModels: metricsViewModel
-        )
-        
+    private func configureHeaderView() {
+        headerView.configure(stockData: stockData, metricsData: metrics)
+    }
+    
+    @objc private func addStockToWatchlist() {
+        HapticsManager.shared.vibrate(for: .success)
+        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: stockData.companyName)
+        showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
     
 }
 
 // MARK: - Delegate Methods
 
-extension StockDetailsViewController: WatchlistViewControllerDelegate, StockDetailHeaderTitleViewDelegate {
+extension StockDetailsViewController: WatchlistViewControllerDelegate {
     
     func didUpdateData(stockData: StockData) {
-        self.quoteData = stockData.quote
-        self.chartData = stockData.priceHistory
+        self.stockData.quote = stockData.quote
+        self.stockData.priceHistory = stockData.priceHistory
         DispatchQueue.main.async {
-            self.configureHeaderViewData()
+            self.configureHeaderView()
         }
         print("didUpdateData")
-    }
-    
-    func didTapAddingButton() {
-        HapticsManager.shared.vibrate(for: .success)
-        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: companyName)
-        showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
-        
-        // ! Pass the cached data to watchlist list.
     }
     
 }

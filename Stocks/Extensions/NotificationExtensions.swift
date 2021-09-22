@@ -9,4 +9,5 @@ import Foundation
 
 extension Notification.Name {
     static let didChangeEditingMode = Notification.Name("didChangeEditingMode")
+    static let didTapAddToWatchlist = Notification.Name("didTapAddToWatchlist")
 }

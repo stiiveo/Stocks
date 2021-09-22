@@ -7,10 +7,6 @@
 
 import UIKit
 
-protocol StockDetailHeaderTitleViewDelegate: AnyObject {
-    func didTapAddingButton()
-}
-
 class StockDetailHeaderTitleView: UIView {
     
     // MARK: - Properties
@@ -49,13 +45,10 @@ class StockDetailHeaderTitleView: UIView {
         return button
     }()
     
-    weak var delegate: StockDetailHeaderTitleViewDelegate?
-    
     struct ViewModel {
         let quote: Double?
         let previousClose: Double?
         let showAddingButton: Bool
-        let delegate: StockDetailHeaderTitleViewDelegate
     }
     
     override init(frame: CGRect) {
@@ -82,7 +75,6 @@ class StockDetailHeaderTitleView: UIView {
     func configure(viewModel: ViewModel) {
         quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? String.noDataExpression
         watchlistAddingButton.isHidden = !viewModel.showAddingButton
-        delegate = viewModel.delegate
         
         if let quote = viewModel.quote,
            let previousClose = viewModel.previousClose {
@@ -125,7 +117,7 @@ class StockDetailHeaderTitleView: UIView {
     
     @objc private func didTapAddingButton() {
         watchlistAddingButton.isHidden = true
-        delegate?.didTapAddingButton()
+        NotificationCenter.default.post(name: .didTapAddToWatchlist, object: self)
     }
     
 }

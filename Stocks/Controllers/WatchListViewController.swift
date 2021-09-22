@@ -292,12 +292,7 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
             case .success(let stockData):
                 // Present stock details view controller initialized with fetched stock data.
                 DispatchQueue.main.async {
-                    self.shownStockDetailsVC = StockDetailsViewController(
-                        symbol: stockData.symbol,
-                        companyName: searchResult.description.localizedCapitalized,
-                        quoteData: stockData.quote,
-                        chartData: stockData.priceHistory
-                    )
+                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
                     let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
                     self.present(navVC, animated: true, completion: nil)
                 }
@@ -380,12 +375,8 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager.shared.vibrateForSelection()
         
-        // Present stock details view controller initialized with cache stock data.
-        let stockData = stocksData[indexPath.row]
-        shownStockDetailsVC = StockDetailsViewController(symbol: stockData.symbol,
-                                                         companyName: stockData.companyName,
-                                                         quoteData: stockData.quote,
-                                                         chartData: stockData.priceHistory)
+        // Present stock details view controller initialized with cached stock data.
+        shownStockDetailsVC = StockDetailsViewController(stockData: stocksData[indexPath.row])
         delegate = shownStockDetailsVC
         let navVC = UINavigationController(rootViewController: shownStockDetailsVC!)
         present(navVC, animated: true, completion: nil)
