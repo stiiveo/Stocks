@@ -360,8 +360,8 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.performBatchUpdates {
                 let index = indexPath.row
-                stocksData.remove(at: index)
                 PersistenceManager.shared.removeFromWatchlist(symbol: stocksData[index].symbol)
+                stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
             }
         }
@@ -470,6 +470,23 @@ extension WatchListViewController {
 extension WatchListViewController {
     /// Persist the stocks data cached in this class.
     func persistStocksData() {
+        let persistedList = persistenceManager.watchList
+        let cachedList = stocksData.map({ $0.symbol })
+        if persistedList.count != stocksData.count {
+            // The number of stocks in persisted watchlist somehow does not match with the cached ones.
+            // Append the missing data to the cache before persisting it.
+            let diff = persistedList.difference(from: cachedList)
+            for symbol in diff {
+                if !persistedList.contains(symbol) {
+                    persistenceManager.addToWatchlist(symbol: symbol, companyName: symbol)
+                }
+                if !cachedList.contains(symbol) {
+                    let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
+                    stocksData.append(stockData)
+                }
+            }
+        }
+        
         persistenceManager.persistStocksData(stocksData)
     }
 }

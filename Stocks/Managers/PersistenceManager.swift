@@ -96,7 +96,6 @@ final class PersistenceManager {
             newList.append(item)
         }
         userDefaults.set(newList, forKey: Constants.watchlistKey)
-        userDefaults.set(nil, forKey: symbol)
     }
     
     /// Returns if the specified company symbol is saved in the watchlist.
