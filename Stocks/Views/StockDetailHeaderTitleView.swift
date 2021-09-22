@@ -42,6 +42,7 @@ class StockDetailHeaderTitleView: UIView {
         button.backgroundColor = UIColor(red: 102/255, green: 209/255, blue: 255/255, alpha: 1.0)
         button.layer.cornerRadius = 12
         button.contentEdgeInsets = UIEdgeInsets(top: 15, left: 10, bottom: 15, right: 10)
+        button.isHidden = true
         return button
     }()
     
@@ -74,7 +75,7 @@ class StockDetailHeaderTitleView: UIView {
     
     func configure(viewModel: ViewModel) {
         quoteLabel.text = viewModel.quote?.stringFormatted(by: .decimalFormatter) ?? String.noDataExpression
-        watchlistAddingButton.isHidden = !viewModel.showAddingButton
+        watchlistAddingButton.isHidden = (viewModel.showAddingButton && !(viewModel.quote == nil) ? false : true)
         
         if let quote = viewModel.quote,
            let previousClose = viewModel.previousClose {

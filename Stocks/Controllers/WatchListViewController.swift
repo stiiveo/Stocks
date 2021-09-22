@@ -72,14 +72,13 @@ final class WatchListViewController: UIViewController {
                 // Load default stocks data if the persisted data somehow failed to be loaded.
                 persistenceManager.savedDefaultStocks()
                 loadDefaultTableViewCells()
-                print(error)
+                print(error, "Default stocks have been loaded.")
             }
         } else {
             persistenceManager.onboard()
             loadDefaultTableViewCells()
         }
         updateWatchlistData()
-        
     }
     
     // MARK: - UI Setting

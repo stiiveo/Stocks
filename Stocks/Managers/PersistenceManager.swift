@@ -80,11 +80,8 @@ struct PersistenceManager {
     /// Remove specified company from the watchlist.
     /// - Parameter symbol: Stock ticker symbol of the company to be removed from the watchlist.
     func removeFromWatchlist(symbol: String) {
-        var newList = [String]()
-        for item in watchList where item != symbol {
-            newList.append(item)
-        }
-        userDefaults.set(newList, forKey: Constants.watchlistKey)
+        let filteredList = watchList.filter{ $0 != symbol }
+        userDefaults.set(filteredList, forKey: Constants.watchlistKey)
     }
     
     /// Returns if the specified company symbol is saved in the watchlist.
