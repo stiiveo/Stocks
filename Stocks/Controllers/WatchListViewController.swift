@@ -28,7 +28,6 @@ final class WatchListViewController: UIViewController {
     
     private var panel: FloatingPanelController?
     private let footerView = WatchlistFooterView()
-    private var shownStockDetailsVC: StockDetailsViewController?
     
     // MARK: - ScrollView Observing Properties
     
@@ -36,9 +35,8 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Managers Access Points
     
-    private let persistenceManager = PersistenceManager.shared
-    private let calendarManager = CalendarManager.shared
-    private let apiCaller = APICaller.shared
+    private let persistenceManager = PersistenceManager()
+    private let apiCaller = APICaller()
     
     // MARK: - Timer Properties
     private var searchTimer: Timer?
@@ -66,7 +64,6 @@ final class WatchListViewController: UIViewController {
         setUpTableView()
         setUpFloatingPanel()
         setUpFooterView()
-        persistenceManager.delegate = self
         
         if persistenceManager.hasOnboarded {
             do {
@@ -186,7 +183,7 @@ final class WatchListViewController: UIViewController {
     
     func initiateWatchlistUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
-            let currentSecondComponent = calendarManager.newYorkCalendar.component(.second, from: Date())
+            let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
             if currentSecondComponent == 0 {
                 updateQuoteData()
                 updateChartData()
@@ -202,23 +199,15 @@ final class WatchListViewController: UIViewController {
 
 }
 
-// MARK: - Persistence Manager Delegate
+// MARK: - Stock Details VC Delegate
 
-extension WatchListViewController: PersistenceManagerDelegate {
-    func didAddNewCompanyToWatchlist(symbol: String) {
-        apiCaller.fetchQuoteAndCandlesData(symbol: symbol, timeSpan: .day) {
-            [unowned self] result in
-            switch result {
-            case .success(let stockData):
-                self.stocksData.append(stockData)
-                DispatchQueue.main.async {
-                    let newRowIndex = self.stocksData.count - 1
-                    self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
-                                              with: .automatic)
-                }
-            case .failure(let error):
-                print(error)
-            }
+extension WatchListViewController: StockDetailsViewControllerDelegate {
+    func addLatestCachedData(stockData: StockData) {
+        self.stocksData.append(stockData)
+        DispatchQueue.main.async {
+            let newRowIndex = self.stocksData.count - 1
+            self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
+                                      with: .automatic)
         }
     }
 }
@@ -285,26 +274,15 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
     func searchResultViewControllerDidSelect(searchResult: SearchResult) {
         // Present stock details VC for the selected stock.
         navigationItem.searchController?.searchBar.resignFirstResponder()
-        HapticsManager.shared.vibrateForSelection()
+        HapticsManager().vibrateForSelection()
         
-        apiCaller.fetchQuoteAndCandlesData(symbol: searchResult.symbol, timeSpan: .day) { [unowned self] result in
-            switch result {
-            case .success(let stockData):
-                // Present stock details view controller initialized with fetched stock data.
-                DispatchQueue.main.async {
-                    self.shownStockDetailsVC = StockDetailsViewController(stockData: stockData)
-                    let navVC = UINavigationController(rootViewController: self.shownStockDetailsVC!)
-                    self.present(navVC, animated: true, completion: nil)
-                }
-            case .failure(let error):
-                print("Failed to present details view controller due to data fetching error: \(error)")
-                DispatchQueue.main.async {
-                    self.presentAPIErrorAlert()
-                }
-            }
+        let stockData = StockData(symbol: searchResult.symbol, quote: nil, priceHistory: [])
+        DispatchQueue.main.async {
+            let vc = StockDetailsViewController(stockData: stockData, companyName: searchResult.description.localizedCapitalized)
+            vc.delegate = self
+            let navVC = UINavigationController(rootViewController: vc)
+            self.present(navVC, animated: true, completion: nil)
         }
-        
-        
     }
     
     func searchResultScrollViewWillBeginDragging() {
@@ -360,7 +338,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.performBatchUpdates {
                 let index = indexPath.row
-                PersistenceManager.shared.removeFromWatchlist(symbol: stocksData[index].symbol)
+                PersistenceManager().removeFromWatchlist(symbol: stocksData[index].symbol)
                 stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
             }
@@ -373,12 +351,13 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     ///   - indexPath: IndexPath pointing to the selected tableView row.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        HapticsManager.shared.vibrateForSelection()
+        HapticsManager().vibrateForSelection()
         
         // Present stock details view controller initialized with cached stock data.
-        shownStockDetailsVC = StockDetailsViewController(stockData: stocksData[indexPath.row])
-        delegate = shownStockDetailsVC
-        let navVC = UINavigationController(rootViewController: shownStockDetailsVC!)
+        let data = stocksData[indexPath.row]
+        let vc = StockDetailsViewController(stockData: data, companyName: data.companyName)
+        delegate = vc
+        let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true, completion: nil)
     }
     

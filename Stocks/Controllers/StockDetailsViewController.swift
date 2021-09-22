@@ -18,6 +18,8 @@ class StockDetailsViewController: UIViewController {
     var symbol: String {
         return stockData.symbol
     }
+    weak var delegate: StockDetailsViewControllerDelegate?
+    private var addedToWatchlist = false
     
     // MARK: - UI Properties
     
@@ -35,10 +37,12 @@ class StockDetailsViewController: UIViewController {
     // MARK: - Init
 
     init(
-        stockData: StockData
+        stockData: StockData,
+        companyName: String
     ) {
         self.stockData = stockData
         super.init(nibName: nil, bundle: nil)
+        self.title = companyName
     }
     
     required init?(coder: NSCoder) {
@@ -50,58 +54,41 @@ class StockDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = stockData.companyName.localizedCapitalized
         setUpCloseButton()
         setUpHeaderView()
         setUpTableView()
-        DispatchQueue.main.async {
-            self.configureHeaderView()
-        }
-        
+        fetchQuoteData()
+        fetchChartData()
         fetchMetricsData()
         fetchNews()
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(addStockToWatchlist),
-            name: .didTapAddToWatchlist,
-            object: nil
-        )
+        initiateDataUpdateTimer()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
-//        quoteUpdateTimer?.invalidate()
-//        chartUpdateTimer?.invalidate()
+        dataUpdateTimer?.invalidate()
+        if addedToWatchlist {
+            // Send the cached data to WatchlistVC.
+            delegate?.addLatestCachedData(stockData: self.stockData)
+        }
     }
 
     // MARK: - Private
     
-    ///// Use date component to time when to update data
+    private var dataUpdateTimer: Timer?
     
-//    private var quoteUpdateTimer: Timer?
-//    private var chartUpdateTimer: Timer?
-    
-//    private func initiateUpdateTimers() {
-//        let quoteUpdateInterval = 20.0
-//        // Set this value no less than the minimum interval of chart data to save API calling quota.
-//        let chartUpdateInterval = 60.0
-//        let marketCloseDate = CalendarManager.shared.latestTradingTime.close
-//
-//        quoteUpdateTimer = Timer.scheduledTimer(withTimeInterval: quoteUpdateInterval, repeats: true) {
-//            [weak self] _ in
-//            if Date() <= marketCloseDate.addingTimeInterval(quoteUpdateInterval) {
-//                self?.fetchQuoteData()
-//            }
-//        }
-//
-//        chartUpdateTimer = Timer.scheduledTimer(withTimeInterval: chartUpdateInterval, repeats: true) {
-//            [weak self] _ in
-//            if Date() <= marketCloseDate.addingTimeInterval(chartUpdateInterval) {
-//                self?.fetchMetricsData()
-//            }
-//        }
-//    }
+    private func initiateDataUpdateTimer() {
+        dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
+            let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
+            if currentSecondComponent == 0 {
+                fetchQuoteData()
+                fetchChartData()
+            } else if currentSecondComponent == 30 {
+                fetchQuoteData()
+            }
+        }
+    }
     
     private func setUpCloseButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -122,39 +109,38 @@ class StockDetailsViewController: UIViewController {
         tableView.dataSource = self
     }
     
-//    private func fetchQuoteData() {
-//        APICaller.shared.fetchStockQuote(for: symbol) { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success(let stockQuote):
-//                self.quoteData = stockQuote
-//                DispatchQueue.main.async {
-//                    self.configureHeaderView()
-//                }
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
-//    }
-//
-//    private func fetchChartData() {
-//        APICaller.shared.fetchPriceHistory(symbol, timeSpan: .day) { [weak self] result in
-//            guard let self = self else { return }
-//            switch result {
-//            case .success(let candlesData):
-//                self.chartData = candlesData.priceHistory
-//                DispatchQueue.main.async {
-//                    self.configureHeaderView()
-//                }
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
-//    }
+    private func fetchQuoteData() {
+        APICaller().fetchStockQuote(for: symbol) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let quoteData):
+                self.stockData.quote = quoteData
+                DispatchQueue.main.async {
+                    self.configureHeaderView()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
 
-    /// Fetch financial metrics.
+    private func fetchChartData() {
+        APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                self.stockData.priceHistory = response.priceHistory
+                DispatchQueue.main.async {
+                    self.configureHeaderView()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+
     private func fetchMetricsData() {
-        APICaller.shared.fetchStockMetrics(symbol: symbol) { [weak self] result in
+        APICaller().fetchStockMetrics(symbol: symbol) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let metricsResponse):
@@ -169,7 +155,7 @@ class StockDetailsViewController: UIViewController {
     }
 
     private func fetchNews() {
-        APICaller.shared.fetchNews(for: .company(symbol: symbol)) { [weak self] result in
+        APICaller().fetchNews(for: .company(symbol: symbol)) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let stories):
@@ -185,10 +171,17 @@ class StockDetailsViewController: UIViewController {
     
     private func setUpHeaderView() {
         headerView = StockDetailHeaderView()
-        
-        // Define header view's frame.
         headerView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.width)
         tableView.tableHeaderView = headerView
+        DispatchQueue.main.async {
+            self.configureHeaderView()
+        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(addStockToWatchlist),
+            name: .didTapAddToWatchlist,
+            object: nil
+        )
     }
     
     private func configureHeaderView() {
@@ -196,11 +189,16 @@ class StockDetailsViewController: UIViewController {
     }
     
     @objc private func addStockToWatchlist() {
-        HapticsManager.shared.vibrate(for: .success)
-        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: stockData.companyName)
+        HapticsManager().vibrate(for: .success)
+        PersistenceManager().addToWatchlist(symbol: symbol, companyName: stockData.companyName)
+        addedToWatchlist = true
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
     
+}
+
+protocol StockDetailsViewControllerDelegate: AnyObject {
+    func addLatestCachedData(stockData: StockData)
 }
 
 // MARK: - Delegate Methods
@@ -213,7 +211,6 @@ extension StockDetailsViewController: WatchlistViewControllerDelegate {
         DispatchQueue.main.async {
             self.configureHeaderView()
         }
-        print("didUpdateData")
     }
     
 }
@@ -241,7 +238,7 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard let url = URL(string: stories[indexPath.row].url) else { return }
-        HapticsManager.shared.vibrateForSelection()
+        HapticsManager().vibrateForSelection()
         open(url: url, withPresentationStyle: .overFullScreen)
     }
 }

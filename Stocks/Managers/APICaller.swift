@@ -7,9 +7,7 @@
 
 import Foundation
 
-final class APICaller {
-    
-    static let shared = APICaller()
+struct APICaller {
     
     private struct Constants {
         
@@ -34,8 +32,6 @@ final class APICaller {
         case week = "W"
         case month = "M"
     }
-    
-    private init() {}
     
     // MARK: - Public
     
@@ -102,9 +98,9 @@ final class APICaller {
     func fetchPriceHistory(
         _ symbol: String,
         timeSpan: CalendarManager.TimeSpan,
-        completion: @escaping (Result<StockCandlesResponse, Error>) -> Void
+        completion: @escaping (Result<PriceHistoryResponse, Error>) -> Void
     ) {
-        let calendar = CalendarManager.shared
+        let calendar = CalendarManager()
         let startTime = Int(calendar.firstMarketOpenTime(timeSpan: timeSpan).timeIntervalSince1970)
         let endTime = Int(calendar.latestTradingTime.close.timeIntervalSince1970)
         let url = url(
@@ -116,7 +112,7 @@ final class APICaller {
                 "to": "\(endTime)"
             ]
         )
-        request(url: url, expecting: StockCandlesResponse.self, completion: completion)
+        request(url: url, expecting: PriceHistoryResponse.self, completion: completion)
     }
     
     /// Fetch specified company's financial metrics data: 52 week high, 52 week low, 10 day average trading volume etc.

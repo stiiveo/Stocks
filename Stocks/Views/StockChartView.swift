@@ -20,7 +20,7 @@ class StockChartView: LineChartView {
         let showAxis: Bool
     }
     
-    private let calendarManager = CalendarManager.shared
+    private let calendar = CalendarManager()
     
     // MARK: - Init
     
@@ -92,8 +92,8 @@ class StockChartView: LineChartView {
               let firstTimestamp = priceDataEntries.first?.x,
               let lastTimestamp = priceDataEntries.last?.x else { return }
         
-        let latestOpenTime = calendarManager.latestTradingTime.open.timeIntervalSince1970
-        let latestCloseTime = calendarManager.latestTradingTime.close.timeIntervalSince1970
+        let latestOpenTime = calendar.latestTradingTime.open.timeIntervalSince1970
+        let latestCloseTime = calendar.latestTradingTime.close.timeIntervalSince1970
         let latestTradingDayDuration = latestCloseTime - latestOpenTime
         
         let isTimeRangeWithinLatestTradingTimeRange = (lastTimestamp - firstTimestamp) <= latestTradingDayDuration
@@ -198,7 +198,7 @@ final class XAxisValueFormatter: IAxisValueFormatter {
     func stringForValue( _ value: Double, axis _: AxisBase?) -> String {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: "America/New_York")
-        formatter.calendar = CalendarManager.shared.newYorkCalendar
+        formatter.calendar = CalendarManager().newYorkCalendar
         formatter.dateFormat = "H:mm"
         let formattedString = formatter.string(from: Date(timeIntervalSince1970: value))
         

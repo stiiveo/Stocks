@@ -100,10 +100,10 @@ class WatchlistFooterView: UIView {
     /// otherwise, is denotes the remaining time until the next trading session starts.
     /// - Important: Use this method in main thread only since the text property of UILabel is used.
     @objc private func updateMarketStatusLabel() {
-        let calendarManager = CalendarManager.shared
-        let formattedTimeToClose = calendarManager.timeToClose.formattedString
-        let formattedTimeToOpen = calendarManager.timeToOpen.formattedString
-        marketStatusLabel.text = calendarManager.isMarketOpen ?
+        let calendar = CalendarManager()
+        let formattedTimeToClose = calendar.timeToClose.formattedString
+        let formattedTimeToOpen = calendar.timeToOpen.formattedString
+        marketStatusLabel.text = calendar.isMarketOpen ?
             "Market Closes in " + formattedTimeToClose :
             "Market Opens in " + formattedTimeToOpen
     }

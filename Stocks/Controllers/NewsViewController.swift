@@ -47,7 +47,7 @@ class NewsViewController: UIViewController {
     
     private func fetchNews() {
         DispatchQueue.global(qos: .userInteractive).async {
-            APICaller.shared.fetchNews(for: .topStories) { [weak self] result in
+            APICaller().fetchNews(for: .topStories) { [weak self] result in
                 switch result {
                 case .success(let stories):
                     self?.stories = stories
@@ -103,7 +103,7 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
         // Open news story
         let story = stories[indexPath.row]
         guard let url = URL(string: story.url) else {
-            HapticsManager.shared.vibrate(for: .error)
+            HapticsManager().vibrate(for: .error)
             showAlert(
                 withTitle: "Unable to Open",
                 message: "Something went wrong and the article could not be opened.",

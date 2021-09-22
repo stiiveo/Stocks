@@ -10,7 +10,7 @@ import XCTest
 
 class Persistence_Manager_Tests: XCTestCase {
     
-    private let manager = PersistenceManager.shared
+    private let manager = PersistenceManager()
     private let userDefaults: UserDefaults = .standard
     
     // Test use company symbol and name.
@@ -80,8 +80,6 @@ class Persistence_Manager_Tests: XCTestCase {
         // Assertion
         XCTAssert(storedWatchlist.sorted() == originalWatchlist.sorted(),
                   "Watchlist after deletion is not identical to the original one")
-        XCTAssert(userDefaults.string(forKey: testSymbol) == nil,
-                  "Company name is not removed.")
     }
     
     func test_contains_func() {
@@ -111,7 +109,7 @@ class Persistence_Manager_Tests: XCTestCase {
                       priceHistory: [PriceHistory(time: 123456789.0, close: 500)]),
         ]
         manager.persistStocksData(dataToPersist)
-        let persistedData = manager.persistedStocksData()
+        let persistedData = try! manager.persistedStocksData()
         
         XCTAssertEqual(persistedData, dataToPersist)
     }

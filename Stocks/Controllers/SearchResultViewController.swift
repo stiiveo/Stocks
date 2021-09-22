@@ -111,8 +111,7 @@ extension SearchResultViewController: UITableViewDelegate, UITableViewDataSource
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let result = results[indexPath.row]
-        delegate?.searchResultViewControllerDidSelect(searchResult: result)
+        delegate?.searchResultViewControllerDidSelect(searchResult: results[indexPath.row])
     }
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {

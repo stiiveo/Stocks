@@ -8,11 +8,7 @@
 import Foundation
 import UIKit
 
-final class HapticsManager {
-    
-    static let shared = HapticsManager()
-    
-    private init() {}
+struct HapticsManager {
     
     // MARK: - Public
     

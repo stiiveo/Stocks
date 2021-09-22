@@ -17,7 +17,7 @@ class StocksUnitTests: XCTestCase {
         let timestampValues = Array(repeating: TimeInterval.random(in: 1_000...2_000), count: dataCount)
         let volumeValues = Array(repeating: Int.random(in: 500...1_000), count: dataCount)
         
-        let candleSticksData = StockCandlesResponse(
+        let candleSticksData = PriceHistoryResponse(
             close: closeValues,
             timestamp: timestampValues,
             volume: volumeValues,

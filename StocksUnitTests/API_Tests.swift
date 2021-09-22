@@ -10,7 +10,7 @@ import XCTest
 
 class API_Tests: XCTestCase {
     
-    private let apiCaller = APICaller.shared
+    private let apiCaller = APICaller()
     private let testSymbol = "AAPL"
     private let testDescription = "Apple Inc."
     

@@ -11,7 +11,7 @@ import Foundation
 
 class Calendar_Manager_Tests: XCTestCase {
     
-    private let manager = CalendarManager.shared
+    private let manager = CalendarManager()
     
     private let newYorkTimeZone = TimeZone(identifier: "America/New_York")
     

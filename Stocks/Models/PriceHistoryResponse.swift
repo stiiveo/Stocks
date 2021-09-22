@@ -1,5 +1,5 @@
 //
-//  StockCandlesResponse.swift
+//  PriceHistoryResponse.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/7/13.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct StockCandlesResponse: Codable {
+struct PriceHistoryResponse: Codable {
     let close: [Double]
     let timestamp: [TimeInterval]
     let volume: [Int]

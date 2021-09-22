@@ -7,12 +7,9 @@
 
 import Foundation
 
-final class CalendarManager {
+struct CalendarManager {
     
     // MARK: - Properties
-    
-    static let shared = CalendarManager()
-    private init() {}
     
     private var currentTime: Date { Date() }
     

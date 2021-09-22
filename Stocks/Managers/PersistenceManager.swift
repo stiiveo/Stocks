@@ -14,11 +14,7 @@
 
 import Foundation
 
-protocol PersistenceManagerDelegate: AnyObject {
-    func didAddNewCompanyToWatchlist(symbol: String)
-}
-
-final class PersistenceManager {
+struct PersistenceManager {
     
     struct StockDefaults {
         /// The default stocks to be stored in the `UserDefaults` if the App is launched for the first time.
@@ -50,13 +46,7 @@ final class PersistenceManager {
     
     // MARK: - Properties
     
-    static let shared = PersistenceManager()
-    
     private let userDefaults: UserDefaults = .standard
-    
-    weak var delegate: PersistenceManagerDelegate?
-    
-    private init() {}
     
     // MARK: - Public
     
@@ -85,7 +75,6 @@ final class PersistenceManager {
         currentList.append(symbol)
         userDefaults.set(currentList, forKey: Constants.watchlistKey)
         userDefaults.set(companyName, forKey: symbol)
-        delegate?.didAddNewCompanyToWatchlist(symbol: symbol)
     }
     
     /// Remove specified company from the watchlist.
