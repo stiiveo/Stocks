@@ -95,7 +95,7 @@ class WatchListTableViewCell: UITableViewCell {
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: .didChangeEditingMode, object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Public
