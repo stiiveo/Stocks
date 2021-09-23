@@ -78,7 +78,6 @@ final class WatchListViewController: UIViewController {
             persistenceManager.onboard()
             loadDefaultTableViewCells()
         }
-        updateWatchlistData()
     }
     
     // MARK: - UI Setting
@@ -181,13 +180,31 @@ final class WatchListViewController: UIViewController {
     private var updateTimer: Timer?
     
     func initiateWatchlistUpdateTimer() {
+        let calendar = CalendarManager()
+        let currentSecondComponent = calendar.newYorkCalendar.component(.second, from: Date())
+        let currentTime = Date().timeIntervalSince1970
+        let marketCloseTime = calendar.latestTradingTime.close.timeIntervalSince1970
+        
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
-            let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-            if currentSecondComponent == 0 {
-                updateQuoteData()
-                updateChartData()
-            } else if currentSecondComponent == 30 {
-                updateQuoteData()
+            for data in stocksData {
+                guard let quote = data.quote else {
+                    updateQuoteData()
+                    updateChartData()
+                    return
+                }
+                if currentSecondComponent == 0 && quote.isExpired {
+                    updateQuoteData()
+                    updateChartData()
+                }
+                else if currentSecondComponent == 30 && quote.isExpired {
+                    updateChartData()
+                }
+                else if (calendar.isMarketOpen && TimeInterval(quote.time) < currentTime - 30) || (!calendar.isMarketOpen && TimeInterval(quote.time) < marketCloseTime) {
+                    // Update immediately if data is significantly expired.
+                    updateQuoteData()
+                    updateChartData()
+                }
+                break
             }
         }
     }
@@ -277,7 +294,10 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         
         let stockData = StockData(symbol: searchResult.symbol, quote: nil, priceHistory: [])
         DispatchQueue.main.async {
-            let vc = StockDetailsViewController(stockData: stockData, companyName: searchResult.description.localizedCapitalized)
+            let vc = StockDetailsViewController(
+                stockData: stockData,
+                companyName: searchResult.description.localizedCapitalized,
+                isInWatchlist: self.persistenceManager.watchListContains(searchResult.symbol))
             vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
             self.present(navVC, animated: true, completion: nil)
@@ -354,7 +374,8 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Present stock details view controller initialized with cached stock data.
         let data = stocksData[indexPath.row]
-        let vc = StockDetailsViewController(stockData: data, companyName: data.companyName)
+        let vc = StockDetailsViewController(
+            stockData: data, companyName: data.companyName, isInWatchlist: true)
         delegate = vc
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true, completion: nil)
@@ -386,17 +407,8 @@ protocol WatchlistViewControllerDelegate: AnyObject {
 
 extension WatchListViewController {
     
-    /// Fetch the quote and candle sticks data of all the stocks saved in the watchlist.
-    /// - Parameter timeSpan: The time span of the candle stick data.
-    /// - Note: The order of the list is determined by the order the data is fetched.
-    private func updateWatchlistData() {
-        updateQuoteData()
-        updateChartData()
-    }
-    
     /// Update any data in the watchlist if its quote time is before the market closing time.
     private func updateQuoteData() {
-        print("update Quote Data")
         for index in 0..<stocksData.count {
             let symbol = stocksData[index].symbol
             apiCaller.fetchStockQuote(for: symbol) { [unowned self] result in
@@ -419,7 +431,6 @@ extension WatchListViewController {
     }
     
     private func updateChartData() {
-        print("update Chart Data")
         for index in 0..<stocksData.count {
             let symbol = stocksData[index].symbol
             apiCaller.fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
@@ -464,7 +475,6 @@ extension WatchListViewController {
                 }
             }
         }
-        
         persistenceManager.persistStocksData(stocksData)
     }
 }

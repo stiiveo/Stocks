@@ -259,6 +259,9 @@ struct APICaller {
             return
         }
         
+        let time = CalendarManager().currentNewYorkDate
+        print(time, "API request sent for type: \(type)")
+        
         let task = URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
                 if let error = error {

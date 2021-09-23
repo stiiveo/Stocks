@@ -8,6 +8,10 @@
 import UIKit
 import SafariServices
 
+protocol StockDetailsViewControllerDelegate: AnyObject {
+    func addLatestCachedData(stockData: StockData)
+}
+
 class StockDetailsViewController: UIViewController {
 
     // MARK: - Properties
@@ -15,11 +19,11 @@ class StockDetailsViewController: UIViewController {
     private var stockData: StockData
     private var metrics: Metrics?
     private var stories: [NewsStory] = []
+    private var isInWatchlist: Bool
+    weak var delegate: StockDetailsViewControllerDelegate?
     var symbol: String {
         return stockData.symbol
     }
-    weak var delegate: StockDetailsViewControllerDelegate?
-    private var addedToWatchlist = false
     
     // MARK: - UI Properties
     
@@ -38,9 +42,11 @@ class StockDetailsViewController: UIViewController {
 
     init(
         stockData: StockData,
-        companyName: String
+        companyName: String,
+        isInWatchlist: Bool
     ) {
         self.stockData = stockData
+        self.isInWatchlist = isInWatchlist
         super.init(nibName: nil, bundle: nil)
         self.title = companyName
     }
@@ -57,8 +63,10 @@ class StockDetailsViewController: UIViewController {
         setUpCloseButton()
         setUpHeaderView()
         setUpTableView()
-        fetchQuoteData()
-        fetchChartData()
+        if !isInWatchlist {
+            fetchQuoteData()
+            fetchChartData()
+        }
         fetchMetricsData()
         fetchNews()
         initiateDataUpdateTimer()
@@ -68,27 +76,26 @@ class StockDetailsViewController: UIViewController {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
         dataUpdateTimer?.invalidate()
-        if addedToWatchlist {
-            // Send the cached data to WatchlistVC.
-            delegate?.addLatestCachedData(stockData: self.stockData)
-        }
     }
 
-    // MARK: - Private
+    // MARK: - Data Update Timer
     
     private var dataUpdateTimer: Timer?
     
     private func initiateDataUpdateTimer() {
-        dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
+        dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self, !self.isInWatchlist else { return }
             let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-            if currentSecondComponent == 0 {
-                fetchQuoteData()
-                fetchChartData()
-            } else if currentSecondComponent == 30 {
-                fetchQuoteData()
+            if currentSecondComponent == 0 && self.stockData.quote?.isExpired ?? true {
+                self.fetchQuoteData()
+                self.fetchChartData()
+            } else if currentSecondComponent == 30 && self.stockData.quote?.isExpired ?? true {
+                self.fetchQuoteData()
             }
         }
     }
+    
+    // MARK: - UI Setting
     
     private func setUpCloseButton() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -98,16 +105,33 @@ class StockDetailsViewController: UIViewController {
         )
     }
     
-    @objc private func didTapCloseButton() {
-        dismiss(animated: true, completion: nil)
-    }
-
     private func setUpTableView() {
         view.addSubview(tableView)
         tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
     }
+    
+    private func setUpHeaderView() {
+        headerView = StockDetailHeaderView()
+        headerView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.width)
+        tableView.tableHeaderView = headerView
+        DispatchQueue.main.async {
+            self.configureHeaderView()
+        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(addStockToWatchlist),
+            name: .didTapAddToWatchlist,
+            object: nil
+        )
+    }
+    
+    private func configureHeaderView() {
+        headerView.configure(stockData: stockData, metricsData: metrics)
+    }
+    
+    // MARK: - Data Fetching
     
     private func fetchQuoteData() {
         APICaller().fetchStockQuote(for: symbol) { [weak self] result in
@@ -169,36 +193,20 @@ class StockDetailsViewController: UIViewController {
         }
     }
     
-    private func setUpHeaderView() {
-        headerView = StockDetailHeaderView()
-        headerView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.width)
-        tableView.tableHeaderView = headerView
-        DispatchQueue.main.async {
-            self.configureHeaderView()
-        }
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(addStockToWatchlist),
-            name: .didTapAddToWatchlist,
-            object: nil
-        )
-    }
-    
-    private func configureHeaderView() {
-        headerView.configure(stockData: stockData, metricsData: metrics)
-    }
+    // MARK: - Button Selector
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
         PersistenceManager().addToWatchlist(symbol: symbol, companyName: stockData.companyName)
-        addedToWatchlist = true
+        isInWatchlist = true
+        delegate?.addLatestCachedData(stockData: self.stockData)
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
     
-}
-
-protocol StockDetailsViewControllerDelegate: AnyObject {
-    func addLatestCachedData(stockData: StockData)
+    @objc private func didTapCloseButton() {
+        dismiss(animated: true, completion: nil)
+    }
+    
 }
 
 // MARK: - Delegate Methods
@@ -215,7 +223,7 @@ extension StockDetailsViewController: WatchlistViewControllerDelegate {
     
 }
 
-// MARK: - TableView
+// MARK: - TableView Data Source & Delegate
 
 extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource {
 
