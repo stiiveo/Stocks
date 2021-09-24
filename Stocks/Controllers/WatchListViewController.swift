@@ -381,7 +381,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
             fatalError()
         }
         cell.reset()
-        cell.configure(with: stocksData[indexPath.row], showChartAxis: false)
+        cell.configure(with: stocksData[indexPath.row], showChartAxis: false, onEditing: tableView.isEditing)
         return cell
     }
     
@@ -463,7 +463,7 @@ extension WatchListViewController {
                 stocksData[index].quote = quoteData
                 DispatchQueue.main.async {
                     if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index], showChartAxis: false)
+                        cell.configure(with: stocksData[index], showChartAxis: false, onEditing: tableView.isEditing)
                     }
                 }
                 if delegate?.symbol == symbol {
@@ -503,7 +503,7 @@ extension WatchListViewController {
                 stocksData[index].priceHistory = candlesResponse.priceHistory
                 DispatchQueue.main.async {
                     if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index], showChartAxis: false)
+                        cell.configure(with: stocksData[index], showChartAxis: false, onEditing: tableView.isEditing)
                     }
                 }
                 if delegate?.symbol == symbol {

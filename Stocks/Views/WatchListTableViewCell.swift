@@ -102,7 +102,7 @@ class WatchListTableViewCell: UITableViewCell {
     
     // MARK: - Public
     
-    func configure(with stockData: StockData, showChartAxis: Bool) {
+    func configure(with stockData: StockData, showChartAxis: Bool, onEditing: Bool) {
         symbolLabel.text = stockData.symbol
         nameLabel.text = stockData.companyName
         priceLabel.text = stockData.quote?.current.stringFormatted(by: .decimalFormatter) ?? "–"
@@ -113,6 +113,12 @@ class WatchListTableViewCell: UITableViewCell {
                                         highestClose: stockData.quote?.high,
                                         lowestClose: stockData.quote?.low,
                                         showAxis: showChartAxis))
+        if onEditing {
+            // Hide chart and price stack view.
+            self.priceStockViewTrailingConstraint.constant = 120
+            self.priceStackView.alpha = 0
+            self.chartView.alpha = 0
+        }
     }
     
     func reset() {
@@ -194,24 +200,23 @@ class WatchListTableViewCell: UITableViewCell {
     }
     
     @objc private func didChangeEditingMode(_ notification: Notification) {
-        if let isEditing = notification.object as? Bool {
-            if isEditing {
-                // Hide chart view and price stack view.
-                self.priceStockViewTrailingConstraint.constant = 120
-                UIView.animate(withDuration: 0.2) {
-                    self.priceStackView.alpha = 0
-                    self.chartView.alpha = 0
-                    self.layoutIfNeeded()
-                }
+        guard let isEditing = notification.object as? Bool else { return }
+        if isEditing {
+            // Hide chart view and price stack view.
+            self.priceStockViewTrailingConstraint.constant = 120
+            UIView.animate(withDuration: 0.2) {
+                self.priceStackView.alpha = 0
+                self.chartView.alpha = 0
+                self.layoutIfNeeded()
             }
-            else {
-                // Show chart view and price stack view.
-                self.priceStockViewTrailingConstraint.constant = trailingMargin
-                UIView.animate(withDuration: 0.3) {
-                    self.priceStackView.alpha = 1
-                    self.chartView.alpha = 1
-                    self.layoutIfNeeded()
-                }
+        }
+        else {
+            // Show chart view and price stack view.
+            self.priceStockViewTrailingConstraint.constant = trailingMargin
+            UIView.animate(withDuration: 0.3) {
+                self.priceStackView.alpha = 1
+                self.chartView.alpha = 1
+                self.layoutIfNeeded()
             }
         }
     }
