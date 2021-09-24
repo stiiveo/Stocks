@@ -698,8 +698,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/scenee/FloatingPanel.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
+				kind = exactVersion;
+				version = 2.4.0;
 			};
 		};
 		8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
