@@ -20,6 +20,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 26, weight: .heavy)
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
     }()
     
@@ -28,6 +29,7 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         label.font = .systemFont(ofSize: 17, weight: .medium)
         label.textColor = .secondaryLabel
         label.text = "From Finnhub"
+        label.setContentHuggingPriority(.defaultHigh, for: .vertical)
         return label
     }()
     

@@ -25,6 +25,7 @@ class WatchListTableViewCell: UITableViewCell {
     private let symbolLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .semibold)
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
     }()
     
@@ -32,6 +33,7 @@ class WatchListTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textColor = .gray
+        label.setContentHuggingPriority(.defaultHigh, for: .vertical)
         return label
     }()
     

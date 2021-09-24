@@ -17,6 +17,7 @@ class WatchlistFooterView: UIView {
         label.textAlignment = .left
         label.textColor = .tertiaryLabel
         label.text = "U.S. Stocks"
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
         return label
     }()
     
@@ -27,6 +28,7 @@ class WatchlistFooterView: UIView {
         label.textColor = .secondaryLabel
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.7
+        label.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         return label
     }()
     
