@@ -35,7 +35,9 @@ struct PersistenceManager {
         static let watchlistKey = "watchList"
         
         static let stocksDataDirectoryName = "StocksData"
+        
         static let stocksDataFileName = "StocksData"
+        
         static var stocksDataDirectoryUrl: URL {
             let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             let documentPath = paths[0]
@@ -110,26 +112,39 @@ struct PersistenceManager {
 
 extension PersistenceManager {
     
-    /// Encode specified array of `StockData` in JSON and write it to preserved file path.
+    enum PersistError: Error {
+        case failedToCreatePersistingFolder
+        case failedToEncodeDataToJson
+        case failedToWriteEncodedDataToFolder(url: URL)
+        case persistingFolderNotFound
+        case persistedDataNotRetrievable
+        case persistedDataNotDecodable
+    }
+    
+    /// Encode specified array of `StockData` in JSON and write it to the local document directory.
     /// - Parameter stocksData: Array of `StockData` to be written to preserved file path.
-    func persistStocksData(_ stocksData: [StockData]) {
+    func persistStocksData(_ stocksData: [StockData]) throws {
+        // Create a directory to store the data if it does not exist yet.
         let directoryUrl = Constants.stocksDataDirectoryUrl
-        
-        // Create a directory used to store the data if it does not exist yet.
         if !FileManager.default.fileExists(atPath: directoryUrl.path) {
             do {
                 try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: false)
             } catch {
-                print("Failed to create stocks data directory for persistent storage.")
-                return
+                throw PersistError.failedToCreatePersistingFolder
             }
         }
+        
+        // Encode `StockData` into JSON format.
+        guard let encodedData = try? JSONEncoder().encode(stocksData) else {
+            throw PersistError.failedToEncodeDataToJson
+        }
+        
+        // Write encoded data to directory.
+        let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataDirectoryName)
         do {
-            let fileUrl = directoryUrl.appendingPathComponent(Constants.stocksDataDirectoryName)
-            let encodedData = try JSONEncoder().encode(stocksData)
             try encodedData.write(to: fileUrl, options: .atomic)
         } catch {
-            print("Failed to persist stocks data.\n\(error)")
+            throw PersistError.failedToWriteEncodedDataToFolder(url: fileUrl)
         }
     }
     
@@ -146,16 +161,12 @@ extension PersistenceManager {
         guard let persistedData = try? Data(contentsOf: fileUrl) else {
             throw PersistError.persistedDataNotRetrievable
         }
+        
         guard let stocksData = try? JSONDecoder().decode([StockData].self, from: persistedData) else {
             throw PersistError.persistedDataNotDecodable
         }
+        
         return stocksData
-    }
-    
-    enum PersistError: Error {
-        case persistingFolderNotFound
-        case persistedDataNotRetrievable
-        case persistedDataNotDecodable
     }
     
 }

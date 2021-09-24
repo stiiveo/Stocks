@@ -99,19 +99,10 @@ class Persistence_Manager_Tests: XCTestCase {
         userDefaults.setValue(originalWatchlist, forKey: watchlistKey)
     }
     
-    func test_persisting_stocks_data() {
-        let dataToPersist = [
-            StockData(symbol: "AAPL",
-                      quote: StockQuote(open: 90, high: 110, low: 80, current: 100, prevClose: 50, time: 123456780),
-                      priceHistory: [PriceHistory(time: 123456789.0, close: 100)]),
-            StockData(symbol: "TSLA",
-                      quote: StockQuote(open: 800, high: 1100, low: 500, current: 1000, prevClose: 500, time: 123456780),
-                      priceHistory: [PriceHistory(time: 123456789.0, close: 500)]),
-        ]
-        manager.persistStocksData(dataToPersist)
-        let persistedData = try! manager.persistedStocksData()
-        
-        XCTAssertEqual(persistedData, dataToPersist)
+    func test_persisted_data_retrieval() {
+        let watchlist = manager.watchList
+        let persistedList = try! manager.persistedStocksData().map({ $0.symbol })
+        XCTAssert(watchlist == persistedList)
     }
 
 }

@@ -35,7 +35,7 @@ extension StockQuote {
     }
     
     /// Returns a `Boolean` value indicating whether the time of quote is earlier than the latest market trading time.
-    var isExpired: Bool {
+    var isDue: Bool {
         let calendar = CalendarManager()
         let marketCloseTime = calendar.latestTradingTime.close.timeIntervalSince1970
         return (calendar.isMarketOpen && TimeInterval(time) < Date().timeIntervalSince1970) ||

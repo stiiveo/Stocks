@@ -36,7 +36,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillResignActive(_ scene: UIScene) {
         // Persist cached stocks data.
-        watchlistVC.persistStocksData()
+        watchlistVC.persistCachedData()
     }
 
 }

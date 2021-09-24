@@ -17,6 +17,7 @@ class StockDetailsViewController: UIViewController {
     // MARK: - Properties
     
     private var stockData: StockData
+    private var companyName: String
     private var metrics: Metrics?
     private var stories: [NewsStory] = []
     private var isInWatchlist: Bool
@@ -46,9 +47,9 @@ class StockDetailsViewController: UIViewController {
         isInWatchlist: Bool
     ) {
         self.stockData = stockData
+        self.companyName = companyName
         self.isInWatchlist = isInWatchlist
         super.init(nibName: nil, bundle: nil)
-        self.title = companyName
     }
     
     required init?(coder: NSCoder) {
@@ -59,6 +60,7 @@ class StockDetailsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = companyName
         view.backgroundColor = .systemBackground
         setUpCloseButton()
         setUpHeaderView()
@@ -86,10 +88,10 @@ class StockDetailsViewController: UIViewController {
         dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self, !self.isInWatchlist else { return }
             let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-            if currentSecondComponent == 0 && self.stockData.quote?.isExpired ?? true {
+            if currentSecondComponent == 0 && self.stockData.quote?.isDue ?? true {
                 self.fetchQuoteData()
                 self.fetchChartData()
-            } else if currentSecondComponent == 30 && self.stockData.quote?.isExpired ?? true {
+            } else if currentSecondComponent == 30 && self.stockData.quote?.isDue ?? true {
                 self.fetchQuoteData()
             }
         }
@@ -197,7 +199,7 @@ class StockDetailsViewController: UIViewController {
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
-        PersistenceManager().addToWatchlist(symbol: symbol, companyName: stockData.companyName)
+        PersistenceManager().addToWatchlist(symbol: symbol, companyName: companyName)
         isInWatchlist = true
         delegate?.addLatestCachedData(stockData: self.stockData)
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")

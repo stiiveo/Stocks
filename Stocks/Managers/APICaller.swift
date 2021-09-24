@@ -130,72 +130,6 @@ struct APICaller {
         request(url: url, expecting: FinancialMetricsResponse.self, completion: completion)
     }
     
-    /// Fetch specified stock's quote and candle sticks data from API.
-    /// - Note: If an error is returned when fetching stock's quote or candle sticks data, an `Error`
-    ///         will be provided and all remaining operations will be terminated.
-    ///
-    /// - Parameters:
-    ///   - symbol: Symbol of the company.
-    ///   - historyDuration: Number of days of candle sticks data to fetch.
-    ///   - completion: A `StockData` object is provided once the fetching process succeeded.
-    ///                 An error object is provided otherwise.
-    func fetchQuoteAndCandlesData(
-        symbol: String,
-        timeSpan: CalendarManager.TimeSpan,
-        completion: @escaping (Result<StockData, Error>) -> Void
-    ) {
-        var stockQuote: StockQuote?
-        var stockPriceHistory: [PriceHistory]?
-        let group = DispatchGroup()
-        
-        group.enter()
-        fetchStockQuote(for: symbol) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let quote):
-                stockQuote = quote
-            case .failure(let error):
-                print(error)
-            }
-        }
-        
-        group.enter()
-        fetchPriceHistory(symbol, timeSpan: timeSpan) { result in
-            defer {
-                group.leave()
-            }
-            switch result {
-            case .success(let response):
-                stockPriceHistory = response.priceHistory
-            case .failure(let error):
-                print(error)
-            }
-        }
-        
-        group.notify(queue: .global(qos: .default)) {
-            guard let quote = stockQuote,
-                  let priceHistory = stockPriceHistory else {
-                // Stock quote and/or price history data is not fetched.
-                switch (stockQuote == nil, stockPriceHistory == nil) {
-                case (true, true):
-                    completion(.failure(APIError.noQuoteAndPriceHistoryReturned))
-                case (false, true):
-                    completion(.failure(APIError.noPriceHistoryDataReturned))
-                case (true, false):
-                    completion(.failure(APIError.noQuoteDataReturned))
-                default:
-                    return
-                }
-                return
-            }
-            
-            let stockData = StockData(symbol: symbol, quote: quote, priceHistory: priceHistory)
-            completion(.success(stockData))
-        }
-    }
-    
     // MARK: - Private
     
     /// Cases of the http endpoint of the API.
@@ -260,7 +194,7 @@ struct APICaller {
         }
         
         let time = CalendarManager().currentNewYorkDate
-        print(time, "API request sent for type: \(type)")
+        print(time, " | Request sent for type: \(type)")
         
         let task = URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
