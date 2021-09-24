@@ -8,6 +8,7 @@
 import UIKit
 import FloatingPanel
 import SafariServices
+import SnapKit
 
 final class WatchListViewController: UIViewController {
     
@@ -110,6 +111,12 @@ final class WatchListViewController: UIViewController {
             initiateWatchlistUpdateTimer()
         }
         
+        // Adjust tableView's bottom constraints based on its editing status.
+        self.updateTableViewConstraints()
+        UIView.animate(withDuration: 0.2) {
+            self.view.layoutIfNeeded()
+        }
+        
         // Notify all table view cells the table view's editing status.
         NotificationCenter.default.post(name: .didChangeEditingMode, object: tableView.isEditing)
     }
@@ -120,9 +127,23 @@ final class WatchListViewController: UIViewController {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.frame = CGRect(x: 0, y: 0,
-                                 width: view.width,
-                                 height: view.height - 175)
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        tableView.snp.makeConstraints { make in
+            make.top.left.right.equalTo(view)
+            make.bottom.equalTo(view.bottom).offset(-175.0)
+        }
+    }
+    
+    private func updateTableViewConstraints() {
+        if tableView.isEditing {
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view.bottom).offset(-86)
+            }
+        } else {
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view).offset(-175.0)
+            }
+        }
     }
     
     private func setUpFloatingPanel() {

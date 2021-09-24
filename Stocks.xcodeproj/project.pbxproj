@@ -44,6 +44,7 @@
 		8F89E45D26CF5102002BD69E /* Persistence_Manager_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F89E45C26CF5102002BD69E /* Persistence_Manager_Tests.swift */; };
 		8F89E45F26CFD386002BD69E /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F89E45E26CFD386002BD69E /* CalendarManager.swift */; };
 		8F89E46126D005DE002BD69E /* Calendar_Manager_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F89E46026D005DE002BD69E /* Calendar_Manager_Tests.swift */; };
+		8F8EE97B26FDAD590067613A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8F8EE97A26FDAD590067613A /* SnapKit */; };
 		8FA0E9B926F9D3AA006BB9DD /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA0E9B826F9D3AA006BB9DD /* StringExtensions.swift */; };
 		8FB254BE269D31A1004FF1C1 /* PriceHistoryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BD269D31A1004FF1C1 /* PriceHistoryResponse.swift */; };
 		8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BF269D7EC5004FF1C1 /* WatchListTableViewCell.swift */; };
@@ -120,6 +121,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F1A30A426DCA0E00061A48A /* SDWebImage in Frameworks */,
+				8F8EE97B26FDAD590067613A /* SnapKit in Frameworks */,
 				8F1A309E26DCA0360061A48A /* Charts in Frameworks */,
 				8F1A30A126DCA0680061A48A /* FloatingPanel in Frameworks */,
 			);
@@ -296,6 +298,7 @@
 				8F1A309D26DCA0360061A48A /* Charts */,
 				8F1A30A026DCA0680061A48A /* FloatingPanel */,
 				8F1A30A326DCA0E00061A48A /* SDWebImage */,
+				8F8EE97A26FDAD590067613A /* SnapKit */,
 			);
 			productName = Stocks;
 			productReference = 8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */;
@@ -350,6 +353,7 @@
 				8F1A309C26DCA0360061A48A /* XCRemoteSwiftPackageReference "Charts" */,
 				8F1A309F26DCA0680061A48A /* XCRemoteSwiftPackageReference "FloatingPanel" */,
 				8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */,
+				8F8EE97926FDAD590067613A /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = 8F11B93A26986C8000F4AFD1 /* Products */;
 			projectDirPath = "";
@@ -698,8 +702,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/scenee/FloatingPanel.git";
 			requirement = {
-				kind = exactVersion;
-				version = 2.4.0;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
 			};
 		};
 		8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
@@ -708,6 +712,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.11.1;
+			};
+		};
+		8F8EE97926FDAD590067613A /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -727,6 +739,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8F1A30A226DCA0E00061A48A /* XCRemoteSwiftPackageReference "SDWebImage" */;
 			productName = SDWebImage;
+		};
+		8F8EE97A26FDAD590067613A /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8F8EE97926FDAD590067613A /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
