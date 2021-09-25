@@ -32,8 +32,7 @@ class SearchResultViewController: UIViewController {
     private let noResultHint: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = true
-        label.minimumScaleFactor = 0.8
+        label.numberOfLines = 0
         label.textColor = .secondaryLabel
         label.isHidden = true
         return label
@@ -67,8 +66,9 @@ class SearchResultViewController: UIViewController {
         view.addSubview(noResultHint)
         noResultHint.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            noResultHint.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
             noResultHint.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 130),
+            noResultHint.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            noResultHint.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20)
         ])
     }
     
