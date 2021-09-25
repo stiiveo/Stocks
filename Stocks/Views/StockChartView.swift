@@ -35,11 +35,6 @@ class StockChartView: LineChartView {
     
     // MARK: - Public Methods
     
-    // Reset chart view
-    func resetData() {
-        data = nil
-    }
-    
     func configure(with viewModel: ViewModel) {
         // Switch the appearance of the right and x axis.
         rightAxis.enabled = viewModel.showAxis

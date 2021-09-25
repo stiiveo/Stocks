@@ -87,11 +87,6 @@ class StockDetailHeaderTitleView: UIView {
         }
     }
     
-    func resetData() {
-        quoteLabel.text = nil
-        priceChangeLabel.text = nil
-    }
-    
     // MARK: - Private Methods
     
     private func setUpStackView() {

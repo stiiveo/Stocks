@@ -60,10 +60,6 @@ class StockMetricsView: UICollectionView {
         }
     }
     
-    func resetData() {
-        self.cellsViewModels.removeAll()
-    }
-    
     // MARK: - Private
     
     private func cellsViewModels(from modelData: ViewModel) -> [MetricCollectionViewCell.ViewModel] {

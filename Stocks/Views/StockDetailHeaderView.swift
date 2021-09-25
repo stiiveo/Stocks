@@ -80,14 +80,11 @@ class StockDetailHeaderView: UIView {
         stockData: StockData,
         metricsData: Metrics?
     ) {
-//        titleView.resetData()
         let quote = stockData.quote
         titleView.configure(viewModel: .init(quote: stockData.quote?.current, previousClose: stockData.quote?.prevClose, showAddingButton: !PersistenceManager().watchListContains(stockData.symbol)))
         
-//        chartView.resetData()
         chartView.configure(with: .init(data: stockData.priceHistory, previousClose: stockData.quote?.prevClose, highestClose: stockData.quote?.high, lowestClose: stockData.quote?.low, showAxis: true))
         
-//        metricsView.resetData()
         metricsView.configure(viewModel: .init(
                                 openPrice: quote?.open,
                                 highestPrice: quote?.high,

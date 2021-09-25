@@ -121,14 +121,6 @@ class WatchListTableViewCell: UITableViewCell {
         }
     }
     
-    func reset() {
-        symbolLabel.text = nil
-        nameLabel.text = nil
-        priceLabel.text = nil
-        priceChangeButton.setTitle(nil, for: .normal)
-        chartView.resetData()
-    }
-    
     // MARK: - Private
     
     private let topMargin: CGFloat = 12.5

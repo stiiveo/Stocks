@@ -342,14 +342,19 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         navigationItem.searchController?.searchBar.resignFirstResponder()
         HapticsManager().vibrateForSelection()
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
+            let symbol = searchResult.symbol
+            var stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
+            if let cachedData = stocksData.filter({ $0.symbol == symbol }).first {
+                stockData = cachedData
+            }
             let vc = StockDetailsViewController(
-                stockData: StockData(symbol: searchResult.symbol, quote: nil, priceHistory: []),
+                stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
                 isInWatchlist: self.persistenceManager.watchListContains(searchResult.symbol))
             vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
-            self.present(navVC, animated: true, completion: nil)
+            present(navVC, animated: true, completion: nil)
         }
     }
     
@@ -386,7 +391,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
-        cell.reset()
         cell.configure(with: stocksData[indexPath.row], showChartAxis: false, onEditing: tableView.isEditing)
         return cell
     }

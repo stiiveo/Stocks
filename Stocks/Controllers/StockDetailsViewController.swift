@@ -69,6 +69,8 @@ class StockDetailsViewController: UIViewController {
             fetchQuoteData()
             fetchChartData()
             initiateDataUpdateTimer()
+        } else {
+            configureHeaderView()
         }
         fetchMetricsData()
         fetchNews()
