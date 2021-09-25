@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        // Initiate watchlist VC's data fetching timer.
+        watchlistVC.updateWatchlistData()
         watchlistVC.initiateWatchlistUpdateTimer()
     }
 

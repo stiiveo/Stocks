@@ -68,10 +68,11 @@ class StockDetailsViewController: UIViewController {
         if !isInWatchlist {
             fetchQuoteData()
             fetchChartData()
+            initiateDataUpdateTimer()
         }
         fetchMetricsData()
         fetchNews()
-        initiateDataUpdateTimer()
+        observeNotifications()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -86,12 +87,12 @@ class StockDetailsViewController: UIViewController {
     
     private func initiateDataUpdateTimer() {
         dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self, !self.isInWatchlist else { return }
+            guard let self = self else { return }
             let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-            if currentSecondComponent == 0 && self.stockData.quote?.isDue ?? true {
+            if currentSecondComponent == 0 {
                 self.fetchQuoteData()
                 self.fetchChartData()
-            } else if currentSecondComponent == 30 && self.stockData.quote?.isDue ?? true {
+            } else if currentSecondComponent == 30 {
                 self.fetchQuoteData()
             }
         }
@@ -195,7 +196,12 @@ class StockDetailsViewController: UIViewController {
         }
     }
     
-    // MARK: - Button Selector
+    // MARK: - Selector Operations
+    
+    private func observeNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(presentApiLimitAlert), name: .apiLimitReached, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(presentApiNoAccessAlert), name: .dataAccessDenied, object: nil)
+    }
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
@@ -207,6 +213,22 @@ class StockDetailsViewController: UIViewController {
     
     @objc private func didTapCloseButton() {
         dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func presentApiLimitAlert() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  self.presentedViewController == nil else { return }
+            self.presentApiAlert(type: .apiLimitReached)
+        }
+    }
+    
+    @objc private func presentApiNoAccessAlert() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  self.presentedViewController == nil else { return }
+            self.presentApiAlert(type: .noAccessToData)
+        }
     }
     
 }

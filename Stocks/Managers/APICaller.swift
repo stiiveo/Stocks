@@ -17,10 +17,6 @@ struct APICaller {
         static let secondsInADay: TimeInterval = 3600 * 24
     }
     
-    struct ExplicitAPIError: Codable, Error {
-        let error: String
-    }
-    
     /// Time interval between each data set.
     enum DataResolution: String {
         case minute = "1"
@@ -142,15 +138,6 @@ struct APICaller {
         case metrics = "stock/metric"
     }
     
-    /// Error cases related to the API operations.
-    private enum APIError: Error {
-        case noDataReturned
-        case invalidUrl
-        case noQuoteDataReturned
-        case noPriceHistoryDataReturned
-        case noQuoteAndPriceHistoryReturned
-    }
-    
     private var apiKey: String {
         return Constants.apiKey != "PLACE-YOUR-API-KEY-HERE" ? Constants.apiKey : Credentials.apiKey
     }
@@ -182,6 +169,17 @@ struct APICaller {
         return url
     }
     
+    /// Error cases related to the API operations.
+    enum APIError: Error {
+        case noDataReturned
+        case invalidUrl
+        case noQuoteDataReturned
+        case noPriceHistoryDataReturned
+        case noQuoteAndPriceHistoryReturned
+        case accessDenied
+        case apiLimitReached
+    }
+    
     private func request<T: Codable>(
         url: URL?,
         expecting type: T.Type,
@@ -194,7 +192,7 @@ struct APICaller {
         }
         
         let time = CalendarManager().currentNewYorkDate
-        print(time, " | Request sent for type: \(type)")
+        print(time, "| Request sent for type: \(type)")
         
         let task = URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
@@ -210,10 +208,19 @@ struct APICaller {
                 let result = try JSONDecoder().decode(type, from: data)
                 completion(.success(result))
             } catch {
-                // Try decode the data into ExplicitAPIError type to get error from API.
+                // Attempt to retrieve error message returned from API.
                 do {
-                    let explicitAPIError = try JSONDecoder().decode(ExplicitAPIError.self, from: data)
-                    completion(.failure(explicitAPIError))
+                    let explicitError = try JSONDecoder().decode(ExplicitApiError.self, from: data)
+                    switch explicitError.error {
+                    case "You don\'t have access to this resource.":
+                        NotificationCenter.default.post(name: .dataAccessDenied, object: nil)
+                        completion(.failure(APIError.accessDenied))
+                    case "API limit reached. Please try again later. Remaining Limit: 0":
+                        NotificationCenter.default.post(name: .apiLimitReached, object: nil)
+                        completion(.failure(APIError.apiLimitReached))
+                    default:
+                        completion(.failure(explicitError))
+                    }
                 } catch {
                     completion(.failure(error))
                 }
@@ -221,6 +228,10 @@ struct APICaller {
         }
         
         task.resume()
+    }
+    
+    struct ExplicitApiError: Codable, Error {
+        let error: String
     }
     
 }

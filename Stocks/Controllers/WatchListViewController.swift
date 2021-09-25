@@ -10,6 +10,11 @@ import FloatingPanel
 import SafariServices
 import SnapKit
 
+protocol WatchlistViewControllerDelegate: AnyObject {
+    func didUpdateData(stockData: StockData)
+    var symbol: String { get }
+}
+
 final class WatchListViewController: UIViewController {
     
     static let shared = WatchListViewController()
@@ -28,7 +33,7 @@ final class WatchListViewController: UIViewController {
     }()
     
     private var panel: FloatingPanelController?
-    private let footerView = WatchlistFooterView()
+    private lazy var footerView = WatchlistFooterView()
     
     // MARK: - ScrollView Observing Properties
     
@@ -37,7 +42,6 @@ final class WatchListViewController: UIViewController {
     // MARK: - Managers Access Points
     
     private let persistenceManager = PersistenceManager()
-    private let apiCaller = APICaller()
     
     // MARK: - Timer Properties
     private var searchTimer: Timer?
@@ -79,16 +83,11 @@ final class WatchListViewController: UIViewController {
             persistenceManager.onboard()
             loadDefaultTableViewCells()
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(onApiLimitReached), name: .apiLimitReached, object: nil)
     }
     
-    private func loadDefaultTableViewCells() {
-        for symbol in persistenceManager.watchList.sorted() {
-            let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
-            stocksData.append(stockData)
-            DispatchQueue.main.async {
-                self.tableView.reloadRows(at: [IndexPath(row: self.stocksData.count - 1, section: 0)], with: .automatic)
-            }
-        }
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Edit Button Actions
@@ -200,38 +199,36 @@ final class WatchListViewController: UIViewController {
         ])
     }
     
-    // MARK: - Update Timer Operations
+    private func loadDefaultTableViewCells() {
+        for symbol in persistenceManager.watchList.sorted() {
+            let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
+            stocksData.append(stockData)
+            DispatchQueue.main.async {
+                self.tableView.reloadRows(at: [IndexPath(row: self.stocksData.count - 1, section: 0)], with: .automatic)
+            }
+        }
+    }
+    
+    // MARK: - Data Update Operations
     
     private var updateTimer: Timer?
     
     func initiateWatchlistUpdateTimer() {
-        let calendar = CalendarManager()
-        
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
-            
+            guard !apiLimitReached else { return }
             for index in 0..<stocksData.count {
-                let currentSecondComponent = calendar.newYorkCalendar.component(.second, from: Date())
-                let currentTime = Date().timeIntervalSince1970
-                let latestMarketCloseTime = Int(calendar.latestTradingTime.close.timeIntervalSince1970)
-                
-                guard let quote = stocksData[index].quote else {
+                guard stocksData[index].quote != nil else {
                     // Quote data is unavailable.
                     updateCachedQuote(at: index)
                     updateCachedChartData(at: index)
                     continue
                 }
-                if currentSecondComponent == 0 && quote.isDue {
+                
+                let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
+                if currentSecondComponent == 0 {
                     updateCachedQuote(at: index)
                     updateCachedChartData(at: index)
-                }
-                else if currentSecondComponent == 30 && quote.isDue {
-                    updateCachedChartData(at: index)
-                }
-                else if (calendar.isMarketOpen && quote.time < Int(currentTime) - 600) ||
-                            (!calendar.isMarketOpen && quote.time < latestMarketCloseTime) {
-                    /// Update both quote and chart immediately if quote had apparently expired.
-                    /// - Note: Offset value 180 is used to tolerate the quote delay from the API.
-                    updateCachedQuote(at: index)
+                } else if currentSecondComponent == 30 {
                     updateCachedChartData(at: index)
                 }
             }
@@ -242,19 +239,28 @@ final class WatchListViewController: UIViewController {
         updateTimer?.invalidate()
     }
     
-// TEST START
-    var quoteDelayLog = [Double]()
-    var minimumDelay: Double = 999.9 {
-        didSet {
-            print("⚠️ New minimum delay record:", minimumDelay)
+    func updateWatchlistData() {
+        for index in 0..<stocksData.count {
+            updateCachedQuote(at: index)
+            updateCachedChartData(at: index)
         }
     }
-    var maximumDelay: Double = 0.0 {
-        didSet {
-            print("⚠️ New maximum delay record:", maximumDelay)
+    
+    // MARK: - Notification Selectors
+    
+    private var apiLimitReached = false
+    
+    @objc private func onApiLimitReached() {
+        DispatchQueue.main.async { [unowned self] in
+            guard presentedViewController == nil else { return }
+            presentApiAlert(type: .apiLimitReached)
+        }
+        // Temporarily pause data update operation.
+        apiLimitReached = true
+        let _ = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: false) { [unowned self] _ in
+            self.apiLimitReached = false
         }
     }
-// TEST END
 
 }
 
@@ -307,9 +313,9 @@ extension WatchListViewController: UISearchResultsUpdating {
         
         // Kick off new timer
         // Optimize to reduce number of searches for when user stops typing
-        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [unowned self] _ in
+        searchTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { _ in
             // Call API to search
-            self.apiCaller.search(query: query) { result in
+            APICaller().search(query: query) { result in
                 switch result {
                 case .success(let response):
                     DispatchQueue.main.async {
@@ -445,11 +451,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
 
 // MARK: - Data Updating Methods
 
-protocol WatchlistViewControllerDelegate: AnyObject {
-    func didUpdateData(stockData: StockData)
-    var symbol: String { get }
-}
-
 extension WatchListViewController {
     
     /// Update any data in the watchlist if its quote time is before the market closing time.
@@ -457,7 +458,7 @@ extension WatchListViewController {
         assert(index >= 0 && index < stocksData.count,
                "Index out of the bound of cached data array.")
         let symbol = stocksData[index].symbol
-        apiCaller.fetchStockQuote(for: symbol) { [unowned self] result in
+        APICaller().fetchStockQuote(for: symbol) { [unowned self] result in
             switch result {
             case .success(let quoteData):
                 stocksData[index].quote = quoteData
@@ -469,24 +470,6 @@ extension WatchListViewController {
                 if delegate?.symbol == symbol {
                     delegate?.didUpdateData(stockData: stocksData[index])
                 }
-                
-// TEST START
-                let quoteDelay = Date().timeIntervalSince1970 - TimeInterval(quoteData.time)
-                quoteDelayLog.append(quoteDelay)
-                
-                if minimumDelay > quoteDelay {
-                    minimumDelay = quoteDelay
-                }
-                
-                if maximumDelay < quoteDelay {
-                    maximumDelay = quoteDelay
-                }
-                print("Quote Delay:", Date().timeIntervalSince1970 - TimeInterval(quoteData.time), "s\n-")
-                var totalDelay = 0.0
-                totalDelay += quoteDelay
-                print("📡 Average Delay:", totalDelay / Double(quoteDelayLog.count), "\n-")
-// TEST End
-                
             case .failure(let error):
                 print("Failed to fetch quote data of stock \(symbol):\n\(error)")
             }
@@ -497,7 +480,7 @@ extension WatchListViewController {
         assert(index >= 0 && index < stocksData.count,
                "Index out of the bound of cached data array.")
         let symbol = stocksData[index].symbol
-        apiCaller.fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
+        APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
             switch result {
             case .success(let candlesResponse):
                 stocksData[index].priceHistory = candlesResponse.priceHistory

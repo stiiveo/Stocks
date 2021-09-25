@@ -51,17 +51,36 @@ extension UIViewController {
         present(safariVC, animated: true, completion: nil)
     }
     
+    enum ApiAlert {
+        case apiLimitReached
+        case noAccessToData
+        
+        var title: String {
+            switch self {
+            case .apiLimitReached:
+                return "API Limit Reached"
+            case .noAccessToData:
+                return "No Access to Data"
+            }
+        }
+        
+        var message: String {
+            switch self {
+            case .apiLimitReached:
+                return #"Tap "API Limit" for more info."#
+            case .noAccessToData:
+                return #"Tap "API Limit" for more info."#
+            }
+        }
+    }
+    
     /// Present error alert with web link to Finnhub's API limit page.
-    func presentAPIErrorAlert() {
-        let alert = UIAlertController(title: "Data Unavailable",
-                                      message: """
-                                               Data sources are inaccessible due to \
-                                               API limits. Tap "API Limit" for more info.
-                                               """,
+    func presentApiAlert(type errorType: ApiAlert) {
+        let alert = UIAlertController(title: errorType.title,
+                                      message: errorType.message,
                                       preferredStyle: .alert)
         
         let dismissAction = UIAlertAction(title: "Dismiss", style: .default, handler: nil)
-        
         let openLinkAction = UIAlertAction(title: "API Limit", style: .cancel) { _ in
             let safariVC = SFSafariViewController(url: URL(string: "https://finnhub.io/pricing")!)
             safariVC.dismissButtonStyle = .close
