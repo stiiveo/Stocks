@@ -275,6 +275,9 @@ extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
         self.panel?.hide(animated: true)
         invalidateWatchlistUpdateTimer()
+        if stocksData.count > 0 {
+            tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
+        }
     }
     func willDismissSearchController(_ searchController: UISearchController) {
         self.panel?.show(animated: true)
