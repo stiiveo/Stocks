@@ -206,7 +206,8 @@ final class WatchListViewController: UIViewController {
     
     func initiateWatchlistUpdateTimer() {
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
-            guard !apiLimitReached else { return }
+            guard !dataUpdateSuspended else { return }
+            
             for index in 0..<stocksData.count {
                 guard stocksData[index].quote != nil else {
                     // Quote data is unavailable.
@@ -239,18 +240,26 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Notification Selectors
     
-    private var apiLimitReached = false
+    private var dataUpdateSuspended = false
     
     @objc private func onApiLimitReached() {
+        // Temporarily suspend data updating operation.
+        dataUpdateSuspended = true
+        
+        /// Set `dataUpdateSuspended` to `true` after preset time when the API limit should be reset.
+        /// This timer must be added to `RunLoop` for the selected method to be fired properly
+        /// after the specified time interval for unknown reason.
+        let dataUpdateSuspendingTimer = Timer(timeInterval: 30.0, target: self, selector: #selector(resumeDataUpdating), userInfo: nil, repeats: false)
+        RunLoop.main.add(dataUpdateSuspendingTimer, forMode: .common)
+        
         DispatchQueue.main.async { [unowned self] in
             guard presentedViewController == nil else { return }
             presentApiAlert(type: .apiLimitReached)
         }
-        // Temporarily pause data update operation.
-        apiLimitReached = true
-        let _ = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: false) { [unowned self] _ in
-            self.apiLimitReached = false
-        }
+    }
+    
+    @objc private func resumeDataUpdating() {
+        dataUpdateSuspended = false
     }
 
 }
@@ -405,9 +414,10 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             tableView.performBatchUpdates {
                 let index = indexPath.row
-                persistenceManager.removeFromWatchlist(symbol: stocksData[index].symbol)
+                let symbol = stocksData[index].symbol
                 stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
+                persistenceManager.removeFromWatchlist(symbol: symbol)
                 try! persistenceManager.persistStocksData(stocksData)
             }
         }
