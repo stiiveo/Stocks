@@ -26,25 +26,6 @@ class Persistence_Manager_Tests: XCTestCase {
         userDefaults.stringArray(forKey: watchlistKey) ?? []
     }
     
-    func test_watchlist_retrieval_and_default_list_setup() {
-        // Set onboard status to false and trigger defaults set up.
-        userDefaults.setValue(false, forKey: onboardKey)
-        let retrievedWatchlist = manager.watchList
-        
-        // Assertion
-        XCTAssert(retrievedWatchlist == storedWatchlist,
-                  "Retrieved watchlist does not match with the actual one.")
-        
-        let defaultSymbols = PersistenceManager.StockDefaults.defaultStocks.map{ $0.key }
-        XCTAssert(storedWatchlist.containsSameElement(as: defaultSymbols),
-                  "Watchlist (\(storedWatchlist)) does not contain same elements as the default one.")
-    }
-    
-    func test_watchlist_retrieving() {
-        XCTAssert(manager.watchList == storedWatchlist,
-                  "Retrieved watchlist (\(storedWatchlist)) does not match with the stored one.")
-    }
-    
     func test_watchlist_addition() {
         let originalWatchlist = storedWatchlist
         
@@ -78,7 +59,7 @@ class Persistence_Manager_Tests: XCTestCase {
         manager.removeFromWatchlist(symbol: testSymbol)
         
         // Assertion
-        XCTAssert(storedWatchlist.sorted() == originalWatchlist.sorted(),
+        XCTAssert(storedWatchlist.difference(from: originalWatchlist).isEmpty,
                   "Watchlist after deletion is not identical to the original one")
     }
     
@@ -91,7 +72,7 @@ class Persistence_Manager_Tests: XCTestCase {
         userDefaults.setValue(list, forKey: watchlistKey)
         
         // Assertion
-        let containsTestSymbol = manager.watchListContains(testSymbol)
+        let containsTestSymbol = manager.watchList.contains(testSymbol)
         XCTAssert(containsTestSymbol,
                   "Contains function returns false even though the watchlist contains test symbol")
         
@@ -102,13 +83,7 @@ class Persistence_Manager_Tests: XCTestCase {
     func test_persisted_data_retrieval() {
         let watchlist = manager.watchList
         let persistedList = try! manager.persistedStocksData().map({ $0.symbol })
-        XCTAssert(watchlist == persistedList)
+        XCTAssertTrue(watchlist.difference(from: persistedList).isEmpty)
     }
 
-}
-
-extension Array where Element: Comparable {
-    func containsSameElement(as other: [Element]) -> Bool {
-        return self.count == other.count && self.sorted() == other.sorted()
-    }
 }

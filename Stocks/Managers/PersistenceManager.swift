@@ -86,13 +86,6 @@ struct PersistenceManager {
         userDefaults.set(filteredList, forKey: Constants.watchlistKey)
     }
     
-    /// Returns if the specified company symbol is saved in the watchlist.
-    /// - Parameter symbol: The company's stock ticker symbol.
-    /// - Returns: True if the specified company stock ticker symbol is contained in the watchlist.
-    func watchListContains(_ symbol: String) -> Bool {
-        return watchList.contains(symbol)
-    }
-    
     /// Store preset companies to the watchlist as default.
     /// - Note: Any data previously stored in the watchlist will be replaced by the default ones.
     func savedDefaultStocks() {

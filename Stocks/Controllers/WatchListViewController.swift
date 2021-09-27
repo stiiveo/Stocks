@@ -83,6 +83,8 @@ final class WatchListViewController: UIViewController {
             persistenceManager.onboard()
             loadDefaultTableViewCells()
         }
+        updateWatchlistData()
+        
         NotificationCenter.default.addObserver(self, selector: #selector(onApiLimitReached), name: .apiLimitReached, object: nil)
     }
     
@@ -97,12 +99,18 @@ final class WatchListViewController: UIViewController {
             // Enter editing mode.
             invalidateWatchlistUpdateTimer()
             tableView.setEditing(true, animated: true)
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view.bottom).offset(-86)
+            }
             navigationItem.rightBarButtonItem?.title = "Done"
             navigationItem.rightBarButtonItem?.style = .done
             panel?.hide(animated: true)
         } else {
             // Leave editing mode.
             tableView.setEditing(false, animated: true)
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view).offset(-175.0)
+            }
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
             persistCachedData()
@@ -110,8 +118,6 @@ final class WatchListViewController: UIViewController {
             initiateWatchlistUpdateTimer()
         }
         
-        // Adjust tableView's bottom constraints based on its editing status.
-        self.updateTableViewConstraints()
         UIView.animate(withDuration: 0.2) {
             self.view.layoutIfNeeded()
         }
@@ -130,18 +136,6 @@ final class WatchListViewController: UIViewController {
         tableView.snp.makeConstraints { make in
             make.top.left.right.equalTo(view)
             make.bottom.equalTo(view.bottom).offset(-175.0)
-        }
-    }
-    
-    private func updateTableViewConstraints() {
-        if tableView.isEditing {
-            tableView.snp.updateConstraints { make in
-                make.bottom.equalTo(view.bottom).offset(-86)
-            }
-        } else {
-            tableView.snp.updateConstraints { make in
-                make.bottom.equalTo(view).offset(-175.0)
-            }
         }
     }
     
@@ -190,13 +184,10 @@ final class WatchListViewController: UIViewController {
     
     private func setUpFooterView() {
         view.addSubviews(footerView)
-        footerView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            footerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            footerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            footerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            footerView.heightAnchor.constraint(equalToConstant: 86)
-        ])
+        footerView.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalTo(86)
+        }
     }
     
     private func loadDefaultTableViewCells() {
@@ -351,7 +342,7 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
             let vc = StockDetailsViewController(
                 stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
-                isInWatchlist: self.persistenceManager.watchListContains(searchResult.symbol))
+                isInWatchlist: self.persistenceManager.watchList.contains(searchResult.symbol))
             vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
             present(navVC, animated: true, completion: nil)

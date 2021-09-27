@@ -32,17 +32,13 @@ class NewsViewController: UIViewController {
         fetchNews()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
-    }
-    
     // MARK: - Private Functions
     
     private func setUpTable() {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.frame = view.bounds
     }
     
     private func fetchNews() {

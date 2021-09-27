@@ -76,15 +76,22 @@ class StockDetailHeaderView: UIView {
     ///   - titleViewModel: View model of the title view.
     ///   - chartViewModel: View model of the chart view.
     ///   - metricViewModels: View model of the metrics view.
-    func configure(
-        stockData: StockData,
-        metricsData: Metrics?
-    ) {
+    func configure(stockData: StockData, metricsData: Metrics?) {
+        titleView.configure(viewModel: .init(
+            quote: stockData.quote?.current,
+            previousClose: stockData.quote?.prevClose,
+            showAddingButton: !PersistenceManager().watchList.contains(stockData.symbol))
+        )
+        
+        chartView.configure(with: .init(
+            data: stockData.priceHistory,
+            previousClose: stockData.quote?.prevClose,
+            highestClose: stockData.quote?.high,
+            lowestClose: stockData.quote?.low,
+            showAxis: true)
+        )
+        
         let quote = stockData.quote
-        titleView.configure(viewModel: .init(quote: stockData.quote?.current, previousClose: stockData.quote?.prevClose, showAddingButton: !PersistenceManager().watchListContains(stockData.symbol)))
-        
-        chartView.configure(with: .init(data: stockData.priceHistory, previousClose: stockData.quote?.prevClose, highestClose: stockData.quote?.high, lowestClose: stockData.quote?.low, showAxis: true))
-        
         metricsView.configure(viewModel: .init(
                                 openPrice: quote?.open,
                                 highestPrice: quote?.high,
