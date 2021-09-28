@@ -139,6 +139,18 @@ final class WatchListViewController: UIViewController {
         }
     }
     
+    private func updateTableViewBottomOffset(avoidFloatingPanel: Bool) {
+        if avoidFloatingPanel {
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view).offset(-175.0)
+            }
+        } else {
+            tableView.snp.updateConstraints { make in
+                make.bottom.equalTo(view.bottom).offset(-86)
+            }
+        }
+    }
+    
     private func setUpFloatingPanel() {
         let vc = NewsViewController()
         let panel = FloatingPanelController()
@@ -282,15 +294,17 @@ extension WatchListViewController: StockDetailsViewControllerDelegate {
 
 extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
-        self.panel?.hide(animated: true)
         invalidateWatchlistUpdateTimer()
+        self.panel?.hide(animated: true)
+        updateTableViewBottomOffset(avoidFloatingPanel: false)
         if stocksData.count > 0 {
             tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
         }
     }
     func willDismissSearchController(_ searchController: UISearchController) {
-        self.panel?.show(animated: true)
         initiateWatchlistUpdateTimer()
+        self.panel?.show(animated: true)
+        updateTableViewBottomOffset(avoidFloatingPanel: true)
     }
 }
 
