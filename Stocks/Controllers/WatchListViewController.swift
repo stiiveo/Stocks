@@ -217,6 +217,7 @@ final class WatchListViewController: UIViewController {
     private var updateTimer: Timer?
     
     func initiateWatchlistUpdateTimer() {
+        updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
             guard !dataUpdateSuspended else { return }
             
