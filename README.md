@@ -4,7 +4,7 @@ Stay informed with your favorite stocks. 📈
 
 ![Screenshots](./Docs/Overview.png)
 
-*![Demo Video](https://www.youtube.com/watch?v=l8rljMK0dcI)*
+*[Demo Video](https://www.youtube.com/watch?v=l8rljMK0dcI)*
 
 ## Data Source (API Key Required)
 
