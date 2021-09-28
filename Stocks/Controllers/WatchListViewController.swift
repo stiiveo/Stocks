@@ -312,17 +312,19 @@ extension WatchListViewController: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text,
-              query != prevSearchBarQuery, // Make sure the new query is diff from the prev one.
-              let resultVC = searchController.searchResultsController as? SearchResultViewController else {
-            return
-        }
+              let resultVC = searchController.searchResultsController
+                as? SearchResultViewController else { return }
         
         if query.trimmingCharacters(in: .whitespaces).isEmpty {
+            prevSearchBarQuery = ""
             DispatchQueue.main.async {
                 resultVC.update([], from: query)
             }
             return
         }
+        
+        // Make sure the new query is diff from the prev one.
+        guard query != prevSearchBarQuery else { return }
         
         // Reset timer
         searchTimer?.invalidate()
