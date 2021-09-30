@@ -76,8 +76,6 @@ final class WatchListViewController: UIViewController {
             persistenceManager.isOnboarded = true
         }
         
-        updateWatchlistData()
-        
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(onApiLimitReached),
@@ -242,13 +240,6 @@ final class WatchListViewController: UIViewController {
     
     func invalidateWatchlistUpdateTimer() {
         updateTimer?.invalidate()
-    }
-    
-    func updateWatchlistData() {
-        for index in 0..<stocksData.count {
-            updateCachedQuote(at: index)
-            updateCachedChartData(at: index)
-        }
     }
     
     // MARK: - Notification Selectors

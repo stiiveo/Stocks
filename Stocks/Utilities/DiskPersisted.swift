@@ -31,17 +31,25 @@ import Foundation
             return persistedData
         }
         set {
-            // Encode `StockData` into JSON format.
+            /// Create intermediate directories if it does not exist.
+            var parentUrl = fileUrl
+            parentUrl.deleteLastPathComponent()
+            if !storage.fileExists(atPath: parentUrl.path) {
+                try! storage.createDirectory(at: parentUrl,
+                                             withIntermediateDirectories: true)
+            }
+            
+            /// Encode `newValue` into JSON format.
             guard let encodedData = try? JSONEncoder().encode(newValue) else {
                 print("Unable to encode value to JSON object.")
                 return
             }
             
-            // Write encoded data to fileDirectory.
+            /// Write encoded data to `fileUrl`.
             do {
                 try encodedData.write(to: fileUrl, options: .atomic)
             } catch {
-                print("Failed to write data \(newValue) to destination \(fileUrl).")
+                print(error)
             }
         }
     }
