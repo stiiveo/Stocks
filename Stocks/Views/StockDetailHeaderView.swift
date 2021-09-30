@@ -80,7 +80,7 @@ class StockDetailHeaderView: UIView {
         titleView.configure(viewModel: .init(
             quote: stockData.quote?.current,
             previousClose: stockData.quote?.prevClose,
-            showAddingButton: !PersistenceManager().watchList.contains(stockData.symbol))
+                                showAddingButton: !PersistenceManager.shared.watchList.contains(stockData.symbol))
         )
         
         chartView.configure(with: .init(

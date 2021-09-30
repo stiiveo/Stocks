@@ -14,22 +14,15 @@
 
 import Foundation
 
-struct PersistenceManager {
+final class PersistenceManager {
     
-    struct StockDefaults {
-        /// The default stocks to be stored in the `UserDefaults` if the App is launched for the first time.
-        static let defaultStocks: [String: String] = [
-            "AAPL": "Apple Inc.",
-            "MSFT": "Microsoft Corporation",
-            "GOOG": "Alphabet Inc.",
-            "AMZN": "Amazon Inc.",
-            "FB": "Facebook Inc."
-        ]
-    }
+    static let shared = PersistenceManager()
+    
+    // MARK: - Properties
     
     struct Constants {
         /// Key to access onboard status stored in the `UserDefaults`
-        static let onboardKey = "hasOnboarded"
+        static let onboardKey = "isOnboarded"
         
         /// Key to access stock watchlist stored in the `UserDefaults`
         static let watchlistKey = "watchList"
@@ -46,57 +39,52 @@ struct PersistenceManager {
         }
     }
     
-    // MARK: - Properties
-    
     private let userDefaults: UserDefaults = .standard
+    
+    /// The default stocks to be persisted in the `UserDefaults` if the App is launched for the first time.
+    let defaultWatchList: [String: String] = [
+        "AAPL": "Apple Inc.",
+        "MSFT": "Microsoft Corporation",
+        "GOOG": "Alphabet Inc.",
+        "AMZN": "Amazon Inc.",
+        "FB": "Facebook Inc."
+    ]
+    
+    // MARK: - Init
+    
+    private init() {
+        if !isOnboarded {
+            for (symbol, companyName) in defaultWatchList {
+                watchList.append(symbol)
+                userDefaults.set(companyName, forKey: symbol)
+            }
+            isOnboarded = true
+        }
+    }
     
     // MARK: - Public
     
     /// Array of company symbols saved in defaults database.
-    var watchList: [String] {
-        return userDefaults.stringArray(forKey: Constants.watchlistKey) ?? []
-    }
+    @Persisted(wrappedValue: [], key: Constants.watchlistKey)
+    private(set) var watchList: [String]
     
     /// Returns if it's the first time the watchlist is accessed.
-    var hasOnboarded: Bool {
-        return userDefaults.bool(forKey: Constants.onboardKey)
-    }
-    
-    /// Set `hasOnboarded` status to true and save default stocks to defaults database.
-    func onboard() {
-        userDefaults.set(true, forKey: Constants.onboardKey)
-        savedDefaultStocks()
-    }
+    @Persisted(wrappedValue: false, key: Constants.onboardKey)
+    private(set) var isOnboarded: Bool
     
     /// Save specified company symbol and name to the watchlist.
     /// - Parameters:
     ///   - symbol: Company's stock ticker symbol.
     ///   - companyName: The company's formal name.
     func addToWatchlist(symbol: String, companyName: String) {
-        var currentList = watchList
-        currentList.append(symbol)
-        userDefaults.set(currentList, forKey: Constants.watchlistKey)
+        watchList.append(symbol)
         userDefaults.set(companyName, forKey: symbol)
     }
     
     /// Remove specified company from the watchlist.
     /// - Parameter symbol: Stock ticker symbol of the company to be removed from the watchlist.
     func removeFromWatchlist(symbol: String) {
-        let filteredList = watchList.filter{ $0 != symbol }
-        userDefaults.set(filteredList, forKey: Constants.watchlistKey)
-    }
-    
-    /// Store preset companies to the watchlist as default.
-    /// - Note: Any data previously stored in the watchlist will be replaced by the default ones.
-    func savedDefaultStocks() {
-        // Save company symbols.
-        let symbols = StockDefaults.defaultStocks.map{ $0.key }
-        userDefaults.set(symbols, forKey: Constants.watchlistKey)
-        
-        // Save company names.
-        for (symbol, name) in StockDefaults.defaultStocks {
-            userDefaults.set(name, forKey: symbol)
-        }
+        watchList.removeAll(where: { $0 == symbol} )
     }
     
 }

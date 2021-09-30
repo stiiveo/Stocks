@@ -207,7 +207,7 @@ class StockDetailsViewController: UIViewController {
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
-        PersistenceManager().addToWatchlist(symbol: symbol, companyName: companyName)
+        PersistenceManager.shared.addToWatchlist(symbol: symbol, companyName: companyName)
         isInWatchlist = true
         delegate?.addLatestCachedData(stockData: self.stockData)
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")

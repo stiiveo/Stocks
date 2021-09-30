@@ -41,7 +41,7 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Managers Access Points
     
-    private let persistenceManager = PersistenceManager()
+    private let persistenceManager = PersistenceManager.shared
     
     // MARK: - Timer Properties
     private var searchTimer: Timer?
@@ -70,22 +70,26 @@ final class WatchListViewController: UIViewController {
         setUpFloatingPanel()
         setUpFooterView()
         
-        if persistenceManager.hasOnboarded {
+        if persistenceManager.isOnboarded {
             do {
+                // Load persisted stocks data.
                 stocksData = try persistenceManager.persistedStocksData()
             } catch {
-                // Load default stocks data if the persisted data somehow failed to be loaded.
-                persistenceManager.savedDefaultStocks()
                 loadDefaultTableViewCells()
-                print(error, "Default stocks have been loaded.")
+                print("Persisted stocks data cannot be loaded.\n", error)
             }
         } else {
-            persistenceManager.onboard()
             loadDefaultTableViewCells()
         }
+        
         updateWatchlistData()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(onApiLimitReached), name: .apiLimitReached, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onApiLimitReached),
+            name: .apiLimitReached,
+            object: nil
+        )
     }
     
     deinit {
@@ -207,7 +211,10 @@ final class WatchListViewController: UIViewController {
             let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
             stocksData.append(stockData)
             DispatchQueue.main.async {
-                self.tableView.reloadRows(at: [IndexPath(row: self.stocksData.count - 1, section: 0)], with: .automatic)
+                self.tableView.reloadRows(
+                    at: [IndexPath(row: self.stocksData.count - 1, section: 0)],
+                    with: .automatic
+                )
             }
         }
     }
