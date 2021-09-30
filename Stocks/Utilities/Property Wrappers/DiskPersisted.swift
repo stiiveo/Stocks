@@ -7,23 +7,26 @@
 
 import Foundation
 
-@propertyWrapper struct DiskPersisted<Value: Codable> {
-    var wrappedValue: Value {
+/// New assigned value is encoded to JSON before being written to specified `URL`.
+/// If the persisting process failed for any reason, the operation will be terminated.
+/// - Note: The initially assigned value is returned if any error occurs during the retrieving of the persisted data.
+@propertyWrapper struct DiskPersisted<T: Codable> {
+    var wrappedValue: T {
         get {
-            /// Try to retrieve `Value` from the specified `destination`.
-            /// If failed, return `defaultValue`.
-            
+            /// Return `defaultValue` if the specified `fileUrl` does not exist.
             if !FileManager.default.fileExists(atPath: fileUrl.path) {
                 print("Persisting data does not exist:", fileUrl.absoluteString)
                 return defaultValue
             }
             
+            /// Return `defaultValue` if data cannot be retrieved from specified `fileUrl`.
             guard let persistedData = try? Data(contentsOf: fileUrl) else {
                 print("Failed to retrieve data from persisting location:", fileUrl.absoluteString)
                 return defaultValue
             }
             
-            guard let persistedData = try? JSONDecoder().decode(Value.self, from: persistedData) else {
+            /// Return `defaultValue` if the retrieved data cannot be decoded to `Value` type object.
+            guard let persistedData = try? JSONDecoder().decode(T.self, from: persistedData) else {
                 print("Unable to decode persisted JSON data:", persistedData)
                 return defaultValue
             }
@@ -54,12 +57,12 @@ import Foundation
         }
     }
     
-    private let defaultValue: Value
+    private let defaultValue: T
     private let fileUrl: URL
     private let storage = FileManager.default
     
     init(
-        wrappedValue defaultValue: Value,
+        wrappedValue defaultValue: T,
         fileURL: URL
     ) {
         self.defaultValue = defaultValue

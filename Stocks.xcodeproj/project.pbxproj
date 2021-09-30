@@ -245,8 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				8F1A309926DC99070061A48A /* WatchlistFloatingPanelLayout.swift */,
-				8F1E1D7427040BEC001664B6 /* UserDefaultsPersisted.swift */,
-				8FA22B33270576AA00C64940 /* DiskPersisted.swift */,
+				8FA22B362705AB9100C64940 /* Property Wrappers */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -282,6 +281,15 @@
 				8F89E46026D005DE002BD69E /* Calendar_Manager_Tests.swift */,
 			);
 			path = StocksUnitTests;
+			sourceTree = "<group>";
+		};
+		8FA22B362705AB9100C64940 /* Property Wrappers */ = {
+			isa = PBXGroup;
+			children = (
+				8F1E1D7427040BEC001664B6 /* UserDefaultsPersisted.swift */,
+				8FA22B33270576AA00C64940 /* DiskPersisted.swift */,
+			);
+			path = "Property Wrappers";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
