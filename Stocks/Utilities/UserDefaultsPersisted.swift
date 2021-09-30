@@ -1,5 +1,5 @@
 //
-//  Persisted.swift
+//  UserDefaultsPersisted.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/9/29.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-@propertyWrapper struct Persisted<Value> {
+@propertyWrapper struct UserDefaultsPersisted<Value> {
     var wrappedValue: Value {
         get {
             let value = storage.value(forKey: key) as? Value

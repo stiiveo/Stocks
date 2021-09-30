@@ -34,10 +34,5 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         watchlistVC.invalidateWatchlistUpdateTimer()
     }
 
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Persist cached stocks data.
-        watchlistVC.persistCachedData()
-    }
-
 }
 

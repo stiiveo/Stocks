@@ -21,6 +21,7 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Data Cache
     
+    @DiskPersisted(fileURL: PersistenceManager.Constants.persistingFileUrl)
     private var stocksData = [StockData]()
     
     // MARK: - UI Components
@@ -70,16 +71,9 @@ final class WatchListViewController: UIViewController {
         setUpFloatingPanel()
         setUpFooterView()
         
-        if persistenceManager.isOnboarded {
-            do {
-                // Load persisted stocks data.
-                stocksData = try persistenceManager.persistedStocksData()
-            } catch {
-                loadDefaultTableViewCells()
-                print("Persisted stocks data cannot be loaded.\n", error)
-            }
-        } else {
-            loadDefaultTableViewCells()
+        if !persistenceManager.isOnboarded {
+            loadDefaultData()
+            persistenceManager.isOnboarded = true
         }
         
         updateWatchlistData()
@@ -117,7 +111,6 @@ final class WatchListViewController: UIViewController {
             }
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
-            persistCachedData()
             panel?.show(animated: true)
             initiateWatchlistUpdateTimer()
         }
@@ -206,16 +199,16 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    private func loadDefaultTableViewCells() {
-        for symbol in persistenceManager.watchList.sorted() {
-            let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
-            stocksData.append(stockData)
-            DispatchQueue.main.async {
-                self.tableView.reloadRows(
-                    at: [IndexPath(row: self.stocksData.count - 1, section: 0)],
-                    with: .automatic
-                )
-            }
+    private func loadDefaultData() {
+        var defaultData = [StockData]()
+        persistenceManager.watchList.sorted().forEach {
+            let stockData = StockData(symbol: $0, quote: nil, priceHistory: [])
+            defaultData.append(stockData)
+        }
+        /// Update `StocksData` at once to avoid frequent disk access.
+        stocksData = defaultData
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
         }
     }
     
@@ -287,14 +280,13 @@ final class WatchListViewController: UIViewController {
 // MARK: - Stock Details VC Delegate
 
 extension WatchListViewController: StockDetailsViewControllerDelegate {
-    func addLatestCachedData(stockData: StockData) {
+    func addNewStockData(stockData: StockData) {
         stocksData.append(stockData)
         DispatchQueue.main.async {
             let newRowIndex = self.stocksData.count - 1
             self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
                                       with: .automatic)
         }
-        try! persistenceManager.persistStocksData(stocksData)
     }
 }
 
@@ -442,7 +434,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
                 stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
                 persistenceManager.removeFromWatchlist(symbol: symbol)
-                try! persistenceManager.persistStocksData(stocksData)
             }
         }
     }
@@ -530,17 +521,4 @@ extension WatchListViewController {
         }
     }
     
-}
-
-// MARK: - Stock Data Persisting
-
-extension WatchListViewController {
-    /// Persist the stocks data cached in this class.
-    func persistCachedData() {
-        do {
-            try persistenceManager.persistStocksData(stocksData)
-        } catch {
-            print(error)
-        }
-    }
 }
