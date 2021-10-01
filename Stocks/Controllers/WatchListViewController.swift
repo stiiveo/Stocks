@@ -21,7 +21,7 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Data Cache
     
-    @DiskPersisted(fileURL: PersistenceManager.Constants.persistingFileUrl)
+    @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
     private var stocksData = [StockData]()
     
     // MARK: - UI Components
@@ -199,7 +199,7 @@ final class WatchListViewController: UIViewController {
     
     private func loadDefaultData() {
         var defaultData = [StockData]()
-        persistenceManager.watchList.sorted().forEach {
+        persistenceManager.watchlist.keys.sorted().forEach {
             let stockData = StockData(symbol: $0, quote: nil, priceHistory: [])
             defaultData.append(stockData)
         }
@@ -361,7 +361,7 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
             let vc = StockDetailsViewController(
                 stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
-                isInWatchlist: self.persistenceManager.watchList.contains(searchResult.symbol))
+                isInWatchlist: self.persistenceManager.watchlist.keys.contains(searchResult.symbol))
             vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
             present(navVC, animated: true, completion: nil)
@@ -424,7 +424,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
                 let symbol = stocksData[index].symbol
                 stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
-                persistenceManager.removeFromWatchlist(symbol: symbol)
+                persistenceManager.watchlist[symbol] = nil
             }
         }
     }

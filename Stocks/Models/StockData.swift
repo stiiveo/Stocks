@@ -23,6 +23,6 @@ extension StockData: Equatable {
 
 extension StockData {
     var companyName: String {
-        return UserDefaults.standard.string(forKey: symbol) ?? symbol
+        return PersistenceManager.shared.watchlist[symbol] ?? symbol
     }
 }
