@@ -25,18 +25,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        watchlistVC.updateWatchlistData()
         watchlistVC.initiateWatchlistUpdateTimer()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        // Invalidate watchlist VC's data fetching timer.
         watchlistVC.invalidateWatchlistUpdateTimer()
-    }
-
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Persist cached stocks data.
-        watchlistVC.persistCachedData()
     }
 
 }

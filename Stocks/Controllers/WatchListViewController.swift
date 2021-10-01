@@ -21,7 +21,8 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Data Cache
     
-    private var stocksData = [StockData]()
+    @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
+    private var stocksData = PersistenceManager.defaultData
     
     // MARK: - UI Components
     
@@ -41,7 +42,7 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - Managers Access Points
     
-    private let persistenceManager = PersistenceManager()
+    private let persistenceManager = PersistenceManager.shared
     
     // MARK: - Timer Properties
     private var searchTimer: Timer?
@@ -70,22 +71,21 @@ final class WatchListViewController: UIViewController {
         setUpFloatingPanel()
         setUpFooterView()
         
-        if persistenceManager.hasOnboarded {
-            do {
-                stocksData = try persistenceManager.persistedStocksData()
-            } catch {
-                // Load default stocks data if the persisted data somehow failed to be loaded.
-                persistenceManager.savedDefaultStocks()
-                loadDefaultTableViewCells()
-                print(error, "Default stocks have been loaded.")
-            }
-        } else {
-            persistenceManager.onboard()
-            loadDefaultTableViewCells()
+        if !persistenceManager.isOnboarded {
+            persistenceManager.isOnboarded = true
         }
-        updateWatchlistData()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(onApiLimitReached), name: .apiLimitReached, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onApiLimitReached),
+            name: .apiLimitReached,
+            object: nil
+        )
+        
+        stocksData.forEach {
+            updateQuote(symbol: $0.symbol)
+            updateChartData(symbol: $0.symbol)
+        }
     }
     
     deinit {
@@ -113,7 +113,6 @@ final class WatchListViewController: UIViewController {
             }
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
-            persistCachedData()
             panel?.show(animated: true)
             initiateWatchlistUpdateTimer()
         }
@@ -202,16 +201,6 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    private func loadDefaultTableViewCells() {
-        for symbol in persistenceManager.watchList.sorted() {
-            let stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
-            stocksData.append(stockData)
-            DispatchQueue.main.async {
-                self.tableView.reloadRows(at: [IndexPath(row: self.stocksData.count - 1, section: 0)], with: .automatic)
-            }
-        }
-    }
-    
     // MARK: - Data Update Operations
     
     private var updateTimer: Timer?
@@ -219,22 +208,14 @@ final class WatchListViewController: UIViewController {
     func initiateWatchlistUpdateTimer() {
         updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
-            guard !dataUpdateSuspended else { return }
-            
-            for index in 0..<stocksData.count {
-                guard stocksData[index].quote != nil else {
-                    // Quote data is unavailable.
-                    updateCachedQuote(at: index)
-                    updateCachedChartData(at: index)
-                    continue
-                }
-                
-                let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-                if currentSecondComponent == 0 {
-                    updateCachedQuote(at: index)
-                    updateCachedChartData(at: index)
+            guard !isUpdateSuspended else { return }
+            let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
+            stocksData.forEach {
+                if $0.quote == nil || currentSecondComponent == 0 {
+                    updateQuote(symbol: $0.symbol)
+                    updateChartData(symbol: $0.symbol)
                 } else if currentSecondComponent == 30 {
-                    updateCachedChartData(at: index)
+                    updateChartData(symbol: $0.symbol)
                 }
             }
         }
@@ -244,20 +225,13 @@ final class WatchListViewController: UIViewController {
         updateTimer?.invalidate()
     }
     
-    func updateWatchlistData() {
-        for index in 0..<stocksData.count {
-            updateCachedQuote(at: index)
-            updateCachedChartData(at: index)
-        }
-    }
-    
     // MARK: - Notification Selectors
     
-    private var dataUpdateSuspended = false
+    private var isUpdateSuspended = false
     
     @objc private func onApiLimitReached() {
         // Temporarily suspend data updating operation.
-        dataUpdateSuspended = true
+        isUpdateSuspended = true
         
         /// Set `dataUpdateSuspended` to `true` after preset time when the API limit should be reset.
         /// This timer must be added to `RunLoop` for the selected method to be fired properly
@@ -272,7 +246,7 @@ final class WatchListViewController: UIViewController {
     }
     
     @objc private func resumeDataUpdating() {
-        dataUpdateSuspended = false
+        isUpdateSuspended = false
     }
 
 }
@@ -280,14 +254,13 @@ final class WatchListViewController: UIViewController {
 // MARK: - Stock Details VC Delegate
 
 extension WatchListViewController: StockDetailsViewControllerDelegate {
-    func addLatestCachedData(stockData: StockData) {
+    func addNewStockData(stockData: StockData) {
         stocksData.append(stockData)
         DispatchQueue.main.async {
             let newRowIndex = self.stocksData.count - 1
             self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
                                       with: .automatic)
         }
-        try! persistenceManager.persistStocksData(stocksData)
     }
 }
 
@@ -364,14 +337,14 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         
         DispatchQueue.main.async { [unowned self] in
             let symbol = searchResult.symbol
-            var stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
-            if let cachedData = stocksData.filter({ $0.symbol == symbol }).first {
+            var stockData = StockData(symbol: symbol)
+            if let cachedData = stocksData.first(where: { $0.symbol == symbol }) {
                 stockData = cachedData
             }
             let vc = StockDetailsViewController(
                 stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
-                isInWatchlist: self.persistenceManager.watchList.contains(searchResult.symbol))
+                isInWatchlist: self.persistenceManager.watchlist.keys.contains(searchResult.symbol))
             vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
             present(navVC, animated: true, completion: nil)
@@ -434,8 +407,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
                 let symbol = stocksData[index].symbol
                 stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
-                persistenceManager.removeFromWatchlist(symbol: symbol)
-                try! persistenceManager.persistStocksData(stocksData)
+                persistenceManager.watchlist[symbol] = nil
             }
         }
     }
@@ -479,19 +451,24 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
 extension WatchListViewController {
     
     /// Update any data in the watchlist if its quote time is before the market closing time.
-    private func updateCachedQuote(at index: Int) {
-        assert(index >= 0 && index < stocksData.count,
-               "Index out of the bound of cached data array.")
-        let symbol = stocksData[index].symbol
+    private func updateQuote(symbol: String) {
         APICaller().fetchStockQuote(for: symbol) { [unowned self] result in
             switch result {
             case .success(let quoteData):
+                guard let index = stocksData.firstIndex(where: {$0.symbol == symbol}) else {
+                    print("Data updating is aborted since no data with symbol \(symbol) is stored.")
+                    return
+                }
                 stocksData[index].quote = quoteData
+                let indexPath = IndexPath(row: index, section: 0)
                 DispatchQueue.main.async {
-                    if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index], showChartAxis: false, onEditing: tableView.isEditing)
+                    if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+                        cell.configure(with: stocksData[index],
+                                       showChartAxis: false,
+                                       onEditing: tableView.isEditing)
                     }
                 }
+                // Send the updated data to the delegate if there's any.
                 if delegate?.symbol == symbol {
                     delegate?.didUpdateData(stockData: stocksData[index])
                 }
@@ -501,19 +478,24 @@ extension WatchListViewController {
         }
     }
     
-    private func updateCachedChartData(at index: Int) {
-        assert(index >= 0 && index < stocksData.count,
-               "Index out of the bound of cached data array.")
-        let symbol = stocksData[index].symbol
+    private func updateChartData(symbol: String) {
         APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
             switch result {
             case .success(let candlesResponse):
+                guard let index = stocksData.firstIndex(where: {$0.symbol == symbol}) else {
+                    print("Data updating is aborted since no data with symbol \(symbol) is stored.")
+                    return
+                }
                 stocksData[index].priceHistory = candlesResponse.priceHistory
+                let indexPath = IndexPath(row: index, section: 0)
                 DispatchQueue.main.async {
-                    if let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index], showChartAxis: false, onEditing: tableView.isEditing)
+                    if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+                        cell.configure(with: stocksData[index],
+                                       showChartAxis: false,
+                                       onEditing: tableView.isEditing)
                     }
                 }
+                // Send the updated data to the delegate if there's any.
                 if delegate?.symbol == symbol {
                     delegate?.didUpdateData(stockData: stocksData[index])
                 }
@@ -523,17 +505,4 @@ extension WatchListViewController {
         }
     }
     
-}
-
-// MARK: - Stock Data Persisting
-
-extension WatchListViewController {
-    /// Persist the stocks data cached in this class.
-    func persistCachedData() {
-        do {
-            try persistenceManager.persistStocksData(stocksData)
-        } catch {
-            print(error)
-        }
-    }
 }

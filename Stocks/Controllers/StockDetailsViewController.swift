@@ -9,7 +9,7 @@ import UIKit
 import SafariServices
 
 protocol StockDetailsViewControllerDelegate: AnyObject {
-    func addLatestCachedData(stockData: StockData)
+    func addNewStockData(stockData: StockData)
 }
 
 class StockDetailsViewController: UIViewController {
@@ -207,9 +207,9 @@ class StockDetailsViewController: UIViewController {
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
-        PersistenceManager().addToWatchlist(symbol: symbol, companyName: companyName)
+        PersistenceManager.shared.watchlist[symbol] = companyName
         isInWatchlist = true
-        delegate?.addLatestCachedData(stockData: self.stockData)
+        delegate?.addNewStockData(stockData: self.stockData)
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
     
