@@ -35,14 +35,20 @@ final class PersistenceManager {
         "FB": "Facebook Inc."
     ]
     
+    static var defaultData: [StockData] {
+        var data = [StockData]()
+        PersistenceManager.defaultWatchlist.keys.sorted().forEach {
+            data.append(StockData(symbol: $0))
+        }
+        return data
+    }
+    
     // MARK: - Public
     
-    @UserDefaultsPersisted(wrappedValue: false,
-                           key: UserDefaultsKey.isOnboarded)
-    var isOnboarded: Bool
+    @UserDefaultsPersisted(key: UserDefaultsKey.isOnboarded)
+    var isOnboarded: Bool = false
     
-    @UserDefaultsPersisted(wrappedValue: PersistenceManager.defaultWatchlist,
-                           key: UserDefaultsKey.watchlist)
-    var watchlist: [String: String]
+    @UserDefaultsPersisted(key: UserDefaultsKey.watchlist)
+    var watchlist: [String: String] = PersistenceManager.defaultWatchlist
     
 }

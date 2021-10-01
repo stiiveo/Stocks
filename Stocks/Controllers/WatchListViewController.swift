@@ -22,7 +22,7 @@ final class WatchListViewController: UIViewController {
     // MARK: - Data Cache
     
     @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
-    private var stocksData = [StockData]()
+    private var stocksData = PersistenceManager.defaultData
     
     // MARK: - UI Components
     
@@ -72,7 +72,6 @@ final class WatchListViewController: UIViewController {
         setUpFooterView()
         
         if !persistenceManager.isOnboarded {
-            loadDefaultData()
             persistenceManager.isOnboarded = true
         }
         
@@ -194,19 +193,6 @@ final class WatchListViewController: UIViewController {
         footerView.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
             make.height.equalTo(86)
-        }
-    }
-    
-    private func loadDefaultData() {
-        var defaultData = [StockData]()
-        persistenceManager.watchlist.keys.sorted().forEach {
-            let stockData = StockData(symbol: $0, quote: nil, priceHistory: [])
-            defaultData.append(stockData)
-        }
-        /// Update `StocksData` at once to avoid frequent disk access.
-        stocksData = defaultData
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
         }
     }
     
@@ -354,7 +340,7 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
         
         DispatchQueue.main.async { [unowned self] in
             let symbol = searchResult.symbol
-            var stockData = StockData(symbol: symbol, quote: nil, priceHistory: [])
+            var stockData = StockData(symbol: symbol)
             if let cachedData = stocksData.filter({ $0.symbol == symbol }).first {
                 stockData = cachedData
             }

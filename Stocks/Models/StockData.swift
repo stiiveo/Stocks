@@ -9,8 +9,8 @@ import Foundation
 
 struct StockData: Codable {
     let symbol: String
-    var quote: StockQuote?
-    var priceHistory: [PriceHistory]
+    var quote: StockQuote? = nil
+    var priceHistory: [PriceHistory] = []
 }
 
 extension StockData: Equatable {
