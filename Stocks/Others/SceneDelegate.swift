@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        watchlistVC.initiateWatchlistUpdateTimer()
+        watchlistVC.initiateDataUpdateTimer()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {

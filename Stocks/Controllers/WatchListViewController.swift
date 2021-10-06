@@ -18,37 +18,37 @@ protocol WatchlistViewControllerDelegate: AnyObject {
 final class WatchListViewController: UIViewController {
     
     static let shared = WatchListViewController()
+    weak var delegate: WatchlistViewControllerDelegate?
     
-    // MARK: - Data Cache
-    
+    // Data Cache
     @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
     private var stocksData = PersistenceManager.defaultData
     
-    // MARK: - UI Components
-    
+    // UI Components
     private let tableView: UITableView = {
         let table = UITableView()
         table.register(WatchListTableViewCell.self,
                        forCellReuseIdentifier: WatchListTableViewCell.identifier)
         return table
     }()
-    
     private var panel: FloatingPanelController?
     private lazy var footerView = WatchlistFooterView()
     
-    // MARK: - ScrollView Observing Properties
-    
+    // ScrollView Observing Properties
     private var lastContentOffset: CGFloat = 0
-    
-    // MARK: - Managers Access Points
-    
     private let persistenceManager = PersistenceManager.shared
     
-    // MARK: - Timer Properties
+    // Timer Properties
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
-    weak var delegate: WatchlistViewControllerDelegate?
+    // Data updating settings
+    // Note: Setting these values too small results in little benefit
+    // and consumes the limited number of api calls quickly
+    // since there's certain time interval between the data provided
+    // by Finnhub.
+    private let quoteUpdatingFrequency: TimeInterval = 30
+    private let chartUpdatingFrequency: TimeInterval = 60
     
     // MARK: - Init
     
@@ -82,10 +82,8 @@ final class WatchListViewController: UIViewController {
             object: nil
         )
         
-        stocksData.forEach {
-            updateQuote(symbol: $0.symbol)
-            updateChartData(symbol: $0.symbol)
-        }
+        updateQuoteData()
+        updateChartData()
     }
     
     deinit {
@@ -114,7 +112,7 @@ final class WatchListViewController: UIViewController {
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
             panel?.show(animated: true)
-            initiateWatchlistUpdateTimer()
+            initiateDataUpdateTimer()
         }
         
         UIView.animate(withDuration: 0.2) {
@@ -204,20 +202,30 @@ final class WatchListViewController: UIViewController {
     // MARK: - Data Update Operations
     
     private var updateTimer: Timer?
+    private var lastTimeQuoteUpdateIsInvoked: TimeInterval = 0
+    private var lastTimeChartUpdateIsInvoked: TimeInterval = 0
     
-    func initiateWatchlistUpdateTimer() {
+    func initiateDataUpdateTimer() {
         updateTimer?.invalidate()
         updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [unowned self] _ in
             guard !isUpdateSuspended else { return }
-            let currentSecondComponent = CalendarManager().newYorkCalendar.component(.second, from: Date())
-            stocksData.forEach {
-                if $0.quote == nil || currentSecondComponent == 0 {
-                    updateQuote(symbol: $0.symbol)
-                    updateChartData(symbol: $0.symbol)
-                } else if currentSecondComponent == 30 {
-                    updateChartData(symbol: $0.symbol)
-                }
-            }
+            updateOutdatedData()
+        }
+    }
+    
+    private func updateOutdatedData() {
+        let currentTime = Date().timeIntervalSince1970
+        let timeSinceQuoteUpdated = currentTime - lastTimeQuoteUpdateIsInvoked
+        let timeSinceChartUpdated = currentTime - lastTimeChartUpdateIsInvoked
+        
+        if timeSinceQuoteUpdated >= quoteUpdatingFrequency &&
+            timeSinceChartUpdated >= chartUpdatingFrequency {
+            updateChartData()
+            updateQuoteData()
+        } else if timeSinceQuoteUpdated >= lastTimeQuoteUpdateIsInvoked {
+            updateQuoteData()
+        } else if timeSinceChartUpdated >= lastTimeChartUpdateIsInvoked {
+            updateChartData()
         }
     }
     
@@ -230,15 +238,16 @@ final class WatchListViewController: UIViewController {
     private var isUpdateSuspended = false
     
     @objc private func onApiLimitReached() {
-        // Temporarily suspend data updating operation.
+        // Suspend data updating operation.
         isUpdateSuspended = true
         
-        /// Set `dataUpdateSuspended` to `true` after preset time when the API limit should be reset.
-        /// This timer must be added to `RunLoop` for the selected method to be fired properly
-        /// after the specified time interval for unknown reason.
-        let dataUpdateSuspendingTimer = Timer(timeInterval: 30.0, target: self, selector: #selector(resumeDataUpdating), userInfo: nil, repeats: false)
+        /// Set `isUpdateSuspended` to `false` after a preset time when the quota limit should be reset.
+        /// Note: This timer must be added to `RunLoop` for the timer to be fired properly after the specified
+        /// time interval for unknown reason.
+        let dataUpdateSuspendingTimer = Timer(timeInterval: 60.0, target: self, selector: #selector(resumeDataUpdating), userInfo: nil, repeats: false)
         RunLoop.main.add(dataUpdateSuspendingTimer, forMode: .common)
         
+        // Present alert to the user.
         DispatchQueue.main.async { [unowned self] in
             guard presentedViewController == nil else { return }
             presentApiAlert(type: .apiLimitReached)
@@ -276,7 +285,7 @@ extension WatchListViewController: UISearchControllerDelegate {
         }
     }
     func willDismissSearchController(_ searchController: UISearchController) {
-        initiateWatchlistUpdateTimer()
+        initiateDataUpdateTimer()
         self.panel?.show(animated: true)
         updateTableViewBottomOffset(avoidFloatingPanel: true)
     }
@@ -449,60 +458,70 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
 // MARK: - Data Updating Methods
 
 extension WatchListViewController {
-    
     /// Update any data in the watchlist if its quote time is before the market closing time.
-    private func updateQuote(symbol: String) {
-        APICaller().fetchStockQuote(for: symbol) { [unowned self] result in
-            switch result {
-            case .success(let quoteData):
-                guard let index = stocksData.firstIndex(where: {$0.symbol == symbol}) else {
-                    print("Data updating is aborted since no data with symbol \(symbol) is stored.")
-                    return
-                }
-                stocksData[index].quote = quoteData
-                let indexPath = IndexPath(row: index, section: 0)
-                DispatchQueue.main.async {
-                    if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index],
-                                       showChartAxis: false,
-                                       onEditing: tableView.isEditing)
+    private func updateQuoteData() {
+        lastTimeQuoteUpdateIsInvoked = Date().timeIntervalSince1970
+        stocksData.forEach {
+            let symbol = $0.symbol
+            APICaller().fetchStockQuote(for: symbol) { [unowned self] result in
+                switch result {
+                case .success(let quoteData):
+                    // Make sure cached data with the symbol value still exists.
+                    guard let index = stocksData.firstIndex(where: { $0.symbol == symbol }) else {
+                        print("Data updating is aborted since no data with symbol \(symbol) is stored.")
+                        return
                     }
+                    // Update cached data and tableView cell.
+                    stocksData[index].quote = quoteData
+                    let indexPath = IndexPath(row: index, section: 0)
+                    DispatchQueue.main.async {
+                        if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+                            cell.configure(with: stocksData[index],
+                                           showChartAxis: false,
+                                           onEditing: tableView.isEditing)
+                        }
+                    }
+                    // Send the updated data to the delegate if there's any.
+                    if delegate?.symbol == symbol {
+                        delegate?.didUpdateData(stockData: stocksData[index])
+                    }
+                case .failure(let error):
+                    print("Failed to fetch quote data of stock \(symbol):\n\(error)")
                 }
-                // Send the updated data to the delegate if there's any.
-                if delegate?.symbol == symbol {
-                    delegate?.didUpdateData(stockData: stocksData[index])
-                }
-            case .failure(let error):
-                print("Failed to fetch quote data of stock \(symbol):\n\(error)")
             }
         }
     }
     
-    private func updateChartData(symbol: String) {
-        APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
-            switch result {
-            case .success(let candlesResponse):
-                guard let index = stocksData.firstIndex(where: {$0.symbol == symbol}) else {
-                    print("Data updating is aborted since no data with symbol \(symbol) is stored.")
-                    return
-                }
-                stocksData[index].priceHistory = candlesResponse.priceHistory
-                let indexPath = IndexPath(row: index, section: 0)
-                DispatchQueue.main.async {
-                    if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
-                        cell.configure(with: stocksData[index],
-                                       showChartAxis: false,
-                                       onEditing: tableView.isEditing)
+    private func updateChartData() {
+        lastTimeChartUpdateIsInvoked = Date().timeIntervalSince1970
+        stocksData.forEach {
+            let symbol = $0.symbol
+            APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
+                switch result {
+                case .success(let candlesResponse):
+                    // Make sure cached data with the symbol value still exists.
+                    guard let index = stocksData.firstIndex(where: { $0.symbol == symbol }) else {
+                        print("Data updating is aborted since no data with symbol \(symbol) is stored.")
+                        return
                     }
+                    // Update cached data and tableView cell.
+                    stocksData[index].priceHistory = candlesResponse.priceHistory
+                    let indexPath = IndexPath(row: index, section: 0)
+                    DispatchQueue.main.async {
+                        if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+                            cell.configure(with: stocksData[index],
+                                           showChartAxis: false,
+                                           onEditing: tableView.isEditing)
+                        }
+                    }
+                    // Send the updated data to the delegate if there's any.
+                    if delegate?.symbol == symbol {
+                        delegate?.didUpdateData(stockData: stocksData[index])
+                    }
+                case .failure(let error):
+                    print("Failed to fetch price history data of stock \(symbol):\n\(error)")
                 }
-                // Send the updated data to the delegate if there's any.
-                if delegate?.symbol == symbol {
-                    delegate?.didUpdateData(stockData: stocksData[index])
-                }
-            case .failure(let error):
-                print("Failed to fetch price history data of stock \(symbol):\n\(error)")
             }
         }
     }
-    
 }
