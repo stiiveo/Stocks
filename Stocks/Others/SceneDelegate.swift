@@ -25,11 +25,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        watchlistVC.initiateDataUpdateTimer()
+        watchlistVC.initiateDataUpdater()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        watchlistVC.invalidateWatchlistUpdateTimer()
+        watchlistVC.invalidateDataUpdater()
     }
 
 }
