@@ -710,8 +710,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/danielgindi/Charts.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.0;
+				kind = exactVersion;
+				version = 3.6.0;
 			};
 		};
 		8F1A309F26DCA0680061A48A /* XCRemoteSwiftPackageReference "FloatingPanel" */ = {

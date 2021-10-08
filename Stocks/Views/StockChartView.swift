@@ -160,7 +160,7 @@ class StockChartView: LineChartView {
         if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
                                      colors: gradientColors,
                                      locations: gradientLocations) {
-            dataSet.fill = LinearGradientFill(gradient: gradient, angle: 90.0)
+            dataSet.fill = Fill.fillWithLinearGradient(gradient, angle: 90.0)
         }
         return dataSet
     }
@@ -189,7 +189,7 @@ class StockChartView: LineChartView {
 
 }
 
-final class XAxisValueFormatter: AxisValueFormatter {
+final class XAxisValueFormatter: IAxisValueFormatter {
     func stringForValue( _ value: Double, axis _: AxisBase?) -> String {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone(identifier: "America/New_York")
