@@ -456,6 +456,11 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.lastContentOffset = scrollView.contentOffset.y
+        if let searchBar = navigationItem.searchController?.searchBar {
+            if searchBar.isFirstResponder {
+                searchBar.endEditing(true)
+            }
+        }
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
