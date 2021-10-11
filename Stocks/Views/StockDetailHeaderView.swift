@@ -7,6 +7,7 @@
 
 import UIKit
 import Charts
+import SnapKit
 
 class StockDetailHeaderView: UIView {
     
@@ -25,13 +26,19 @@ class StockDetailHeaderView: UIView {
     private let titleViewHeight: CGFloat = 25
     static let metricsViewHeight: CGFloat = 70
     
+    private let chartLoadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
     // MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         clipsToBounds = true
-        addSubviews(titleView, chartView, metricsView)
-        setUpSubviews()
+        configureSubviews()
+        configureChartLoadingIndicator()
     }
     
     required init?(coder: NSCoder) {
@@ -40,33 +47,42 @@ class StockDetailHeaderView: UIView {
     
     // MARK: - Private
     
-    private func setUpSubviews() {
+    private func configureSubviews() {
+        addSubviews(titleView, chartView, metricsView)
         let leadingPadding: CGFloat = 20.0
         let trailingPadding: CGFloat = -20.0
         
         titleView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            titleView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20.0),
-            titleView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
-            titleView.topAnchor.constraint(equalTo: self.topAnchor, constant: 20.0),
+            titleView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20.0),
+            titleView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: trailingPadding),
+            titleView.topAnchor.constraint(equalTo: topAnchor, constant: 20.0),
             titleView.heightAnchor.constraint(equalToConstant: titleViewHeight)
         ])
         
         chartView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            chartView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingPadding),
-            chartView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
+            chartView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            chartView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: trailingPadding),
             chartView.topAnchor.constraint(equalTo: titleView.bottomAnchor, constant: 10.0)
         ])
         
         metricsView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            metricsView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: leadingPadding),
-            metricsView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: trailingPadding),
+            metricsView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingPadding),
+            metricsView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: trailingPadding),
             metricsView.topAnchor.constraint(equalTo: chartView.bottomAnchor, constant: 20.0),
-            metricsView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -20.0),
+            metricsView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20.0),
             metricsView.heightAnchor.constraint(equalToConstant: StockDetailHeaderView.metricsViewHeight)
         ])
+    }
+    
+    private func configureChartLoadingIndicator() {
+        chartView.addSubview(chartLoadingIndicator)
+        chartLoadingIndicator.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        chartLoadingIndicator.startAnimating()
     }
     
     // MARK: - Public
@@ -83,6 +99,10 @@ class StockDetailHeaderView: UIView {
                                 showAddingButton: !PersistenceManager.shared.watchlist.keys.contains(stockData.symbol))
         )
         
+        // Stop chart loading indicator if data used to configure it is not empty.
+        if !stockData.priceHistory.isEmpty {
+            chartLoadingIndicator.stopAnimating()
+        }
         chartView.configure(with: .init(
             data: stockData.priceHistory,
             previousClose: stockData.quote?.prevClose,
