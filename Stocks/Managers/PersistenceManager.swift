@@ -24,8 +24,6 @@ final class PersistenceManager {
         return fileUrl
     }
     
-    private let userDefaults: UserDefaults = .standard
-    
     /// The default stocks to be persisted in the `UserDefaults` if the App is launched for the first time.
     static let defaultWatchlist: [String: String] = [
         "AAPL": "Apple Inc.",

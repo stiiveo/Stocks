@@ -7,6 +7,7 @@
 
 import UIKit
 import SafariServices
+import SnapKit
 
 protocol StockDetailsViewControllerDelegate: AnyObject {
     func stockDetailsViewControllerDidAddStockData(_ stockData: StockData)
@@ -36,6 +37,12 @@ class StockDetailsViewController: UIViewController {
     // by Finnhub.
     private let quoteUpdatingInterval: TimeInterval = 30
     private let chartUpdatingInterval: TimeInterval = 60
+    
+    private let newsLoadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
     
     // MARK: - UI Properties
     
@@ -78,12 +85,12 @@ class StockDetailsViewController: UIViewController {
         configureCloseButton()
         configureHeaderView()
         configureTableView()
-        refreshHeaderView()
         updateOutdatedData()
         initiateDataUpdater()
         fetchMetricsData()
         fetchNews()
         observeNotifications()
+        configureNewsLoadingIndicator()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -91,6 +98,17 @@ class StockDetailsViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
         dataUpdateTimer?.invalidate()
         delegate?.stockDetailsViewControllerDidDisappear(self)
+    }
+    
+    private func configureNewsLoadingIndicator() {
+        view.addSubview(newsLoadingIndicator)
+        newsLoadingIndicator.frame = CGRect(
+            x: view.width / 2 - 10,
+            y: view.width + 120 - 10,
+            width: 20,
+            height: 20
+        )
+        newsLoadingIndicator.startAnimating()
     }
 
     // MARK: - Data Update Operations
@@ -141,7 +159,6 @@ class StockDetailsViewController: UIViewController {
     }
     
     private func configureHeaderView() {
-        headerView = StockDetailHeaderView()
         headerView.frame = CGRect(x: 0, y: 0, width: view.width, height: view.width)
         tableView.tableHeaderView = headerView
         DispatchQueue.main.async {
@@ -214,6 +231,7 @@ class StockDetailsViewController: UIViewController {
             switch result {
             case .success(let stories):
                 DispatchQueue.main.async {
+                    self.newsLoadingIndicator.stopAnimating()
                     self.stories = stories
                     self.tableView.reloadData()
                 }

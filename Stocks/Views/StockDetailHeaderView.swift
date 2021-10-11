@@ -12,15 +12,15 @@ class StockDetailHeaderView: UIView {
     
     // MARK: - Properties
     
-    private let titleView = StockDetailHeaderTitleView()
+    private lazy var titleView = StockDetailHeaderTitleView()
 
-    private let chartView: StockChartView = {
+    private lazy var chartView: StockChartView = {
         let chart = StockChartView()
         chart.isUserInteractionEnabled = false
         return chart
     }()
     
-    private let metricsView = StockMetricsView()
+    private lazy var metricsView = StockMetricsView()
     
     private let titleViewHeight: CGFloat = 25
     static let metricsViewHeight: CGFloat = 70
