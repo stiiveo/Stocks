@@ -117,18 +117,6 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    private func updateTableViewBottomOffset(avoidFloatingPanel: Bool) {
-        if avoidFloatingPanel {
-            tableView.snp.updateConstraints { make in
-                make.bottom.equalTo(view).offset(-175.0)
-            }
-        } else {
-            tableView.snp.updateConstraints { make in
-                make.bottom.equalTo(view.bottom).offset(-86)
-            }
-        }
-    }
-    
     private func configureFloatingPanel() {
         let vc = NewsViewController()
         let panel = FloatingPanelController()
@@ -191,7 +179,7 @@ final class WatchListViewController: UIViewController {
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(resumeUpdatingData),
+            selector: #selector(onDidDismissStockDetailsVC),
             name: .didDismissStockDetailsViewController,
             object: nil
         )
@@ -205,8 +193,9 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    @objc private func resumeUpdatingData() {
-        if !isSearchControllerPresented {
+    @objc private func onDidDismissStockDetailsVC() {
+        if let searchController = navigationItem.searchController,
+           !searchController.isActive {
             viewModel.initiateDataUpdater()
         }
     }
@@ -242,17 +231,10 @@ extension WatchListViewController: WatchlistViewControllerViewModelDelegate {
 extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
         viewModel.invalidateDataUpdater()
-        self.panel?.hide(animated: true)
-        updateTableViewBottomOffset(avoidFloatingPanel: false)
-        if viewModel.stocksData.count > 0 {
-            tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
-        }
         isSearchControllerPresented = true
     }
     func willDismissSearchController(_ searchController: UISearchController) {
         viewModel.initiateDataUpdater()
-        self.panel?.show(animated: true)
-        updateTableViewBottomOffset(avoidFloatingPanel: true)
         isSearchControllerPresented = false
     }
 }
@@ -412,9 +394,11 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.lastContentOffset = scrollView.contentOffset.y
-        if let searchBar = navigationItem.searchController?.searchBar {
-            if searchBar.isFirstResponder {
-                searchBar.endEditing(true)
+        
+        // Deactivate search controller if it's active.
+        if let searchController = navigationItem.searchController {
+            if searchController.isActive {
+                searchController.isActive = false
             }
         }
     }
