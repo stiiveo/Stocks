@@ -12,4 +12,6 @@ extension Notification.Name {
     static let didTapAddToWatchlist = Notification.Name("didTapAddToWatchlist")
     static let apiLimitReached = Notification.Name("didReachApiLimit")
     static let dataAccessDenied = Notification.Name("dataAccessDenied")
+    static let didDismissStockDetailsViewController = Notification.Name("didDismissStockDetailsViewController")
+    static let didAddNewStockData = Notification.Name("didAddNewStockData")
 }

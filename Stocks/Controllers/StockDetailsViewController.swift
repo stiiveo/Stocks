@@ -9,11 +9,6 @@ import UIKit
 import SafariServices
 import SnapKit
 
-protocol StockDetailsViewControllerDelegate: AnyObject {
-    func stockDetailsViewControllerDidAddStockData(_ stockData: StockData)
-    func stockDetailsViewControllerDidDisappear(_ controller: StockDetailsViewController)
-}
-
 class StockDetailsViewController: UIViewController {
 
     // MARK: - Properties
@@ -23,8 +18,6 @@ class StockDetailsViewController: UIViewController {
     
     private var metrics: Metrics?
     private var stories: [NewsStory] = []
-    
-    weak var delegate: StockDetailsViewControllerDelegate?
     
     var symbol: String {
         return stockData.symbol
@@ -97,7 +90,7 @@ class StockDetailsViewController: UIViewController {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
         dataUpdateTimer?.invalidate()
-        delegate?.stockDetailsViewControllerDidDisappear(self)
+        NotificationCenter.default.post(name: .didDismissStockDetailsViewController, object: nil)
     }
     
     private func configureNewsLoadingIndicator() {
@@ -251,7 +244,12 @@ class StockDetailsViewController: UIViewController {
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
         PersistenceManager.shared.watchlist[symbol] = companyName
-        delegate?.stockDetailsViewControllerDidAddStockData(stockData)
+        let dataDict = ["data": stockData]
+        NotificationCenter.default.post(
+            name: .didAddNewStockData,
+            object: nil,
+            userInfo: dataDict
+        )
         showAlert(withTitle: "Added to Watchlist", message: "", actionTitle: "OK")
     }
     

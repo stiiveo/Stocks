@@ -33,6 +33,7 @@
 		8F70574C26D23CBA00F94E37 /* Date and Calendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F70574B26D23CBA00F94E37 /* Date and Calendar.swift */; };
 		8F70574F26D23D3500F94E37 /* Numbers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F70574E26D23D3500F94E37 /* Numbers.swift */; };
 		8F7D594327031148004A3E87 /* Overview.png in Resources */ = {isa = PBXBuildFile; fileRef = 8F7D594227031148004A3E87 /* Overview.png */; };
+		8F7DDD3427169678004F47F5 /* WatchlistViewControllerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7DDD3327169678004F47F5 /* WatchlistViewControllerViewModel.swift */; };
 		8F7EECAF26E24ECE002815D3 /* StockMetricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7EECAE26E24ECE002815D3 /* StockMetricsView.swift */; };
 		8F878BFC269E9B8D00ACE8AF /* StockQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */; };
 		8F878BFE269F11B200ACE8AF /* StockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFD269F11B200ACE8AF /* StockData.swift */; };
@@ -94,6 +95,7 @@
 		8F70574B26D23CBA00F94E37 /* Date and Calendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date and Calendar.swift"; sourceTree = "<group>"; };
 		8F70574E26D23D3500F94E37 /* Numbers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Numbers.swift; sourceTree = "<group>"; };
 		8F7D594227031148004A3E87 /* Overview.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Overview.png; sourceTree = "<group>"; };
+		8F7DDD3327169678004F47F5 /* WatchlistViewControllerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistViewControllerViewModel.swift; sourceTree = "<group>"; };
 		8F7EECAE26E24ECE002815D3 /* StockMetricsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockMetricsView.swift; sourceTree = "<group>"; };
 		8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockQuote.swift; sourceTree = "<group>"; };
 		8F878BFD269F11B200ACE8AF /* StockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockData.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 		8F11B93B26986C8000F4AFD1 /* Stocks */ = {
 			isa = PBXGroup;
 			children = (
+				8F7DDD3227169652004F47F5 /* ViewModels */,
 				8F11B95026986CEF00F4AFD1 /* Models */,
 				8F11B95126986CF600F4AFD1 /* Views */,
 				8F11B95226986D0600F4AFD1 /* Controllers */,
@@ -269,6 +272,14 @@
 				8FA0E9B826F9D3AA006BB9DD /* StringExtensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		8F7DDD3227169652004F47F5 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				8F7DDD3327169678004F47F5 /* WatchlistViewControllerViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		8F878C0A26A1AC8200ACE8AF /* StocksUnitTests */ = {
@@ -432,6 +443,7 @@
 				8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */,
 				8FA22B34270576AA00C64940 /* DiskPersisted.swift in Sources */,
 				8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */,
+				8F7DDD3427169678004F47F5 /* WatchlistViewControllerViewModel.swift in Sources */,
 				8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */,
 				8F878C0426A0421700ACE8AF /* MetricCollectionViewCell.swift in Sources */,
 				8F1E1D7527040BEC001664B6 /* UserDefaultsPersisted.swift in Sources */,

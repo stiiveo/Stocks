@@ -13,10 +13,7 @@ import SnapKit
 final class WatchListViewController: UIViewController {
     
     static let shared = WatchListViewController()
-    
-    // Data Cache
-    @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
-    private var stocksData = PersistenceManager.defaultData
+    let viewModel = WatchlistViewControllerViewModel.shared
     
     // UI Components
     private let tableView: UITableView = {
@@ -36,14 +33,6 @@ final class WatchListViewController: UIViewController {
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
     
-    // Settings on the minimum interval of the data updating.
-    // Note: Setting these values too small yields little benefit
-    // and could consumes the limited quotas of api calls quickly
-    // since there's quite big interval between each data provided
-    // by Finnhub.
-    private let quoteUpdatingInterval: TimeInterval = 30
-    private let chartUpdatingInterval: TimeInterval = 60
-    
     // Search Controller State
     private var isSearchControllerPresented = false
     
@@ -61,26 +50,21 @@ final class WatchListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.delegate = self
         view.backgroundColor = .systemBackground
-        setUpNavigationBar()
-        setUpSearchController()
-        setUpTableView()
-        setUpFloatingPanel()
-        setUpFooterView()
+        configureNavigationBar()
+        configureSearchController()
+        configureTableView()
+        configureFloatingPanel()
+        configureFooterView()
         
         if !persistenceManager.isOnboarded {
             persistenceManager.isOnboarded = true
         }
         
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(onApiLimitReached),
-            name: .apiLimitReached,
-            object: nil
-        )
-        
-        updateQuoteData()
-        updateChartData()
+        observeNotifications()
+        viewModel.updateQuoteData()
+        viewModel.updateChartData()
     }
     
     deinit {
@@ -92,7 +76,7 @@ final class WatchListViewController: UIViewController {
     @objc private func editButtonDidTap() {
         if !tableView.isEditing {
             // Enter editing mode.
-            invalidateDataUpdater()
+            viewModel.invalidateDataUpdater()
             tableView.setEditing(true, animated: true)
             tableView.snp.updateConstraints { make in
                 make.bottom.equalTo(view.bottom).offset(-86)
@@ -109,7 +93,7 @@ final class WatchListViewController: UIViewController {
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
             panel?.show(animated: true)
-            initiateDataUpdater()
+            viewModel.initiateDataUpdater()
         }
         
         UIView.animate(withDuration: 0.2) {
@@ -122,7 +106,7 @@ final class WatchListViewController: UIViewController {
     
     // MARK: - UI Setting
     
-    private func setUpTableView() {
+    private func configureTableView() {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
@@ -145,7 +129,7 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    private func setUpFloatingPanel() {
+    private func configureFloatingPanel() {
         let vc = NewsViewController()
         let panel = FloatingPanelController()
         panel.layout = WatchlistFloatingPanelLayout()
@@ -157,17 +141,17 @@ final class WatchListViewController: UIViewController {
         self.panel = panel
     }
     
-    private func setUpNavigationBar() {
+    private func configureNavigationBar() {
         navigationController?.navigationBar.isTranslucent = false
         extendedLayoutIncludesOpaqueBars = true
-        setUpTitleView()
+        configureTitleView()
         
         // Add system edit bar button to the NavBar.
         let buttonItem = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editButtonDidTap))
         navigationItem.rightBarButtonItem = buttonItem
     }
     
-    private func setUpTitleView() {
+    private func configureTitleView() {
         let titleView = UIView()
         titleView.frame = CGRect(x: 0, y: 0, width: 400, height: 30)
         
@@ -179,7 +163,7 @@ final class WatchListViewController: UIViewController {
         navigationItem.titleView = titleView
     }
 
-    private func setUpSearchController() {
+    private func configureSearchController() {
         let resultVC = SearchResultViewController()
         resultVC.delegate = self
         let searchVC = UISearchController(searchResultsController: resultVC)
@@ -188,7 +172,7 @@ final class WatchListViewController: UIViewController {
         navigationItem.searchController = searchVC
     }
     
-    private func setUpFooterView() {
+    private func configureFooterView() {
         view.addSubviews(footerView)
         footerView.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
@@ -196,55 +180,24 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    // MARK: - Data Update Operations
+    // MARK: - Notification Center Operations
     
-    private var updateTimer: Timer?
-    private var lastQuoteDataUpdatedTime: TimeInterval = 0
-    private var lastChartDataUpdatedTime: TimeInterval = 0
-    
-    func initiateDataUpdater() {
-        updateTimer?.invalidate()
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) {
-            [unowned self] _ in
-            guard !isUpdateSuspended else { return }
-            updateOutdatedData()
-        }
+    private func observeNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onApiLimitReached),
+            name: .apiLimitReached,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(resumeUpdatingData),
+            name: .didDismissStockDetailsViewController,
+            object: nil
+        )
     }
-    
-    private func updateOutdatedData() {
-        let currentTime = Date().timeIntervalSince1970
-        let timeSinceQuoteUpdated = currentTime - lastQuoteDataUpdatedTime
-        let timeSinceChartUpdated = currentTime - lastChartDataUpdatedTime
-        
-        if timeSinceQuoteUpdated >= quoteUpdatingInterval &&
-            timeSinceChartUpdated >= chartUpdatingInterval {
-            updateChartData()
-            updateQuoteData()
-        } else if timeSinceQuoteUpdated >= quoteUpdatingInterval {
-            updateQuoteData()
-        } else if timeSinceChartUpdated >= chartUpdatingInterval {
-            updateChartData()
-        }
-    }
-    
-    func invalidateDataUpdater() {
-        updateTimer?.invalidate()
-    }
-    
-    // MARK: - Notification Selectors
-    
-    private var isUpdateSuspended = false
     
     @objc private func onApiLimitReached() {
-        // Suspend data updating operation.
-        isUpdateSuspended = true
-        
-        /// Set `isUpdateSuspended` to `false` after a preset time when the quota limit should be reset.
-        /// Note: This timer must be added to `RunLoop` for the timer to be fired properly after the specified
-        /// time interval for unknown reason.
-        let dataUpdateSuspendingTimer = Timer(timeInterval: 60.0, target: self, selector: #selector(resumeDataUpdating), userInfo: nil, repeats: false)
-        RunLoop.main.add(dataUpdateSuspendingTimer, forMode: .common)
-        
         // Present alert to the user.
         DispatchQueue.main.async { [unowned self] in
             guard presentedViewController == nil else { return }
@@ -252,26 +205,34 @@ final class WatchListViewController: UIViewController {
         }
     }
     
-    @objc private func resumeDataUpdating() {
-        isUpdateSuspended = false
+    @objc private func resumeUpdatingData() {
+        if !isSearchControllerPresented {
+            viewModel.initiateDataUpdater()
+        }
     }
 
 }
 
-// MARK: - Stock Details VC Delegate
+// MARK: - View Model Delegate
 
-extension WatchListViewController: StockDetailsViewControllerDelegate {
-    func stockDetailsViewControllerDidAddStockData(_ stockData: StockData) {
-        stocksData.append(stockData)
-        DispatchQueue.main.async {
-            let newRowIndex = self.stocksData.count - 1
-            self.tableView.insertRows(at: [IndexPath(row: newRowIndex, section: 0)],
-                                      with: .automatic)
+extension WatchListViewController: WatchlistViewControllerViewModelDelegate {
+    func didUpdateViewModel(at index: Int) {
+        let indexPath = IndexPath(row: index, section: 0)
+        DispatchQueue.main.async { [unowned self] in
+            if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+                cell.configure(with: viewModel.stocksData[index],
+                               showChartAxis: false,
+                               onEditing: tableView.isEditing)
+            }
         }
     }
-    func stockDetailsViewControllerDidDisappear(_ controller: StockDetailsViewController) {
-        if !isSearchControllerPresented {
-            initiateDataUpdater()
+    
+    func didAddViewModel(at index: Int) {
+        DispatchQueue.main.async { [unowned self] in
+            tableView.insertRows(
+                at: [IndexPath(row: index, section: 0)],
+                with: .automatic
+            )
         }
     }
 }
@@ -280,16 +241,16 @@ extension WatchListViewController: StockDetailsViewControllerDelegate {
 
 extension WatchListViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
-        invalidateDataUpdater()
+        viewModel.invalidateDataUpdater()
         self.panel?.hide(animated: true)
         updateTableViewBottomOffset(avoidFloatingPanel: false)
-        if stocksData.count > 0 {
+        if viewModel.stocksData.count > 0 {
             tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: true)
         }
         isSearchControllerPresented = true
     }
     func willDismissSearchController(_ searchController: UISearchController) {
-        initiateDataUpdater()
+        viewModel.initiateDataUpdater()
         self.panel?.show(animated: true)
         updateTableViewBottomOffset(avoidFloatingPanel: true)
         isSearchControllerPresented = false
@@ -297,7 +258,6 @@ extension WatchListViewController: UISearchControllerDelegate {
 }
 
 extension WatchListViewController: UISearchResultsUpdating {
-    
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text,
               let resultVC = searchController.searchResultsController
@@ -337,13 +297,11 @@ extension WatchListViewController: UISearchResultsUpdating {
             }
         }
     }
-    
 }
 
 // MARK: - Search Result VC Delegate
 
 extension WatchListViewController: SearchResultViewControllerDelegate {
-    
     func didSelectSearchResult(_ searchResult: SearchResult) {
         // Present stock details VC for the selected stock.
         navigationItem.searchController?.searchBar.resignFirstResponder()
@@ -353,17 +311,16 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
             let symbol = searchResult.symbol
             var stockData = StockData(symbol: symbol)
             var isDataCached = false
-            if let cachedData = stocksData.first(where: { $0.symbol == symbol }) {
+            if let cachedData = viewModel.stocksData.first(where: { $0.symbol == symbol }) {
                 stockData = cachedData
                 isDataCached = true
             }
             let vc = StockDetailsViewController(
                 stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
-                lastQuoteDataUpdatedTime: isDataCached ? lastQuoteDataUpdatedTime : 0,
-                lastChartDataUpdatedTime: isDataCached ? lastChartDataUpdatedTime : 0
+                lastQuoteDataUpdatedTime: isDataCached ? viewModel.lastQuoteDataUpdatedTime : 0,
+                lastChartDataUpdatedTime: isDataCached ? viewModel.lastChartDataUpdatedTime : 0
             )
-            vc.delegate = self
             let navVC = UINavigationController(rootViewController: vc)
             present(navVC, animated: true, completion: nil)
         }
@@ -376,7 +333,6 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
             searchBar.resignFirstResponder()
         }
     }
-    
 }
 
 // MARK: - Floating Panel Delegate
@@ -390,9 +346,8 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
 // MARK: - TableView Data Source & Delegate
 
 extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return stocksData.count
+        return viewModel.stocksData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -402,7 +357,9 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         ) as? WatchListTableViewCell else {
             fatalError()
         }
-        cell.configure(with: stocksData[indexPath.row], showChartAxis: false, onEditing: tableView.isEditing)
+        cell.configure(with: viewModel.stocksData[indexPath.row],
+                       showChartAxis: false,
+                       onEditing: tableView.isEditing)
         return cell
     }
     
@@ -415,15 +372,15 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        stocksData.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+        viewModel.stocksData.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             tableView.performBatchUpdates {
                 let index = indexPath.row
-                let symbol = stocksData[index].symbol
-                stocksData.remove(at: index)
+                let symbol = viewModel.stocksData[index].symbol
+                viewModel.stocksData.remove(at: index)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
                 persistenceManager.watchlist[symbol] = nil
             }
@@ -435,19 +392,18 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
     ///   - tableView: TableView used to layout the cells containing each company's data.
     ///   - indexPath: IndexPath pointing to the selected tableView row.
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        invalidateDataUpdater()
+        viewModel.invalidateDataUpdater()
         tableView.deselectRow(at: indexPath, animated: true)
         HapticsManager().vibrateForSelection()
         
         // Present stock details view controller initialized with cached stock data.
-        let data = stocksData[indexPath.row]
+        let data = viewModel.stocksData[indexPath.row]
         let vc = StockDetailsViewController(
             stockData: data,
             companyName: data.companyName,
-            lastQuoteDataUpdatedTime: lastQuoteDataUpdatedTime,
-            lastChartDataUpdatedTime: lastChartDataUpdatedTime
+            lastQuoteDataUpdatedTime: viewModel.lastQuoteDataUpdatedTime,
+            lastChartDataUpdatedTime: viewModel.lastChartDataUpdatedTime
         )
-        vc.delegate = self
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true, completion: nil)
     }
@@ -469,69 +425,6 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         if scrollView.contentOffset.y > self.lastContentOffset {
             if panel.state == .full || panel.state == .half {
                 panel.move(to: .tip, animated: true)
-            }
-        }
-    }
-}
-
-// MARK: - Data Updating Methods
-
-extension WatchListViewController {
-    /// Update any data in the watchlist if its quote time is before the market closing time.
-    private func updateQuoteData() {
-        lastQuoteDataUpdatedTime = Date().timeIntervalSince1970
-        stocksData.forEach {
-            let symbol = $0.symbol
-            APICaller().fetchStockQuote(for: symbol) { [unowned self] result in
-                switch result {
-                case .success(let quoteData):
-                    // Make sure cached data with the symbol value still exists.
-                    guard let index = stocksData.firstIndex(where: { $0.symbol == symbol }) else {
-                        print("Data updating is aborted since no data with symbol \(symbol) is stored.")
-                        return
-                    }
-                    // Update cached data and tableView cell.
-                    stocksData[index].quote = quoteData
-                    let indexPath = IndexPath(row: index, section: 0)
-                    DispatchQueue.main.async {
-                        if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
-                            cell.configure(with: stocksData[index],
-                                           showChartAxis: false,
-                                           onEditing: tableView.isEditing)
-                        }
-                    }
-                case .failure(let error):
-                    print("Failed to fetch quote data of stock \(symbol):\n\(error)")
-                }
-            }
-        }
-    }
-    
-    private func updateChartData() {
-        lastChartDataUpdatedTime = Date().timeIntervalSince1970
-        stocksData.forEach {
-            let symbol = $0.symbol
-            APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [unowned self] result in
-                switch result {
-                case .success(let candlesResponse):
-                    // Make sure cached data with the symbol value still exists.
-                    guard let index = stocksData.firstIndex(where: { $0.symbol == symbol }) else {
-                        print("Data updating is aborted since no data with symbol \(symbol) is stored.")
-                        return
-                    }
-                    // Update cached data and tableView cell.
-                    stocksData[index].priceHistory = candlesResponse.priceHistory
-                    let indexPath = IndexPath(row: index, section: 0)
-                    DispatchQueue.main.async {
-                        if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
-                            cell.configure(with: stocksData[index],
-                                           showChartAxis: false,
-                                           onEditing: tableView.isEditing)
-                        }
-                    }
-                case .failure(let error):
-                    print("Failed to fetch price history data of stock \(symbol):\n\(error)")
-                }
             }
         }
     }
