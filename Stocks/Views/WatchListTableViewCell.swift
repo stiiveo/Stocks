@@ -102,18 +102,18 @@ class WatchListTableViewCell: UITableViewCell {
     
     // MARK: - Public
     
-    func configure(with stockData: StockData, showChartAxis: Bool, onEditing: Bool) {
+    func configure(with stockData: StockData, showChartAxis: Bool, isEditing: Bool) {
         symbolLabel.text = stockData.symbol
         nameLabel.text = stockData.companyName
-        priceLabel.text = stockData.quote?.current.stringFormatted(by: .decimalFormatter) ?? "–"
-        priceChangeButton.setTitle(stockData.quote?.changePercentage.signedPercentageString() ?? "––", for: .normal)
+        priceLabel.text = stockData.quote?.current.stringFormatted(by: .decimalFormatter) ?? String.noDataExpression
+        priceChangeButton.setTitle(stockData.quote?.changePercentage.signedPercentageString() ?? String.noDataExpression, for: .normal)
         priceChangeButton.backgroundColor = stockData.quote?.changeColor ?? .stockPriceUp
         chartView.configure(with: .init(data: stockData.priceHistory,
                                         previousClose: stockData.quote?.prevClose,
                                         highestClose: stockData.quote?.high,
                                         lowestClose: stockData.quote?.low,
                                         showAxis: showChartAxis))
-        if onEditing {
+        if isEditing {
             // Hide chart and price stack view.
             self.priceStockViewTrailingConstraint.constant = 120
             self.priceStackView.alpha = 0

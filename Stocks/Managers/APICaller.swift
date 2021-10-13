@@ -53,11 +53,11 @@ struct APICaller {
     }
     
     enum NewsType {
-        case topStories, company(symbol: String)
+        case topStories, company(_ symbol: String)
     }
     
     func fetchNews(
-        for type: NewsType,
+        type: NewsType,
         completion: @escaping (Result<[NewsStory], Error>) -> Void
     ) {
         switch type {

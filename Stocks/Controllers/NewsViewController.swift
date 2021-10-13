@@ -46,7 +46,7 @@ class NewsViewController: UIViewController {
     
     private func fetchNews() {
         DispatchQueue.global(qos: .userInteractive).async {
-            APICaller().fetchNews(for: .topStories) { [weak self] result in
+            APICaller().fetchNews(type: .topStories) { [weak self] result in
                 switch result {
                 case .success(let stories):
                     self?.stories = stories

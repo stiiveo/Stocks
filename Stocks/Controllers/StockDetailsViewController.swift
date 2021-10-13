@@ -11,34 +11,9 @@ import SnapKit
 
 class StockDetailsViewController: UIViewController {
 
-    // MARK: - Properties
+    private let viewModel: StockDetailsViewControllerViewModel
     
-    private var stockData: StockData
-    private var companyName: String
-    
-    private var metrics: Metrics?
-    private var stories: [NewsStory] = []
-    
-    var symbol: String {
-        return stockData.symbol
-    }
-    
-    // Settings on the minimum interval of the data updating.
-    // Note: Setting these values too small yields little benefit
-    // and could consumes the limited quotas of api calls quickly
-    // since there's quite big interval between each data provided
-    // by Finnhub.
-    private let quoteUpdatingInterval: TimeInterval = 30
-    private let chartUpdatingInterval: TimeInterval = 60
-    
-    private let newsLoadingIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView()
-        indicator.hidesWhenStopped = true
-        return indicator
-    }()
-    
-    // MARK: - UI Properties
-    
+    // UI Properties
     private lazy var headerView = StockDetailHeaderView()
     
     private let tableView: UITableView = {
@@ -49,19 +24,16 @@ class StockDetailsViewController: UIViewController {
                        forCellReuseIdentifier: NewsStoryTableViewCell.identifier)
         return table
     }()
-
-    // MARK: - Init
-
-    init(
-        stockData: StockData,
-        companyName: String,
-        lastQuoteDataUpdatedTime: TimeInterval,
-        lastChartDataUpdatedTime: TimeInterval
-    ) {
-        self.stockData = stockData
-        self.companyName = companyName
-        self.lastQuoteDataUpdatedTime = lastQuoteDataUpdatedTime
-        self.lastChartDataUpdatedTime = lastChartDataUpdatedTime
+    
+    private let newsLoadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
+    // Init
+    init(viewModel: StockDetailsViewControllerViewModel.ViewModel) {
+        self.viewModel = .init(viewModel: viewModel)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -73,23 +45,27 @@ class StockDetailsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = companyName
+        viewModel.delegate = self
+        
+        self.title = viewModel.companyName
         view.backgroundColor = .systemBackground
         configureCloseButton()
         configureHeaderView()
         configureTableView()
-        updateOutdatedData()
-        initiateDataUpdater()
-        fetchMetricsData()
-        fetchNews()
-        observeNotifications()
         configureNewsLoadingIndicator()
+        
+        viewModel.updateOutdatedData()
+        viewModel.initiateDataUpdater()
+        viewModel.fetchMetricsData()
+        viewModel.fetchNews()
+        
+        observeNotifications()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
-        dataUpdateTimer?.invalidate()
+        viewModel.dataUpdateTimer?.invalidate()
         NotificationCenter.default.post(name: .didDismissStockDetailsViewController, object: nil)
     }
     
@@ -102,36 +78,6 @@ class StockDetailsViewController: UIViewController {
             height: 20
         )
         newsLoadingIndicator.startAnimating()
-    }
-
-    // MARK: - Data Update Operations
-    
-    private var dataUpdateTimer: Timer?
-    private var lastQuoteDataUpdatedTime: TimeInterval = 0
-    private var lastChartDataUpdatedTime: TimeInterval = 0
-    
-    private func initiateDataUpdater() {
-        dataUpdateTimer?.invalidate()
-        dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) {
-            [weak self] _ in
-            self?.updateOutdatedData()
-        }
-    }
-    
-    private func updateOutdatedData() {
-        let currentTime = Date().timeIntervalSince1970
-        let timeSinceQuoteUpdated = currentTime - lastQuoteDataUpdatedTime
-        let timeSinceChartUpdated = currentTime - lastChartDataUpdatedTime
-        
-        if timeSinceQuoteUpdated >= quoteUpdatingInterval &&
-            timeSinceChartUpdated >= chartUpdatingInterval {
-            updateQuoteData()
-            updateChartData()
-        } else if timeSinceQuoteUpdated >= quoteUpdatingInterval {
-            updateQuoteData()
-        } else if timeSinceChartUpdated >= chartUpdatingInterval {
-            updateChartData()
-        }
     }
     
     // MARK: - UI Setting
@@ -166,72 +112,8 @@ class StockDetailsViewController: UIViewController {
     }
     
     private func refreshHeaderView() {
-        headerView.configure(stockData: stockData, metricsData: metrics)
-    }
-    
-    // MARK: - Data Fetching
-    
-    private func updateQuoteData() {
-        lastQuoteDataUpdatedTime = Date().timeIntervalSince1970
-        APICaller().fetchStockQuote(for: symbol) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let quoteData):
-                self.stockData.quote = quoteData
-                DispatchQueue.main.async {
-                    self.refreshHeaderView()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
-
-    private func updateChartData() {
-        lastChartDataUpdatedTime = Date().timeIntervalSince1970
-        APICaller().fetchPriceHistory(symbol, timeSpan: .day) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let response):
-                self.stockData.priceHistory = response.priceHistory
-                DispatchQueue.main.async {
-                    self.refreshHeaderView()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
-
-    private func fetchMetricsData() {
-        APICaller().fetchStockMetrics(symbol: symbol) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let metricsResponse):
-                self.metrics = metricsResponse.metric
-                DispatchQueue.main.async {
-                    self.refreshHeaderView()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
-    }
-
-    private func fetchNews() {
-        APICaller().fetchNews(for: .company(symbol: symbol)) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let stories):
-                DispatchQueue.main.async {
-                    self.newsLoadingIndicator.stopAnimating()
-                    self.stories = stories
-                    self.tableView.reloadData()
-                }
-            case .failure(let error):
-                print(error)
-            }
-        }
+        headerView.configure(stockData: viewModel.stockData,
+                             metricsData: viewModel.metrics)
     }
     
     // MARK: - Selector Operations
@@ -243,8 +125,8 @@ class StockDetailsViewController: UIViewController {
     
     @objc private func addStockToWatchlist() {
         HapticsManager().vibrate(for: .success)
-        PersistenceManager.shared.watchlist[symbol] = companyName
-        let dataDict = ["data": stockData]
+        PersistenceManager.shared.watchlist[viewModel.symbol] = viewModel.companyName
+        let dataDict = ["data": viewModel.stockData]
         NotificationCenter.default.post(
             name: .didAddNewStockData,
             object: nil,
@@ -280,7 +162,7 @@ class StockDetailsViewController: UIViewController {
 extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return stories.count
+        return viewModel.stories.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -291,14 +173,31 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
             fatalError()
         }
         cell.reset()
-        cell.configure(with: .init(news: stories[indexPath.row]))
+        cell.configure(with: .init(news: viewModel.stories[indexPath.row]))
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let url = URL(string: stories[indexPath.row].url) else { return }
+        guard let url = URL(string: viewModel.stories[indexPath.row].url) else { return }
         HapticsManager().vibrateForSelection()
         open(url: url, withPresentationStyle: .overFullScreen)
+    }
+}
+
+// MARK: - View Model Delegate Methods
+
+extension StockDetailsViewController: StockDetailsViewControllerViewModelDelegate {
+    func didUpdateStockData() {
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshHeaderView()
+        }
+    }
+    
+    func didUpdateNewsData() {
+        DispatchQueue.main.async { [weak self] in
+            self?.newsLoadingIndicator.stopAnimating()
+            self?.tableView.reloadData()
+        }
     }
 }

@@ -222,7 +222,7 @@ extension WatchListViewController: WatchlistViewControllerViewModelDelegate {
             if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
                 cell.configure(with: viewModel.stocksData[index],
                                showChartAxis: false,
-                               onEditing: tableView.isEditing)
+                               isEditing: tableView.isEditing)
             }
         }
     }
@@ -315,11 +315,11 @@ extension WatchListViewController: SearchResultViewControllerDelegate {
                 stockData = cachedData
                 isDataCached = true
             }
-            let vc = StockDetailsViewController(
+            let vc = StockDetailsViewController(viewModel: .init(
                 stockData: stockData,
                 companyName: searchResult.description.localizedCapitalized,
                 lastQuoteDataUpdatedTime: isDataCached ? viewModel.lastQuoteDataUpdatedTime : 0,
-                lastChartDataUpdatedTime: isDataCached ? viewModel.lastChartDataUpdatedTime : 0
+                lastChartDataUpdatedTime: isDataCached ? viewModel.lastChartDataUpdatedTime : 0)
             )
             let navVC = UINavigationController(rootViewController: vc)
             present(navVC, animated: true, completion: nil)
@@ -359,7 +359,7 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         }
         cell.configure(with: viewModel.stocksData[indexPath.row],
                        showChartAxis: false,
-                       onEditing: tableView.isEditing)
+                       isEditing: tableView.isEditing)
         return cell
     }
     
@@ -398,11 +398,11 @@ extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Present stock details view controller initialized with cached stock data.
         let data = viewModel.stocksData[indexPath.row]
-        let vc = StockDetailsViewController(
+        let vc = StockDetailsViewController(viewModel: .init(
             stockData: data,
             companyName: data.companyName,
             lastQuoteDataUpdatedTime: viewModel.lastQuoteDataUpdatedTime,
-            lastChartDataUpdatedTime: viewModel.lastChartDataUpdatedTime
+            lastChartDataUpdatedTime: viewModel.lastChartDataUpdatedTime)
         )
         let navVC = UINavigationController(rootViewController: vc)
         present(navVC, animated: true, completion: nil)
