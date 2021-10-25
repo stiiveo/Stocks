@@ -188,13 +188,13 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
 // MARK: - View Model Delegate Methods
 
 extension StockDetailsViewController: StockDetailsViewControllerViewModelDelegate {
-    func didUpdateStockData() {
+    func didUpdateStockData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel) {
         DispatchQueue.main.async { [weak self] in
             self?.refreshHeaderView()
         }
     }
     
-    func didUpdateNewsData() {
+    func didUpdateNewsData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel) {
         DispatchQueue.main.async { [weak self] in
             self?.newsLoadingIndicator.stopAnimating()
             self?.tableView.reloadData()

@@ -11,13 +11,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     /// Main application window.
     var window: UIWindow?
-    private let watchlistVC = WatchListViewController.shared
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
-        let navVC = UINavigationController(rootViewController: watchlistVC)
+        let navVC = UINavigationController(rootViewController: WatchlistViewController.shared)
         window.rootViewController = navVC
         window.makeKeyAndVisible()
         
@@ -25,11 +24,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        WatchlistViewControllerViewModel.shared.initiateDataUpdater()
+        WatchlistViewController.shared.viewModel.initiateDataUpdater()
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        WatchlistViewControllerViewModel.shared.invalidateDataUpdater()
+        WatchlistViewController.shared.viewModel.invalidateDataUpdater()
     }
 
 }

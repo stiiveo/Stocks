@@ -1,5 +1,5 @@
 //
-//  WatchListViewController.swift
+//  WatchlistViewController.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/7/9.
@@ -10,10 +10,10 @@ import FloatingPanel
 import SafariServices
 import SnapKit
 
-final class WatchListViewController: UIViewController {
+final class WatchlistViewController: UIViewController {
     
-    static let shared = WatchListViewController()
-    let viewModel = WatchlistViewControllerViewModel.shared
+    static let shared = WatchlistViewController()
+    let viewModel = WatchlistViewControllerViewModel()
     
     // UI Components
     private let tableView: UITableView = {
@@ -202,10 +202,86 @@ final class WatchListViewController: UIViewController {
 
 }
 
+extension WatchlistViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.stocksData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: WatchListTableViewCell.identifier,
+            for: indexPath
+        ) as? WatchListTableViewCell else {
+            fatalError()
+        }
+        cell.configure(with: viewModel.stocksData[indexPath.row],
+                       showChartAxis: false,
+                       isEditing: tableView.isEditing)
+        return cell
+    }
+}
+
+extension WatchlistViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        viewModel.stocksData.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            tableView.performBatchUpdates {
+                let index = indexPath.row
+                let symbol = viewModel.stocksData[index].symbol
+                viewModel.stocksData.remove(at: index)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                PersistenceManager.shared.watchlist[symbol] = nil
+            }
+        }
+    }
+    
+    /// This method is called if the user selects one of the tableView cells.
+    /// - Parameters:
+    ///   - tableView: TableView used to layout the cells containing each company's data.
+    ///   - indexPath: IndexPath pointing to the selected tableView row.
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        viewModel.invalidateDataUpdater()
+        tableView.deselectRow(at: indexPath, animated: true)
+        HapticsManager().vibrateForSelection()
+        
+        // Present stock details view controller initialized with cached stock data.
+        let data = viewModel.stocksData[indexPath.row]
+        let vc = StockDetailsViewController(viewModel: .init(
+            stockData: data,
+            companyName: data.companyName,
+            lastQuoteDataUpdatedTime: viewModel.lastQuoteDataUpdatedTime,
+            lastChartDataUpdatedTime: viewModel.lastChartDataUpdatedTime)
+        )
+        let navVC = UINavigationController(rootViewController: vc)
+        present(navVC, animated: true, completion: nil)
+    }
+}
+
+
 // MARK: - View Model Delegate
 
-extension WatchListViewController: WatchlistViewControllerViewModelDelegate {
-    func didUpdateViewModel(at index: Int) {
+extension WatchlistViewController: WatchlistViewControllerViewModelDelegate {
+    func watchlistViewControllerViewModel(_ watchlistViewControllerViewModel: WatchlistViewControllerViewModel, didAddViewModelAt index: Int) {
+        DispatchQueue.main.async { [unowned self] in
+            tableView.insertRows(
+                at: [IndexPath(row: index, section: 0)],
+                with: .automatic
+            )
+        }
+    }
+    
+    func watchlistViewControllerViewModel(_ watchlistViewControllerViewModel: WatchlistViewControllerViewModel, didUpdateViewModelAt index: Int) {
         let indexPath = IndexPath(row: index, section: 0)
         DispatchQueue.main.async { [unowned self] in
             if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
@@ -215,20 +291,11 @@ extension WatchListViewController: WatchlistViewControllerViewModelDelegate {
             }
         }
     }
-    
-    func didAddViewModel(at index: Int) {
-        DispatchQueue.main.async { [unowned self] in
-            tableView.insertRows(
-                at: [IndexPath(row: index, section: 0)],
-                with: .automatic
-            )
-        }
-    }
 }
 
 // MARK: - Search Controller Delegate
 
-extension WatchListViewController: UISearchControllerDelegate {
+extension WatchlistViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
         viewModel.invalidateDataUpdater()
         isSearchControllerPresented = true
@@ -239,7 +306,7 @@ extension WatchListViewController: UISearchControllerDelegate {
     }
 }
 
-extension WatchListViewController: UISearchResultsUpdating {
+extension WatchlistViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text,
               let resultVC = searchController.searchResultsController
@@ -281,117 +348,17 @@ extension WatchListViewController: UISearchResultsUpdating {
     }
 }
 
-// MARK: - Search Result VC Delegate
-
-extension WatchListViewController: SearchResultViewControllerDelegate {
-    func didSelectSearchResult(_ searchResult: SearchResult) {
-        // Present stock details VC for the selected stock.
-        navigationItem.searchController?.searchBar.resignFirstResponder()
-        HapticsManager().vibrateForSelection()
-        
-        DispatchQueue.main.async { [unowned self] in
-            let symbol = searchResult.symbol
-            var stockData = StockData(symbol: symbol)
-            var isDataCached = false
-            if let cachedData = viewModel.stocksData.first(where: { $0.symbol == symbol }) {
-                stockData = cachedData
-                isDataCached = true
-            }
-            let vc = StockDetailsViewController(viewModel: .init(
-                stockData: stockData,
-                companyName: searchResult.description.localizedCapitalized,
-                lastQuoteDataUpdatedTime: isDataCached ? viewModel.lastQuoteDataUpdatedTime : 0,
-                lastChartDataUpdatedTime: isDataCached ? viewModel.lastChartDataUpdatedTime : 0)
-            )
-            let navVC = UINavigationController(rootViewController: vc)
-            present(navVC, animated: true, completion: nil)
-        }
-    }
-    
-    func searchResultScrollViewWillBeginDragging(scrollView: UIScrollView) {
-        // Dismiss the keyboard when the result table view is about to be scrolled.
-        if let searchBar = navigationItem.searchController?.searchBar,
-           searchBar.isFirstResponder {
-            searchBar.resignFirstResponder()
-        }
-    }
-}
-
 // MARK: - Floating Panel Delegate
 
-extension WatchListViewController: FloatingPanelControllerDelegate {
+extension WatchlistViewController: FloatingPanelControllerDelegate {
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
         navigationItem.titleView?.isHidden = fpc.state == .full
     }
 }
 
-// MARK: - TableView Data Source & Delegate
+// MARK: - ScrollView Delegate Methods
 
-extension WatchListViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.stocksData.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: WatchListTableViewCell.identifier,
-            for: indexPath
-        ) as? WatchListTableViewCell else {
-            fatalError()
-        }
-        cell.configure(with: viewModel.stocksData[indexPath.row],
-                       showChartAxis: false,
-                       isEditing: tableView.isEditing)
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
-    
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        viewModel.stocksData.move(from: sourceIndexPath.row, to: destinationIndexPath.row)
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            tableView.performBatchUpdates {
-                let index = indexPath.row
-                let symbol = viewModel.stocksData[index].symbol
-                viewModel.stocksData.remove(at: index)
-                tableView.deleteRows(at: [indexPath], with: .automatic)
-                persistenceManager.watchlist[symbol] = nil
-            }
-        }
-    }
-    
-    /// This method is called if the user selects one of the tableView cells.
-    /// - Parameters:
-    ///   - tableView: TableView used to layout the cells containing each company's data.
-    ///   - indexPath: IndexPath pointing to the selected tableView row.
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        viewModel.invalidateDataUpdater()
-        tableView.deselectRow(at: indexPath, animated: true)
-        HapticsManager().vibrateForSelection()
-        
-        // Present stock details view controller initialized with cached stock data.
-        let data = viewModel.stocksData[indexPath.row]
-        let vc = StockDetailsViewController(viewModel: .init(
-            stockData: data,
-            companyName: data.companyName,
-            lastQuoteDataUpdatedTime: viewModel.lastQuoteDataUpdatedTime,
-            lastChartDataUpdatedTime: viewModel.lastChartDataUpdatedTime)
-        )
-        let navVC = UINavigationController(rootViewController: vc)
-        present(navVC, animated: true, completion: nil)
-    }
-    
-    // MARK: - ScrollView Delegate Methods
-    
+extension WatchlistViewController {
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         self.lastContentOffset = scrollView.contentOffset.y
         

@@ -8,8 +8,8 @@
 import Foundation
 
 protocol StockDetailsViewControllerViewModelDelegate: AnyObject {
-    func didUpdateStockData()
-    func didUpdateNewsData()
+    func didUpdateStockData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel)
+    func didUpdateNewsData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel)
 }
 
 class StockDetailsViewControllerViewModel {
@@ -24,18 +24,20 @@ class StockDetailsViewControllerViewModel {
     // Property
     private(set) var stockData: StockData {
         didSet {
-            delegate?.didUpdateStockData()
+            delegate?.didUpdateStockData(self)
         }
     }
     private(set) var companyName: String
+    
     private(set) var metrics: Metrics? {
         didSet {
-            delegate?.didUpdateStockData()
+            delegate?.didUpdateStockData(self)
         }
     }
+    
     private(set) var stories: [NewsStory] = [] {
         didSet {
-            delegate?.didUpdateNewsData()
+            delegate?.didUpdateNewsData(self)
         }
     }
     

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B93C26986C8000F4AFD1 /* AppDelegate.swift */; };
 		8F11B93F26986C8000F4AFD1 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B93E26986C8000F4AFD1 /* SceneDelegate.swift */; };
-		8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */; };
+		8F11B94126986C8000F4AFD1 /* WatchlistViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B94026986C8000F4AFD1 /* WatchlistViewController.swift */; };
 		8F11B94626986C8200F4AFD1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8F11B94526986C8200F4AFD1 /* Assets.xcassets */; };
 		8F11B94926986C8200F4AFD1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8F11B94726986C8200F4AFD1 /* LaunchScreen.storyboard */; };
 		8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F11B95526986DDA00F4AFD1 /* NewsViewController.swift */; };
@@ -35,6 +35,7 @@
 		8F7D594327031148004A3E87 /* Overview.png in Resources */ = {isa = PBXBuildFile; fileRef = 8F7D594227031148004A3E87 /* Overview.png */; };
 		8F7DDD3427169678004F47F5 /* WatchlistViewControllerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7DDD3327169678004F47F5 /* WatchlistViewControllerViewModel.swift */; };
 		8F7DDD362716C5D4004F47F5 /* StockDetailsViewControllerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7DDD352716C5D4004F47F5 /* StockDetailsViewControllerViewModel.swift */; };
+		8F7DDDBF271C230B004F47F5 /* WatchlistViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7DDDBE271C230B004F47F5 /* WatchlistViewController+Extension.swift */; };
 		8F7EECAF26E24ECE002815D3 /* StockMetricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7EECAE26E24ECE002815D3 /* StockMetricsView.swift */; };
 		8F878BFC269E9B8D00ACE8AF /* StockQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */; };
 		8F878BFE269F11B200ACE8AF /* StockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F878BFD269F11B200ACE8AF /* StockData.swift */; };
@@ -73,7 +74,7 @@
 		8F11B93926986C8000F4AFD1 /* U.S. Stocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "U.S. Stocks.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F11B93C26986C8000F4AFD1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8F11B93E26986C8000F4AFD1 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListViewController.swift; sourceTree = "<group>"; };
+		8F11B94026986C8000F4AFD1 /* WatchlistViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistViewController.swift; sourceTree = "<group>"; };
 		8F11B94526986C8200F4AFD1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8F11B94826986C8200F4AFD1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8F11B94A26986C8200F4AFD1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -98,6 +99,7 @@
 		8F7D594227031148004A3E87 /* Overview.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Overview.png; sourceTree = "<group>"; };
 		8F7DDD3327169678004F47F5 /* WatchlistViewControllerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistViewControllerViewModel.swift; sourceTree = "<group>"; };
 		8F7DDD352716C5D4004F47F5 /* StockDetailsViewControllerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockDetailsViewControllerViewModel.swift; sourceTree = "<group>"; };
+		8F7DDDBE271C230B004F47F5 /* WatchlistViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WatchlistViewController+Extension.swift"; sourceTree = "<group>"; };
 		8F7EECAE26E24ECE002815D3 /* StockMetricsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockMetricsView.swift; sourceTree = "<group>"; };
 		8F878BFB269E9B8D00ACE8AF /* StockQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockQuote.swift; sourceTree = "<group>"; };
 		8F878BFD269F11B200ACE8AF /* StockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockData.swift; sourceTree = "<group>"; };
@@ -217,7 +219,8 @@
 		8F11B95226986D0600F4AFD1 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				8F11B94026986C8000F4AFD1 /* WatchListViewController.swift */,
+				8F11B94026986C8000F4AFD1 /* WatchlistViewController.swift */,
+				8F7DDDBE271C230B004F47F5 /* WatchlistViewController+Extension.swift */,
 				8F11B95526986DDA00F4AFD1 /* NewsViewController.swift */,
 				8F11B95726986DE700F4AFD1 /* SearchResultViewController.swift */,
 				8F11B95926986DF000F4AFD1 /* StockDetailsViewController.swift */,
@@ -427,7 +430,7 @@
 				8F11B9642699485F00F4AFD1 /* SearchResultTableViewCell.swift in Sources */,
 				8F11B95A26986DF000F4AFD1 /* StockDetailsViewController.swift in Sources */,
 				8FEFA99C26D900BE0083931E /* CalendarDate.swift in Sources */,
-				8F11B94126986C8000F4AFD1 /* WatchListViewController.swift in Sources */,
+				8F11B94126986C8000F4AFD1 /* WatchlistViewController.swift in Sources */,
 				8FCE286C26F1CD6C00E0E42B /* ArrayExtensions.swift in Sources */,
 				8F11B95E269871EA00F4AFD1 /* PersistenceManager.swift in Sources */,
 				8F11B95626986DDA00F4AFD1 /* NewsViewController.swift in Sources */,
@@ -445,6 +448,7 @@
 				8F65B6B6269AE1B8001FC19D /* NewsHeaderView.swift in Sources */,
 				8F11B95826986DE700F4AFD1 /* SearchResultViewController.swift in Sources */,
 				8FA22B34270576AA00C64940 /* DiskPersisted.swift in Sources */,
+				8F7DDDBF271C230B004F47F5 /* WatchlistViewController+Extension.swift in Sources */,
 				8F11B93D26986C8000F4AFD1 /* AppDelegate.swift in Sources */,
 				8F7DDD3427169678004F47F5 /* WatchlistViewControllerViewModel.swift in Sources */,
 				8FB254C0269D7EC5004FF1C1 /* WatchListTableViewCell.swift in Sources */,

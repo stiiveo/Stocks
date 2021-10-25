@@ -8,12 +8,12 @@
 import Foundation
 
 protocol WatchlistViewControllerViewModelDelegate: AnyObject {
-    func didAddViewModel(at index: Int)
-    func didUpdateViewModel(at index: Int)
+    func watchlistViewControllerViewModel(_ watchlistViewControllerViewModel: WatchlistViewControllerViewModel, didAddViewModelAt index: Int)
+    func watchlistViewControllerViewModel(_ watchlistViewControllerViewModel: WatchlistViewControllerViewModel, didUpdateViewModelAt index: Int)
 }
 
 class WatchlistViewControllerViewModel {
-    static let shared = WatchlistViewControllerViewModel()
+    
     weak var delegate: WatchlistViewControllerViewModelDelegate?
     
     @DiskPersisted(fileURL: PersistenceManager.persistedDataUrl)
@@ -32,7 +32,7 @@ class WatchlistViewControllerViewModel {
     private(set) var lastQuoteDataUpdatedTime: TimeInterval = 0
     private(set) var lastChartDataUpdatedTime: TimeInterval = 0
     
-    private init() {
+    init() {
         observeNotifications()
     }
     
@@ -53,7 +53,7 @@ class WatchlistViewControllerViewModel {
     @objc private func addNewStockData(_ notification: NSNotification) {
         if let data = notification.userInfo?["data"] as? StockData {
             stocksData.append(data)
-            delegate?.didAddViewModel(at: stocksData.count - 1)
+            delegate?.watchlistViewControllerViewModel(self, didAddViewModelAt: stocksData.count - 1)
         }
     }
     
@@ -70,6 +70,10 @@ class WatchlistViewControllerViewModel {
     
     @objc private func liftDataUpdateSuspension() {
         isUpdateSuspended = false
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -119,7 +123,7 @@ extension WatchlistViewControllerViewModel {
                     }
                     // Update cached data and tableView cell.
                     stocksData[index].quote = quoteData
-                    delegate?.didUpdateViewModel(at: index)
+                    delegate?.watchlistViewControllerViewModel(self, didUpdateViewModelAt: index)
                 case .failure(let error):
                     print("Failed to fetch quote data of stock \(symbol):\n\(error)")
                 }
@@ -141,7 +145,7 @@ extension WatchlistViewControllerViewModel {
                     }
                     // Update cached data and tableView cell.
                     stocksData[index].priceHistory = candlesResponse.priceHistory
-                    delegate?.didUpdateViewModel(at: index)
+                    delegate?.watchlistViewControllerViewModel(self, didUpdateViewModelAt: index)
                 case .failure(let error):
                     print("Failed to fetch price history data of stock \(symbol):\n\(error)")
                 }
