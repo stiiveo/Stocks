@@ -180,6 +180,12 @@ final class WatchlistViewController: UIViewController {
             name: .didDismissStockDetailsViewController,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onNetworkIsAvailable),
+            name: .networkIsAvailable,
+            object: nil
+        )
     }
     
     @objc private func onApiLimitReached() {
@@ -194,6 +200,15 @@ final class WatchlistViewController: UIViewController {
         if let searchController = navigationItem.searchController,
            !searchController.isActive {
             viewModel.initiateDataUpdater()
+        }
+    }
+    
+    @objc private func onNetworkIsAvailable() {
+        DispatchQueue.main.async { [unowned self] in
+            if let searchController = navigationItem.searchController,
+               searchController.isActive {
+                updateSearchResults(for: searchController)
+            }
         }
     }
 
@@ -308,10 +323,15 @@ extension WatchlistViewController: UISearchResultsUpdating {
               let resultVC = searchController.searchResultsController
                 as? SearchResultViewController else { return }
         
+        guard NetworkMonitor.status == .available else {
+            resultVC.displayNoInternetMessage()
+            return
+        }
+        
         if query.trimmingCharacters(in: .whitespaces).isEmpty {
             prevSearchBarQuery = ""
             DispatchQueue.main.async {
-                resultVC.update([], from: query)
+                resultVC.update(with: [], from: query)
             }
             return
         }
@@ -331,11 +351,11 @@ extension WatchlistViewController: UISearchResultsUpdating {
                 switch result {
                 case .success(let response):
                     DispatchQueue.main.async {
-                        resultVC.update(response.result, from: query)
+                        resultVC.update(with: response.result, from: query)
                     }
                 case .failure(let error):
                     DispatchQueue.main.async {
-                        resultVC.update([], from: query)
+                        resultVC.update(with: [], from: query)
                     }
                     print("Failed to get valid search response: \(error)")
                 }

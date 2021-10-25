@@ -36,7 +36,7 @@ class NetworkMonitor {
         case .requiresConnection:
             NetworkMonitor.status = .unestablished
         @unknown default:
-            print("New network status is available but action to take is undetermined.")
+            print("New network status case is available but action to take is undetermined.")
             break
         }
     }

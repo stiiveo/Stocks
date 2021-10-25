@@ -29,7 +29,7 @@ class SearchResultViewController: UIViewController {
         return table
     }()
     
-    private let noResultHint: UILabel = {
+    private let messageLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -43,8 +43,8 @@ class SearchResultViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        setUpTable()
-        setUpNoResultHint()
+        configureTable()
+        configureMessageLabel()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -55,38 +55,54 @@ class SearchResultViewController: UIViewController {
     
     // MARK: - Private Methods
     
-    private func setUpTable() {
+    private func configureTable() {
         view.addSubview(tableView)
         tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
     }
     
-    private func setUpNoResultHint() {
-        view.addSubview(noResultHint)
-        noResultHint.translatesAutoresizingMaskIntoConstraints = false
+    private func configureMessageLabel() {
+        view.addSubview(messageLabel)
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            noResultHint.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 130),
-            noResultHint.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            noResultHint.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20)
+            messageLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 130),
+            messageLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            messageLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20)
         ])
     }
     
     // MARK: - Public Methods
     
-    public func update(_ results: [SearchResult], from query: String) {
+    public func update(with results: [SearchResult], from query: String) {
         self.results = results
         tableView.reloadData()
         if !results.isEmpty {
             // Scroll to the first row after data is reloaded.
             tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
-            noResultHint.isHidden = true
+            messageLabel.isHidden = true
         } else {
             // Display the hint text unless the query is empty.
-            noResultHint.text = query.isEmpty ? "" : #"No Result for "\#(query)""#
-            noResultHint.isHidden = query.isEmpty ? true : false
+            messageLabel.text = query.isEmpty ? "" : #"No Result for "\#(query)""#
+            messageLabel.isHidden = query.isEmpty ? true : false
         }
         tableView.isHidden = results.isEmpty
+    }
+    
+    public func displayNoInternetMessage() {
+        // Clear tableView if there's any result
+        results.removeAll()
+        tableView.reloadData()
+        
+        let titleAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .headline)]
+        let message = NSMutableAttributedString(string: "Unable to search\n", attributes: titleAttributes)
+        
+        let detailsAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .subheadline)]
+        let details = NSAttributedString(string: "U.S. Stocks is not connected to Internet. Please restore the connection to search.", attributes: detailsAttributes)
+        
+        message.append(details)
+        messageLabel.attributedText = message
+        messageLabel.isHidden = false
     }
 
 }
