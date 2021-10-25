@@ -22,7 +22,7 @@ final class WatchlistViewController: UIViewController {
                        forCellReuseIdentifier: WatchlistTableViewCell.identifier)
         return table
     }()
-    private var panel: FloatingPanelController?
+    private var newsPanel: FloatingPanelController?
     private lazy var footerView = WatchlistFooterView()
     
     // ScrollView Observing Properties
@@ -32,9 +32,6 @@ final class WatchlistViewController: UIViewController {
     // Timer Properties
     private var searchTimer: Timer?
     private var prevSearchBarQuery = ""
-    
-    // Search Controller State
-    private var isSearchControllerPresented = false
     
     // MARK: - Init
     
@@ -55,7 +52,7 @@ final class WatchlistViewController: UIViewController {
         configureNavigationBar()
         configureSearchController()
         configureTableView()
-        configureFloatingPanel()
+        configureNewsPanel()
         configureFooterView()
         
         if !persistenceManager.isOnboarded {
@@ -83,7 +80,7 @@ final class WatchlistViewController: UIViewController {
             }
             navigationItem.rightBarButtonItem?.title = "Done"
             navigationItem.rightBarButtonItem?.style = .done
-            panel?.hide(animated: true)
+            newsPanel?.hide(animated: true)
         } else {
             // Leave editing mode.
             tableView.setEditing(false, animated: true)
@@ -92,7 +89,7 @@ final class WatchlistViewController: UIViewController {
             }
             navigationItem.rightBarButtonItem?.title = "Edit"
             navigationItem.rightBarButtonItem?.style = .plain
-            panel?.show(animated: true)
+            newsPanel?.show(animated: true)
             viewModel.initiateDataUpdater()
         }
         
@@ -117,16 +114,16 @@ final class WatchlistViewController: UIViewController {
         }
     }
     
-    private func configureFloatingPanel() {
+    private func configureNewsPanel() {
         let vc = NewsViewController()
-        let panel = FloatingPanelController()
-        panel.layout = WatchlistFloatingPanelLayout()
-        panel.surfaceView.backgroundColor = .secondarySystemBackground
-        panel.set(contentViewController: vc)
-        panel.addPanel(toParent: self)
-        panel.delegate = self
-        panel.track(scrollView: vc.tableView)
-        self.panel = panel
+        let newsPanel = FloatingPanelController()
+        newsPanel.layout = WatchlistFloatingPanelLayout()
+        newsPanel.surfaceView.backgroundColor = .secondarySystemBackground
+        newsPanel.set(contentViewController: vc)
+        newsPanel.addPanel(toParent: self)
+        newsPanel.delegate = self
+        newsPanel.track(scrollView: vc.tableView)
+        self.newsPanel = newsPanel
     }
     
     private func configureNavigationBar() {
@@ -298,11 +295,10 @@ extension WatchlistViewController: WatchlistViewControllerViewModelDelegate {
 extension WatchlistViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
         viewModel.invalidateDataUpdater()
-        isSearchControllerPresented = true
+        newsPanel?.move(to: .tip, animated: true)
     }
     func willDismissSearchController(_ searchController: UISearchController) {
         viewModel.initiateDataUpdater()
-        isSearchControllerPresented = false
     }
 }
 
@@ -372,7 +368,7 @@ extension WatchlistViewController {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // Move the floating panel to the bottom when tableView is scrolled up.
-        guard let panel = panel else { return }
+        guard let panel = newsPanel else { return }
         if scrollView.contentOffset.y > self.lastContentOffset {
             if panel.state == .full || panel.state == .half {
                 panel.move(to: .tip, animated: true)
