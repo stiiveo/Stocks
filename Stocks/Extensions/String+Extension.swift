@@ -1,5 +1,5 @@
 //
-//  StringExtensions.swift
+//  String+Extension.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/9/21.

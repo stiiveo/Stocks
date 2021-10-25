@@ -1,5 +1,5 @@
 //
-//  ArrayExtensions.swift
+//  Array+Extension.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/9/15.

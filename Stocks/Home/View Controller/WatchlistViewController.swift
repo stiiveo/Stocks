@@ -18,8 +18,8 @@ final class WatchlistViewController: UIViewController {
     // UI Components
     private let tableView: UITableView = {
         let table = UITableView()
-        table.register(WatchListTableViewCell.self,
-                       forCellReuseIdentifier: WatchListTableViewCell.identifier)
+        table.register(WatchlistTableViewCell.self,
+                       forCellReuseIdentifier: WatchlistTableViewCell.identifier)
         return table
     }()
     private var panel: FloatingPanelController?
@@ -209,9 +209,9 @@ extension WatchlistViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: WatchListTableViewCell.identifier,
+            withIdentifier: WatchlistTableViewCell.identifier,
             for: indexPath
-        ) as? WatchListTableViewCell else {
+        ) as? WatchlistTableViewCell else {
             fatalError()
         }
         cell.configure(with: viewModel.stocksData[indexPath.row],
@@ -284,7 +284,7 @@ extension WatchlistViewController: WatchlistViewControllerViewModelDelegate {
     func watchlistViewControllerViewModel(_ watchlistViewControllerViewModel: WatchlistViewControllerViewModel, didUpdateViewModelAt index: Int) {
         let indexPath = IndexPath(row: index, section: 0)
         DispatchQueue.main.async { [unowned self] in
-            if let cell = tableView.cellForRow(at: indexPath) as? WatchListTableViewCell {
+            if let cell = tableView.cellForRow(at: indexPath) as? WatchlistTableViewCell {
                 cell.configure(with: viewModel.stocksData[index],
                                showChartAxis: false,
                                isEditing: tableView.isEditing)

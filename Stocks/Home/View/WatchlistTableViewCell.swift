@@ -1,5 +1,5 @@
 //
-//  WatchListTableViewCell.swift
+//  WatchlistTableViewCell.swift
 //  Stocks
 //
 //  Created by Jason Ou on 2021/7/13.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class WatchListTableViewCell: UITableViewCell {
+class WatchlistTableViewCell: UITableViewCell {
 
     static let identifier = "WatchListTableViewCell"
     
