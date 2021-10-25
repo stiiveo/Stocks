@@ -51,6 +51,7 @@
 		8F8EE97B26FDAD590067613A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8F8EE97A26FDAD590067613A /* SnapKit */; };
 		8FA0E9B926F9D3AA006BB9DD /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA0E9B826F9D3AA006BB9DD /* String+Extension.swift */; };
 		8FA22B34270576AA00C64940 /* DiskPersisted.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA22B33270576AA00C64940 /* DiskPersisted.swift */; };
+		8FAB1223272694D00025E85A /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FAB1222272694D00025E85A /* NetworkMonitor.swift */; };
 		8FB254BE269D31A1004FF1C1 /* PriceHistoryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BD269D31A1004FF1C1 /* PriceHistoryResponse.swift */; };
 		8FB254C0269D7EC5004FF1C1 /* WatchlistTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254BF269D7EC5004FF1C1 /* WatchlistTableViewCell.swift */; };
 		8FB254C2269D8254004FF1C1 /* StockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB254C1269D8254004FF1C1 /* StockChartView.swift */; };
@@ -116,6 +117,7 @@
 		8F89E46026D005DE002BD69E /* Calendar_Manager_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calendar_Manager_Tests.swift; sourceTree = "<group>"; };
 		8FA0E9B826F9D3AA006BB9DD /* String+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		8FA22B33270576AA00C64940 /* DiskPersisted.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskPersisted.swift; sourceTree = "<group>"; };
+		8FAB1222272694D00025E85A /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		8FB254BD269D31A1004FF1C1 /* PriceHistoryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceHistoryResponse.swift; sourceTree = "<group>"; };
 		8FB254BF269D7EC5004FF1C1 /* WatchlistTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistTableViewCell.swift; sourceTree = "<group>"; };
 		8FB254C1269D8254004FF1C1 /* StockChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockChartView.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 			isa = PBXGroup;
 			children = (
 				8FA22B362705AB9100C64940 /* Property Wrappers */,
+				8FAB1222272694D00025E85A /* NetworkMonitor.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -549,6 +552,7 @@
 				8F89E45F26CFD386002BD69E /* CalendarManager.swift in Sources */,
 				8F11B9642699485F00F4AFD1 /* SearchResultTableViewCell.swift in Sources */,
 				8F11B95A26986DF000F4AFD1 /* StockDetailsViewController.swift in Sources */,
+				8FAB1223272694D00025E85A /* NetworkMonitor.swift in Sources */,
 				8FEFA99C26D900BE0083931E /* CalendarDate.swift in Sources */,
 				8F11B94126986C8000F4AFD1 /* WatchlistViewController.swift in Sources */,
 				8FCE286C26F1CD6C00E0E42B /* Array+Extension.swift in Sources */,
