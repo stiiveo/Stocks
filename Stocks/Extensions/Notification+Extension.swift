@@ -14,4 +14,6 @@ extension Notification.Name {
     static let dataAccessDenied = Notification.Name("dataAccessDenied")
     static let didDismissStockDetailsViewController = Notification.Name("didDismissStockDetailsViewController")
     static let didAddNewStockData = Notification.Name("didAddNewStockData")
+    static let networkIsAvailable = Notification.Name("networkIsAvailable")
+    static let networkIsUnavailable = Notification.Name("networkIsUnavailable")
 }

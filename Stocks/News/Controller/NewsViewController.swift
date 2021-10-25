@@ -8,7 +8,7 @@
 import UIKit
 import SafariServices
 
-/// Controller used to present top and company news.
+/// Controller used to present market news.
 class NewsViewController: UIViewController {
     
     // MARK: - Properties
@@ -17,34 +17,52 @@ class NewsViewController: UIViewController {
     
     let tableView: UITableView = {
         let table = UITableView()
-        // Register cell, header
         table.register(NewsHeaderView.self, forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier)
         table.register(NewsStoryTableViewCell.self, forCellReuseIdentifier: NewsStoryTableViewCell.identifier)
         table.backgroundColor = .clear
         return table
     }()
     
+    private var headerView: NewsHeaderView!
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUpTable()
+        view.addSubview(tableView)
+        configureTableView()
         fetchNews()
+        observeNetworkStatus()
     }
     
-    // MARK: - Private Functions
+    private func observeNetworkStatus() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(displayNormalHeaderView),
+            name: .networkIsAvailable,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(displayNoInternetMessage),
+            name: .networkIsUnavailable,
+            object: nil
+        )
+    }
     
-    private func setUpTable() {
-        view.addSubview(tableView)
+    // MARK: - UI Configuration
+    
+    private func configureTableView() {
+        tableView.frame = view.bounds
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.frame = view.bounds
         if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0.0
+            tableView.sectionHeaderTopPadding = .zero
         }
+        headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView
     }
     
-    private func fetchNews() {
+    @objc private func fetchNews() {
         DispatchQueue.global(qos: .userInteractive).async {
             APICaller().fetchNews(type: .topStories) { [weak self] result in
                 switch result {
@@ -54,10 +72,28 @@ class NewsViewController: UIViewController {
                         self?.tableView.reloadData()
                     }
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    switch error {
+                    case let networkError as NetworkError:
+                        if networkError == .noConnection {
+                            self?.displayNoInternetMessage()
+                        }
+                    case let apiError as APIError:
+                        print("API error occurred:", apiError)
+                    default:
+                        print(error.localizedDescription)
+                    }
                 }
             }
         }
+    }
+    
+    @objc private func displayNoInternetMessage() {
+        headerView.status = .noInternetConnection
+    }
+    
+    @objc private func displayNormalHeaderView() {
+        headerView.status = .normal
+        fetchNews()
     }
 
 }
@@ -69,13 +105,8 @@ extension NewsViewController: UITableViewDelegate, UITableViewDataSource {
     // Header View Settings
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: NewsHeaderView.identifier) as? NewsHeaderView else {
-            return nil
-        }
-        header.reset()
-        header.configure(with: .init(title: "Top Stories")
-        )
-        return header
+        headerView.configure(with: .init(title: "Top Stories"))
+        return headerView
     }
     
     // Cells Settings

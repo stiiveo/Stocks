@@ -17,6 +17,13 @@ class NetworkMonitor {
     private(set) static var status: Status = .notAvailable {
         didSet {
             print("Network Status:", status)
+            if status == .available {
+                NotificationCenter.default.post(name: .networkIsAvailable, object: nil)
+            }
+            
+            if status == .notAvailable {
+                NotificationCenter.default.post(name: .networkIsUnavailable, object: nil)
+            }
         }
     }
     

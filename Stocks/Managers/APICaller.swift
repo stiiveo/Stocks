@@ -7,6 +7,21 @@
 
 import Foundation
 
+/// Error cases related to the API operations.
+enum APIError: Error {
+    case noDataReturned
+    case invalidUrl
+    case noQuoteDataReturned
+    case noPriceHistoryDataReturned
+    case noQuoteAndPriceHistoryReturned
+    case accessDenied
+    case apiLimitReached
+}
+
+enum NetworkError: Error {
+    case noConnection
+}
+
 struct APICaller {
     
     private struct Constants {
@@ -169,22 +184,16 @@ struct APICaller {
         return url
     }
     
-    /// Error cases related to the API operations.
-    enum APIError: Error {
-        case noDataReturned
-        case invalidUrl
-        case noQuoteDataReturned
-        case noPriceHistoryDataReturned
-        case noQuoteAndPriceHistoryReturned
-        case accessDenied
-        case apiLimitReached
-    }
-    
     private func request<T: Codable>(
         url: URL?,
         expecting type: T.Type,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
+        guard NetworkMonitor.status == .available else {
+            completion(.failure(NetworkError.noConnection))
+            return
+        }
+        
         guard let url = url else {
             // Invalid url
             completion(.failure(APIError.invalidUrl))

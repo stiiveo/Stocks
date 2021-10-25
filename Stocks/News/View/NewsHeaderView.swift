@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class NewsHeaderView: UITableViewHeaderFooterView {
     
@@ -48,17 +49,35 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         return view
     }()
     
+    private lazy var messageLabel: UILabel = {
+        let label = UILabel()
+        label.text = "U.S. Stocks is not connected to Internet."
+        label.textAlignment = .center
+        label.numberOfLines = 3
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.9
+        label.textColor = .secondaryLabel
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        label.isHidden = true
+        return label
+    }()
+    
     // MARK: - Init
     
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = .secondarySystemBackground
         setUpStackView()
+        configureMessageLabel()
         setUpBorderLine()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        titleLabel.text = nil
     }
     
     // MARK: - Public
@@ -67,8 +86,25 @@ class NewsHeaderView: UITableViewHeaderFooterView {
         titleLabel.text = viewModel.title
     }
     
-    func reset() {
-        titleLabel.text = nil
+    enum Status {
+        case normal, noInternetConnection
+    }
+    
+    var status: Status = .normal {
+        didSet {
+            switch status {
+            case .normal:
+                DispatchQueue.main.async { [weak self] in
+                    self?.stackView.isHidden = false
+                    self?.messageLabel.isHidden = true
+                }
+            case .noInternetConnection:
+                DispatchQueue.main.async { [weak self] in
+                    self?.stackView.isHidden = true
+                    self?.messageLabel.isHidden = false
+                }
+            }
+        }
     }
     
     // MARK: - Private Methods
@@ -76,29 +112,32 @@ class NewsHeaderView: UITableViewHeaderFooterView {
     private func setUpStackView() {
         stackView.addArrangedSubviews(titleLabel, subtitleLabel)
         contentView.addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Bottom constraint with custom priority.
-        let bottomConstraint = stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
-        bottomConstraint.priority = UILayoutPriority(999)
-        
-        NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            bottomConstraint
-        ])
+        stackView.snp.makeConstraints { make in
+            make.leading.equalTo(contentView).offset(20)
+            make.trailing.equalTo(contentView).offset(-20)
+            make.top.equalTo(contentView).offset(20)
+            make.bottom.equalTo(contentView).offset(-20).priority(999)
+        }
+    }
+    
+    private func configureMessageLabel() {
+        contentView.addSubview(messageLabel)
+        messageLabel.snp.makeConstraints { make in
+            make.leading.equalTo(contentView).offset(20.0)
+            make.trailing.equalTo(contentView).offset(-20.0)
+            make.top.equalTo(contentView).offset(10.0)
+            make.bottom.equalTo(contentView.bottom).offset(-10.0).priority(999)
+        }
     }
     
     private func setUpBorderLine() {
         contentView.addSubview(borderLine)
-        borderLine.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            borderLine.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 15),
-            borderLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
-            borderLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            borderLine.heightAnchor.constraint(equalToConstant: 1)
-        ])
+        borderLine.snp.makeConstraints { make in
+            make.leading.equalTo(contentView).offset(15)
+            make.trailing.equalTo(contentView).offset(-15)
+            make.bottom.equalTo(contentView)
+            make.height.equalTo(1)
+        }
     }
     
 }
