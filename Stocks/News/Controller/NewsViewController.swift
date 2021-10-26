@@ -38,13 +38,13 @@ class NewsViewController: UIViewController {
     private func observeNetworkStatus() {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(displayNormalHeaderView),
+            selector: #selector(onNetworkIsAvailable),
             name: .networkIsAvailable,
             object: nil
         )
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(displayNoInternetMessage),
+            selector: #selector(onNetworkIsUnavailable),
             name: .networkIsUnavailable,
             object: nil
         )
@@ -75,7 +75,7 @@ class NewsViewController: UIViewController {
                     switch error {
                     case let networkError as NetworkError:
                         if networkError == .noConnection {
-                            self?.displayNoInternetMessage()
+                            self?.onNetworkIsUnavailable()
                         }
                     case let apiError as APIError:
                         print("API error occurred:", apiError)
@@ -87,11 +87,11 @@ class NewsViewController: UIViewController {
         }
     }
     
-    @objc private func displayNoInternetMessage() {
+    @objc private func onNetworkIsUnavailable() {
         headerView.status = .noInternetConnection
     }
     
-    @objc private func displayNormalHeaderView() {
+    @objc private func onNetworkIsAvailable() {
         headerView.status = .normal
         fetchNews()
     }

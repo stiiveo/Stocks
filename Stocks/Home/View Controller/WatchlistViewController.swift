@@ -64,10 +64,6 @@ final class WatchlistViewController: UIViewController {
         viewModel.updateChartData()
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
     // MARK: - Edit Button Actions
     
     @objc private func editButtonDidTap() {

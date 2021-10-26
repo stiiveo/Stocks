@@ -71,10 +71,6 @@ class WatchlistViewControllerViewModel {
     @objc private func liftDataUpdateSuspension() {
         isUpdateSuspended = false
     }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
 }
 
 // MARK: - Data Update Operations

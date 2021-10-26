@@ -62,7 +62,6 @@ class StockDetailsViewController: UIViewController {
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
         viewModel.stopDataUpdating()
         NotificationCenter.default.post(name: .didDismissStockDetailsViewController, object: nil)
     }

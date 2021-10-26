@@ -96,10 +96,6 @@ class WatchlistTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-    
     // MARK: - Public
     
     func configure(with stockData: StockData, showChartAxis: Bool, isEditing: Bool) {
