@@ -14,11 +14,22 @@ protocol StockDetailsViewControllerViewModelDelegate: AnyObject {
 
 class StockDetailsViewControllerViewModel {
     
+    weak var delegate: StockDetailsViewControllerViewModelDelegate?
+    
     struct ViewModel {
         let stockData: StockData
         let companyName: String
         let lastQuoteDataUpdatedTime: TimeInterval
         let lastChartDataUpdatedTime: TimeInterval
+    }
+    
+    // Init
+    init(viewModel: ViewModel) {
+        stockData = viewModel.stockData
+        companyName = viewModel.companyName
+        lastQuoteDataUpdatedTime = viewModel.lastQuoteDataUpdatedTime
+        lastChartDataUpdatedTime = viewModel.lastChartDataUpdatedTime
+        observeInternetAvailability()
     }
     
     // Property
@@ -29,13 +40,13 @@ class StockDetailsViewControllerViewModel {
     }
     private(set) var companyName: String
     
-    private(set) var metrics: Metrics? {
+    private(set) var metricsData: Metrics? {
         didSet {
             delegate?.didUpdateStockData(self)
         }
     }
     
-    private(set) var stories: [NewsStory] = [] {
+    private(set) var newsStories: [NewsStory] = [] {
         didSet {
             delegate?.didUpdateNewsData(self)
         }
@@ -57,28 +68,44 @@ class StockDetailsViewControllerViewModel {
     
     private var lastQuoteDataUpdatedTime: TimeInterval = 0
     private var lastChartDataUpdatedTime: TimeInterval = 0
-    var dataUpdateTimer: Timer?
+    private var dataUpdateTimer: Timer?
     
-    weak var delegate: StockDetailsViewControllerViewModelDelegate?
+    private func observeInternetAvailability() {
+        NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsAvailable), name: .networkIsAvailable, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsUnavailable), name: .networkIsUnavailable, object: nil)
+    }
     
-    // Init
-    init(viewModel: ViewModel) {
-        self.stockData = viewModel.stockData
-        self.companyName = viewModel.companyName
-        self.lastQuoteDataUpdatedTime = viewModel.lastQuoteDataUpdatedTime
-        self.lastChartDataUpdatedTime = viewModel.lastChartDataUpdatedTime
+    @objc private func onNetworkIsAvailable() {
+        initiateDataUpdating()
+    }
+    
+    @objc private func onNetworkIsUnavailable() {
+        stopDataUpdating()
     }
 }
 
 // MARK: - Data Update Operations
 
 extension StockDetailsViewControllerViewModel {
-    func initiateDataUpdater() {
+    
+    func initiateDataUpdating() {
         dataUpdateTimer?.invalidate()
         dataUpdateTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) {
             [weak self] _ in
             self?.updateOutdatedData()
         }
+        
+        // Fetch metrics and news data if they're absent.
+        if metricsData == nil {
+            fetchMetricsData()
+        }
+        if newsStories.isEmpty {
+            fetchNews()
+        }
+    }
+    
+    func stopDataUpdating() {
+        dataUpdateTimer?.invalidate()
     }
     
     func updateOutdatedData() {
@@ -123,24 +150,24 @@ extension StockDetailsViewControllerViewModel {
         }
     }
     
-    func fetchMetricsData() {
+    private func fetchMetricsData() {
         APICaller().fetchStockMetrics(symbol: symbol) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let metricsResponse):
-                self.metrics = metricsResponse.metric
+                self.metricsData = metricsResponse.metric
             case .failure(let error):
                 print(error)
             }
         }
     }
     
-    func fetchNews() {
+    private func fetchNews() {
         APICaller().fetchNews(type: .company(symbol)) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let stories):
-                self.stories = stories
+                self.newsStories = stories
             case .failure(let error):
                 print(error)
             }

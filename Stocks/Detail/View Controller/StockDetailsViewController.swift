@@ -55,9 +55,7 @@ class StockDetailsViewController: UIViewController {
         configureNewsLoadingIndicator()
         
         viewModel.updateOutdatedData()
-        viewModel.initiateDataUpdater()
-        viewModel.fetchMetricsData()
-        viewModel.fetchNews()
+        viewModel.initiateDataUpdating()
         
         observeNotifications()
     }
@@ -65,7 +63,7 @@ class StockDetailsViewController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         NotificationCenter.default.removeObserver(self)
-        viewModel.dataUpdateTimer?.invalidate()
+        viewModel.stopDataUpdating()
         NotificationCenter.default.post(name: .didDismissStockDetailsViewController, object: nil)
     }
     
@@ -113,7 +111,7 @@ class StockDetailsViewController: UIViewController {
     
     private func refreshHeaderView() {
         headerView.configure(stockData: viewModel.stockData,
-                             metricsData: viewModel.metrics)
+                             metricsData: viewModel.metricsData)
     }
     
     // MARK: - Selector Operations
@@ -162,7 +160,7 @@ class StockDetailsViewController: UIViewController {
 extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.stories.count
+        return viewModel.newsStories.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -173,13 +171,13 @@ extension StockDetailsViewController: UITableViewDelegate, UITableViewDataSource
             fatalError()
         }
         cell.reset()
-        cell.configure(with: .init(news: viewModel.stories[indexPath.row]))
+        cell.configure(with: .init(news: viewModel.newsStories[indexPath.row]))
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let url = URL(string: viewModel.stories[indexPath.row].url) else { return }
+        guard let url = URL(string: viewModel.newsStories[indexPath.row].url) else { return }
         HapticsManager().vibrateForSelection()
         open(url: url, withPresentationStyle: .overFullScreen)
     }
