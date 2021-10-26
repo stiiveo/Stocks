@@ -31,14 +31,63 @@ class StockDetailsViewController: UIViewController {
         return indicator
     }()
     
+    private lazy var messageLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.textColor = .secondaryLabel
+        label.isHidden = true
+        
+        let titleAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .headline)]
+        let message = NSMutableAttributedString(
+            string: "News Feed is Unavailable\n",
+            attributes: titleAttributes
+        )
+        let detailsAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .subheadline)]
+        let details = NSAttributedString(
+            string: "U.S. Stocks is not connected to Internet.",
+            attributes: detailsAttributes
+        )
+        message.append(details)
+        label.attributedText = message
+        
+        return label
+    }()
+    
     // Init
     init(viewModel: StockDetailsViewControllerViewModel.ViewModel) {
         self.viewModel = .init(viewModel: viewModel)
         super.init(nibName: nil, bundle: nil)
+        observeNetworkCondition()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func observeNetworkCondition() {
+        NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsUnavailable), name: .networkIsUnavailable, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsAvailable), name: .networkIsAvailable, object: nil)
+        
+        if NetworkMonitor.status == .notAvailable {
+            onNetworkIsUnavailable()
+        }
+    }
+    
+    @objc private func onNetworkIsAvailable() {
+        DispatchQueue.main.async { [weak self] in
+            self?.messageLabel.isHidden = true
+        }
+    }
+    
+    @objc private func onNetworkIsUnavailable() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.newsLoadingIndicator.stopAnimating()
+            if self.viewModel.newsStories.isEmpty {
+                self.messageLabel.isHidden = false
+            }
+        }
     }
     
     // MARK: - Lifecycle
@@ -53,6 +102,7 @@ class StockDetailsViewController: UIViewController {
         configureHeaderView()
         configureTableView()
         configureNewsLoadingIndicator()
+        configureMessageLabel()
         
         viewModel.updateOutdatedData()
         viewModel.initiateDataUpdating()
@@ -66,15 +116,9 @@ class StockDetailsViewController: UIViewController {
         NotificationCenter.default.post(name: .didDismissStockDetailsViewController, object: nil)
     }
     
-    private func configureNewsLoadingIndicator() {
-        view.addSubview(newsLoadingIndicator)
-        newsLoadingIndicator.frame = CGRect(
-            x: view.width / 2 - 10,
-            y: view.width + 120 - 10,
-            width: 20,
-            height: 20
-        )
-        newsLoadingIndicator.startAnimating()
+    private func refreshHeaderView() {
+        headerView.configure(stockData: viewModel.stockData,
+                             metricsData: viewModel.metricsData)
     }
     
     // MARK: - UI Setting
@@ -108,9 +152,24 @@ class StockDetailsViewController: UIViewController {
         )
     }
     
-    private func refreshHeaderView() {
-        headerView.configure(stockData: viewModel.stockData,
-                             metricsData: viewModel.metricsData)
+    private func configureNewsLoadingIndicator() {
+        view.addSubview(newsLoadingIndicator)
+        newsLoadingIndicator.snp.makeConstraints { make in
+            make.top.equalTo(headerView.snp.bottom).offset(20.0)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-20.0)
+            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20.0)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20.0)
+        }
+    }
+    
+    private func configureMessageLabel() {
+        view.addSubview(messageLabel)
+        messageLabel.snp.makeConstraints { make in
+            make.top.equalTo(headerView.snp.bottom).offset(20.0)
+            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading).offset(20.0)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing).offset(-20.0)
+            make.height.equalTo(120.0)
+        }
     }
     
     // MARK: - Selector Operations
@@ -195,6 +254,14 @@ extension StockDetailsViewController: StockDetailsViewControllerViewModelDelegat
         DispatchQueue.main.async { [weak self] in
             self?.newsLoadingIndicator.stopAnimating()
             self?.tableView.reloadData()
+        }
+    }
+    
+    func newsDataWillBeUpdated(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel) {
+        if NetworkMonitor.status == .available {
+            DispatchQueue.main.async { [weak self] in
+                self?.newsLoadingIndicator.startAnimating()
+            }
         }
     }
 }

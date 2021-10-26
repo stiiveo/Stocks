@@ -47,10 +47,8 @@ class StockDetailHeaderView: UIView {
         clipsToBounds = true
         configureSubviews()
         configureChartLoadingIndicator()
-        observeInternetAvailability()
-        if NetworkMonitor.status == .notAvailable {
-            onNetworkIsUnavailable()
-        }
+        configureMessageLabel()
+        observeNetworkCondition()
     }
     
     required init?(coder: NSCoder) {
@@ -102,6 +100,17 @@ class StockDetailHeaderView: UIView {
         chartLoadingIndicator.startAnimating()
     }
     
+    private func configureMessageLabel() {
+        let titleAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .headline)]
+        let message = NSMutableAttributedString(string: "Chart is Unavailable\n", attributes: titleAttributes)
+        
+        let detailsAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .subheadline)]
+        let details = NSAttributedString(string: "U.S. Stocks is not connected to Internet.", attributes: detailsAttributes)
+        
+        message.append(details)
+        messageLabel.attributedText = message
+    }
+    
     @objc private func onNetworkIsAvailable() {
         DispatchQueue.main.async { [weak self] in
             self?.chartView.isHidden = false
@@ -110,24 +119,19 @@ class StockDetailHeaderView: UIView {
     }
     
     @objc private func onNetworkIsUnavailable() {
-        let titleAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .headline)]
-        let message = NSMutableAttributedString(string: "Chart is Unavailable\n", attributes: titleAttributes)
-        
-        let detailsAttributes: [NSAttributedString.Key : Any] = [.font: UIFont.preferredFont(forTextStyle: .subheadline)]
-        let details = NSAttributedString(string: "U.S. Stocks is not connected to Internet.", attributes: detailsAttributes)
-        
-        message.append(details)
-        
         DispatchQueue.main.async { [weak self] in
-            self?.messageLabel.attributedText = message
             self?.chartView.isHidden = true
             self?.messageLabel.isHidden = false
         }
     }
     
-    private func observeInternetAvailability() {
+    private func observeNetworkCondition() {
         NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsAvailable), name: .networkIsAvailable, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(onNetworkIsUnavailable), name: .networkIsUnavailable, object: nil)
+        
+        if NetworkMonitor.status == .notAvailable {
+            onNetworkIsUnavailable()
+        }
     }
     
     // MARK: - Public

@@ -10,6 +10,7 @@ import Foundation
 protocol StockDetailsViewControllerViewModelDelegate: AnyObject {
     func didUpdateStockData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel)
     func didUpdateNewsData(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel)
+    func newsDataWillBeUpdated(_ stockDetailsViewControllerViewModel: StockDetailsViewControllerViewModel)
 }
 
 class StockDetailsViewControllerViewModel {
@@ -163,6 +164,7 @@ extension StockDetailsViewControllerViewModel {
     }
     
     private func fetchNews() {
+        delegate?.newsDataWillBeUpdated(self)
         APICaller().fetchNews(type: .company(symbol)) { [weak self] result in
             guard let self = self else { return }
             switch result {
